@@ -122,8 +122,10 @@ struct Token* tokenize_digit(char c, FILE *f){
     c = next(f);
     size += 1;
   }
-  //put back last char
-  fseek(f, -sizeof(char), SEEK_CUR);
+  if(c != '\0'){
+    // if not end of stream putback last char 
+    fseek(f, -sizeof(char), SEEK_CUR);
+  }
   return make_token(NUM, int_to_str(digit, size)); 
 }
 
@@ -160,8 +162,10 @@ struct Token* tokenize_ident(char c, FILE* f){
   }
   ident[i] = '\0'; // Null terminate
 
-  //putback last char
-  fseek(f, -sizeof(char), SEEK_CUR);
+  if(c != '\0'){
+    // if not end of stream putback last char 
+    fseek(f, -sizeof(char), SEEK_CUR);
+  }
   return make_token(IDENT, ident);
 }
 
