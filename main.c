@@ -4,6 +4,7 @@
 #include "ast.h"
 #include "lex.h"
 #include "parse.h"
+#include "asm.h"
 
 int main(int argc, char **argv) {
 
@@ -30,6 +31,7 @@ int main(int argc, char **argv) {
   }
 
   struct AstNode* tree = parse(tokens, token_len);
+  gen_asm(tree);
 
   fclose(f);
 
