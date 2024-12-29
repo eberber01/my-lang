@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "ast.h"
 #include "lex.h"
+#include "parse.h"
 
 int main(int argc, char **argv) {
 
@@ -21,6 +23,13 @@ int main(int argc, char **argv) {
   int token_len;
   struct Token * tokens;
   tokens = tokenize(f, &token_len);
+
+
+  for(int i =0; i < token_len; i++){
+    print_token(tokens[i]);
+  }
+
+  struct AstNode* tree = parse(tokens, token_len);
 
   fclose(f);
 
