@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <errno.h>
 #include <limits.h>
 #include <ctype.h>
@@ -39,5 +40,68 @@ str2int_errno str2int(int *out, char *s, int base) { char *end; if (s[0] == '\0'
         return STR2INT_INCONVERTIBLE;
     *out = l;
     return STR2INT_SUCCESS;
+}
+
+
+void* my_malloc(size_t bytes){
+
+    void* ptr = malloc(bytes);
+    if(ptr == NULL){
+        perror("Failed to allocate memory.");
+        exit(1);
+    };
+    return ptr;
+}
+
+void* my_realloc(void* ptr,size_t bytes){
+
+    void* new_ptr = realloc(ptr, bytes);
+    if(new_ptr == NULL){
+        perror("Failed to allocate memory.");
+        exit(1);
+    };
+    return new_ptr;
+}
+
+
+struct String* string_new(){
+
+    //Allocate struct
+    struct String* string = my_malloc(sizeof(String));
+
+    //Allocate inital string
+    char* str = my_malloc(sizeof(char) * 10);
+
+    //Null terminate
+    *str = '\0';
+
+    //Set data 
+    string->size = 10;
+    string->length =0; 
+    string->str =str;
+    
+    return string;
+}
+
+
+void string_append(struct String* string, char c){
+
+
+    if(string->length >= (string->length - 1)){
+      char* new_string = my_realloc(string, sizeof(char) * (2 * string->size));
+
+      string->str = new_string;
+      new_string = NULL;
+    }
+
+    //Overwrite Null Character
+    (string->str)[string->length] = c;
+
+    //Terminate at next spot
+    (string->length)++;
+    (string->str)[string->length] = '\0';
+
+    //Set new size
+    string->size = string->size * 2;
 }
 

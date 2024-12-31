@@ -11,12 +11,8 @@ void print_ast_node(struct AstNode* node){
 
 struct AstNode* make_ast_node(int type, char* value, struct AstNode* left, struct AstNode* right){
   struct AstNode* n;
-  n = malloc(sizeof(AstNode));
+  n = my_malloc(sizeof(AstNode));
 
-  if(n == NULL){
-    perror("Failed to allocate memory.");
-    exit(1);
-  }
   n->type = type;
   n->value =value;
   n->left = left;

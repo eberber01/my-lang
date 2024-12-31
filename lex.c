@@ -3,6 +3,7 @@
 #include <time.h>
 #include <ctype.h>
 #include "lex.h"
+#include "util.h"
 
 struct Token* tokenize(FILE *f, int *token_len) {
   char c;
@@ -10,11 +11,7 @@ struct Token* tokenize(FILE *f, int *token_len) {
 
   int token_size = 5;
   *token_len = 0;
-  struct Token* tokens = malloc(sizeof(Token) * token_size);
-  if(tokens == NULL){
-    perror("Failed to allocate memory.");
-    exit(1);
-  }
+  struct Token* tokens = my_malloc(sizeof(Token) * token_size);
 
   int pos = 0;
   int line = 0;
@@ -90,15 +87,10 @@ struct Token* tokenize(FILE *f, int *token_len) {
 
     pos += 1;
     if(c != ' ' && c != '\n'){
-      print_token(t);
 
       if(*token_len >= token_size){
         token_size *= 2; //New size
-        struct Token* new_tokens = realloc(tokens, sizeof(Token) * token_size);
-        if(new_tokens == NULL){
-          perror("Failed to allocate memory.");
-          exit(1);
-        }
+        struct Token* new_tokens = my_realloc(tokens, sizeof(Token) * token_size);
         tokens = new_tokens;
         new_tokens = NULL;
       }
@@ -138,35 +130,23 @@ int is_ident_char(char c){
 }
 
 struct Token* tokenize_ident(char c, FILE* f){
-  char* ident = malloc(sizeof(char) * 10);
-  if(ident == NULL){
-    perror("Failed to allocate memory.");
-    exit(1);
-  }
 
+  struct String* ident = string_new();
   int i =0;
   while(c && is_ident_char(c)){
-    if(i > 9){
-      char* new_ident = realloc(ident, sizeof(char) * (2 * i));
-      if(new_ident == NULL){
-        perror("Failed to allocate memory.");
-        exit(1);
-      }
-      ident = new_ident;
-      new_ident = NULL;
-
-    }
-    ident[i] = c;
+    string_append(ident, c);
     c = next(f);
     i++;
   }
-  ident[i] = '\0'; // Null terminate
 
   if(c != '\0'){
     // if not end of stream putback last char 
     fseek(f, -sizeof(char), SEEK_CUR);
   }
-  return make_token(IDENT, ident);
+
+  char* value = ident->str;
+  free(ident);
+  return make_token(IDENT, value);
 }
 
 char next(FILE *f) {
@@ -180,12 +160,8 @@ char next(FILE *f) {
 
 struct Token* make_token(int type, char* value){
   struct Token* t;
-  t = malloc(sizeof(Token));
+  t = my_malloc(sizeof(Token));
 
-  if(t == NULL){
-    perror("Failed to allocate memory.");
-    exit(1);
-  }
   t->type = type;
   t->value = value;
   return t;
@@ -196,7 +172,7 @@ void print_token(struct Token t) {
 }
 
 char* int_to_str(int num, int size){
-  char *str = malloc((sizeof(char) * size ) + 1);
+  char *str = my_malloc((sizeof(char) * size ) + 1);
   snprintf(str, size, "%d", num); 
   return str;
 }
