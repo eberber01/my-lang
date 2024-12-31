@@ -23,14 +23,14 @@ typedef struct SymTab{
     struct TableNode** map;
 } SymTab;
 
-struct SymTabEntry* make_symtab_entry(char* key, char* value, TokenType type);
-struct TableNode* make_node(struct TableNode* next, struct SymTabEntry* data);
+SymTabEntry* make_symtab_entry(char* key, char* value, TokenType type);
+TableNode* make_node(TableNode* next,SymTabEntry* data);
 static uint64_t hash(const char* key);
-struct SymTabEntry* find(struct TableNode* node, char* key);
-void insert(TableNode** node, struct SymTabEntry* entry);
-void symtab_add(struct SymTab* table,struct SymTabEntry* entry);
-struct SymTabEntry* symtab_get(struct SymTab* table, char* key);
-struct SymTab* symtab_new();
+SymTabEntry* find(TableNode* node, char* key);
+void insert(TableNode** node, SymTabEntry* entry);
+void symtab_add(SymTab* table,SymTabEntry* entry);
+SymTabEntry* symtab_get(SymTab* table, char* key);
+SymTab* symtab_new();
 
 
 #endif

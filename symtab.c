@@ -1,5 +1,6 @@
 #include "lex.h"
 #include "util.h"
+#include "symtab.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -10,32 +11,17 @@
 
 #define TABLE_SIZE 100
 
-typedef struct SymTabEntry{
-    TokenType type;
-    char* value;
-    char* key;
-} SymTabEntry;
 
-typedef struct TableNode{
-    struct SymTabEntry* data;
-    struct TableNode* next;
-}TableNode;
-
-typedef struct SymTab{
-    size_t size;
-    struct TableNode** map;
-} SymTab;
-
-struct SymTabEntry* make_symtab_entry(char* key, char* value, TokenType type){
-    struct SymTabEntry* entry = my_malloc(sizeof(SymTabEntry));
+SymTabEntry* make_symtab_entry(char* key, char* value, TokenType type){
+    SymTabEntry* entry = my_malloc(sizeof(SymTabEntry));
     entry->key = key;
     entry->value = value;
     entry->type = type;
     return entry;
 }
 
-struct TableNode* make_node(struct TableNode* next, struct SymTabEntry* data){
-    struct TableNode* node = my_malloc(sizeof(TableNode));
+TableNode* make_node(TableNode* next, SymTabEntry* data){
+    TableNode* node = my_malloc(sizeof(TableNode));
     node->data = data; 
     node->next = next; 
     return node;
@@ -54,8 +40,8 @@ static uint64_t hash(const char* key) {
 }
 
 
-struct SymTabEntry* find(struct TableNode* node, char* key){
-    struct TableNode* curr = node;
+SymTabEntry* find(TableNode* node, char* key){
+    TableNode* curr = node;
     while(curr != NULL){
         if(!strcmp(node->data->key, key)){
             return curr->data;
@@ -66,8 +52,8 @@ struct SymTabEntry* find(struct TableNode* node, char* key){
 }
 
 // Insert node at next empty spot
-void insert(TableNode** node, struct SymTabEntry* entry){ 
-    struct TableNode* n = make_node(NULL, entry);
+void insert(TableNode** node, SymTabEntry* entry){ 
+    TableNode* n = make_node(NULL, entry);
 
     //Point to new node if first hash
 
@@ -76,7 +62,7 @@ void insert(TableNode** node, struct SymTabEntry* entry){
         return;
     }
 
-    struct TableNode* curr = *node;
+    TableNode* curr = *node;
 
     while(curr->next != NULL){
         curr = curr->next;
@@ -85,25 +71,25 @@ void insert(TableNode** node, struct SymTabEntry* entry){
     curr->next = n;
 }
 
-void symtab_add(struct SymTab* table,struct SymTabEntry* entry){
+void symtab_add(SymTab* table,SymTabEntry* entry){
     int h = hash(entry->key);
     size_t index = (size_t)(h & (uint64_t)(table->size - 1));
-    struct TableNode** node = table->map + index;
+    TableNode** node = table->map + index;
     insert(node, entry);
 }
 
 //Return entry if it exists else null
-struct SymTabEntry* symtab_get(struct SymTab* table, char* key){
+SymTabEntry* symtab_get(SymTab* table, char* key){
     int h = hash( key);
     size_t index = (size_t)(h & (uint64_t)(table->size - 1));
-    struct TableNode** node = table->map + index;
+    TableNode** node = table->map + index;
     return find(*node, key);
 }
 
 
-struct SymTab* symtab_new(){
-    struct SymTab* table = my_malloc(sizeof(SymTab));
-    struct TableNode** map = my_malloc(sizeof(TableNode*) * TABLE_SIZE);
+SymTab* symtab_new(){
+    SymTab* table = my_malloc(sizeof(SymTab));
+    TableNode** map = my_malloc(sizeof(TableNode*) * TABLE_SIZE);
 
     table->map = map;
     table->size = TABLE_SIZE;

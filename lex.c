@@ -5,13 +5,13 @@
 #include "lex.h"
 #include "util.h"
 
-struct Token* tokenize(FILE *f, int *token_len) {
+Token* tokenize(FILE *f, int *token_len) {
   char c;
-  struct Token t;
+  Token t;
 
   int token_size = 5;
   *token_len = 0;
-  struct Token* tokens = my_malloc(sizeof(Token) * token_size);
+  Token* tokens = my_malloc(sizeof(Token) * token_size);
 
   int pos = 0;
   int line = 0;
@@ -28,8 +28,7 @@ struct Token* tokenize(FILE *f, int *token_len) {
     case '*':
       t.type = MULT;
       t.value = "*";
-      break;
-    case '/':
+      break; case '/':
       t.type = DIV;
       t.value = "/";
       break;
@@ -64,7 +63,7 @@ struct Token* tokenize(FILE *f, int *token_len) {
       if(isdigit(c)){
 
         //free this 
-        struct Token* digit_token = tokenize_digit(c, f);
+        Token* digit_token = tokenize_digit(c, f);
         t.type = digit_token->type;
         t.value = digit_token->value;
         free(digit_token);
@@ -73,7 +72,7 @@ struct Token* tokenize(FILE *f, int *token_len) {
 
       if(is_ident_start(c)){
         //free this 
-        struct Token* ident_token =  tokenize_ident(c, f);
+        Token* ident_token =  tokenize_ident(c, f);
         t.type = ident_token->type;
         t.value = ident_token->value;
         free(ident_token);
@@ -90,7 +89,7 @@ struct Token* tokenize(FILE *f, int *token_len) {
 
       if(*token_len >= token_size){
         token_size *= 2; //New size
-        struct Token* new_tokens = my_realloc(tokens, sizeof(Token) * token_size);
+        Token* new_tokens = my_realloc(tokens, sizeof(Token) * token_size);
         tokens = new_tokens;
         new_tokens = NULL;
       }
@@ -104,7 +103,7 @@ struct Token* tokenize(FILE *f, int *token_len) {
   return tokens;
 }
 
-struct Token* tokenize_digit(char c, FILE *f){
+Token* tokenize_digit(char c, FILE *f){
   int size = 1;
   int digit = 0;
   int multiplier = 10;
@@ -129,9 +128,9 @@ int is_ident_char(char c){
   return (c >= 'A'   && c <= 'Z') || (c >= 'a'   && c <= 'z');
 }
 
-struct Token* tokenize_ident(char c, FILE* f){
+Token* tokenize_ident(char c, FILE* f){
 
-  struct String* ident = string_new();
+  String* ident = string_new();
   int i =0;
   while(c && is_ident_char(c)){
     string_append(ident, c);
@@ -158,8 +157,8 @@ char next(FILE *f) {
   return c;
 }
 
-struct Token* make_token(int type, char* value){
-  struct Token* t;
+Token* make_token(int type, char* value){
+  Token* t;
   t = my_malloc(sizeof(Token));
 
   t->type = type;
@@ -167,7 +166,7 @@ struct Token* make_token(int type, char* value){
   return t;
 }
 
-void print_token(struct Token t) {
+void print_token(Token t) {
   printf("<TOKEN TYPE=%d VALUE=%s>\n", t.type, t.value);
 }
 

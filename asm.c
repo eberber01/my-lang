@@ -49,7 +49,7 @@ int load_register(int reg, int value, FILE* out){
     return reg;
 }
 
-int asm_eval(struct AstNode* node, FILE* out){
+int asm_eval(AstNode* node, FILE* out){
     if(node->type == LITERAL){
         int lit;
         str2int(&lit, node->value,10);
@@ -76,7 +76,7 @@ int asm_eval(struct AstNode* node, FILE* out){
     }
 }
 
-void gen_asm(struct AstNode* root){
+void gen_asm(AstNode* root){
     FILE* out = fopen("asm", "w");
     fprintf(out, ".globl main\n\n");
     fprintf(out, "main:\n");

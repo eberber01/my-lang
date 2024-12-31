@@ -26,26 +26,26 @@ typedef struct Token {
   char* value;
 } Token;
 
-void print_token(struct Token t);
+void print_token(Token t);
 
 
 char* int_to_str(int num, int size);
 
-struct Token* make_token(int type, char* value);
+Token* make_token(int type, char* value);
 
 int is_operator(char c);
 
 char next(FILE *f);
 
-struct Token* tokenize_digit(char c, FILE *f);
+Token* tokenize_digit(char c, FILE *f);
 
 int is_ident_start(char c);
 
 int is_ident_char(char c);
 
-struct Token* tokenize_ident(char c, FILE* f);
+Token* tokenize_ident(char c, FILE* f);
 
 
-struct Token* tokenize(FILE *f, int *token_len);
+Token* tokenize(FILE *f, int *token_len);
 
 #endif

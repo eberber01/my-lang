@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
   }
 
   int token_len;
-  struct Token * tokens;
+  Token * tokens;
   tokens = tokenize(f, &token_len);
 
 
@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
     print_token(tokens[i]);
   }
 
-  struct AstNode* tree = parse(tokens, token_len);
+  AstNode* tree = parse(tokens, token_len);
   gen_asm(tree);
 
   fclose(f);

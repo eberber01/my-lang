@@ -21,8 +21,8 @@ typedef struct String{
     size_t size;
 } String;
 
-struct String* string_new();
-void string_append(struct String* string, char c);
+String* string_new();
+void string_append(String* string, char c);
 void str_resize();
 
 void* my_malloc(size_t bytes);

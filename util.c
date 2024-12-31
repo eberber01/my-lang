@@ -64,10 +64,10 @@ void* my_realloc(void* ptr,size_t bytes){
 }
 
 
-struct String* string_new(){
+String* string_new(){
 
     //Allocate struct
-    struct String* string = my_malloc(sizeof(String));
+    String* string = my_malloc(sizeof(String));
 
     //Allocate inital string
     char* str = my_malloc(sizeof(char) * 10);
@@ -84,7 +84,7 @@ struct String* string_new(){
 }
 
 
-void string_append(struct String* string, char c){
+void string_append(String* string, char c){
 
 
     if(string->length >= (string->length - 1)){

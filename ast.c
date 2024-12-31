@@ -4,13 +4,13 @@
 #include "util.h"
 
 
-void print_ast_node(struct AstNode* node){
+void print_ast_node(AstNode* node){
     printf("<AST NODE TYPE=%d VALUE=%s >\n", node->type, node->value);
 }
 
 
-struct AstNode* make_ast_node(int type, char* value, struct AstNode* left, struct AstNode* right){
-  struct AstNode* n;
+AstNode* make_ast_node(int type, char* value, AstNode* left, AstNode* right){
+  AstNode* n;
   n = my_malloc(sizeof(AstNode));
 
   n->type = type;
@@ -20,7 +20,7 @@ struct AstNode* make_ast_node(int type, char* value, struct AstNode* left, struc
   return n;
 }
 
-int ast_eval(struct AstNode* node){
+int ast_eval(AstNode* node){
     if( node == NULL){
         return 0;
     }

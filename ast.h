@@ -1,11 +1,11 @@
 #ifndef AST_H
 #define AST_H
 
-enum NodeType { 
+typedef enum NodeType { 
         LITERAL, 
         IDENTIFIER, 
         BINARY_EXPR 
-};
+}NodeType;
 
 
 typedef struct AstNode{
@@ -15,10 +15,10 @@ typedef struct AstNode{
     char* value;
 } AstNode;
 
-void visit(struct AstNode* node);
+void visit(AstNode* node);
 
-int ast_eval(struct AstNode* node);
-struct AstNode* make_ast_node(int type,char* value, struct AstNode* left, struct AstNode* right);
+int ast_eval(AstNode* node);
+struct AstNode* make_ast_node(int type,char* value,AstNode* left, AstNode* right);
 
 
 #endif
