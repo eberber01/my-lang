@@ -5,6 +5,11 @@
 #include "lex.h"
 #include "parse.h"
 #include "asm.h"
+#include "symtab.h"
+
+void symtab_init(SymTab* table){
+  symtab_add(table, make_symtab_entry("IF", "", KEYWORD));
+}
 
 int main(int argc, char **argv) {
 

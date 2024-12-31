@@ -4,7 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-enum TokenType {
+typedef enum TokenType {
+  KEYWORD,
   IDENT,
   NUM,
   ADD,
@@ -18,7 +19,7 @@ enum TokenType {
   LCBRACKET,
   RCBRACKET,
   SEMICOLON,
-};
+} TokenType;
 
 typedef struct Token {
   int type;
