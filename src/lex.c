@@ -131,13 +131,10 @@ int is_ident_char(char c){
 Token* tokenize_ident(char c, FILE* f){
 
   String* ident = string_new();
-  int i =0;
   while(c && is_ident_char(c)){
     string_append(ident, c);
     c = next(f);
-    i++;
   }
-
   if(c != '\0'){
     // if not end of stream putback last char 
     fseek(f, -sizeof(char), SEEK_CUR);

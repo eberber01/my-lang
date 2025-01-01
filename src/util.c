@@ -68,7 +68,6 @@ String* string_new(){
 
     //Allocate struct
     String* string = my_malloc(sizeof(String));
-
     //Allocate inital string
     char* str = my_malloc(sizeof(char) * 10);
 
@@ -87,7 +86,7 @@ String* string_new(){
 void string_append(String* string, char c){
 
 
-    if(string->length >= (string->length - 1)){
+    if(string->length >= (string->size - 1)){
       char* new_string = my_realloc(string, sizeof(char) * (2 * string->size));
 
       string->str = new_string;
