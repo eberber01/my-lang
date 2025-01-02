@@ -8,7 +8,7 @@
 #include "symtab.h"
 
 void symtab_init(SymTab* table){
-  symtab_add(table, make_symtab_entry("IF", "", KEYWORD));
+  symtab_add(table, make_symtab_entry("int", "", TYPE));
 }
 
 int main(int argc, char **argv) {
@@ -35,8 +35,9 @@ int main(int argc, char **argv) {
     print_token(tokens[i]);
   }
 
-  AstNode* tree = parse(tokens, token_len);
-  gen_asm(tree);
+  TokenStream* stream = make_token_stream(tokens,  token_len);
+  AstNode* tree = parse(stream);
+  //gen_asm(tree);
 
   fclose(f);
 

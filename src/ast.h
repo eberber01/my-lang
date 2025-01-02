@@ -4,7 +4,9 @@
 typedef enum NodeType { 
         LITERAL, 
         IDENTIFIER, 
-        BINARY_EXPR 
+        BINARY_EXPR,
+        FUNC_DECLARE, 
+        VAR_DECLARE,
 }NodeType;
 
 

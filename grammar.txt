@@ -1,3 +1,20 @@
+FunctionDeclare -> Type Identifier ( ) Assign Expr
+
+
 Expr    -> Term ( ('+' | '-') Term )*
 Term    -> Factor ( ('*' | '/') Factor )*
 Factor  -> NUM | '(' Expr ')'
+
+Program       -> Statement*
+
+Statement     -> VarAssign | FuncDef | Expr ';'
+
+VarAssign     -> IDENT '=' Expr ';'
+
+FuncDef       -> "int" IDENT '(' ParamList ')' '{' Statement* '}'
+
+ParamList     -> IDENT (',' IDENT)* | ε
+
+Expr          -> Term ( ('+' | '-') Term )*
+Term          -> Factor ( ('*' | '/') Factor )*
+Factor        -> NUM | IDENT | '(' Expr ')'

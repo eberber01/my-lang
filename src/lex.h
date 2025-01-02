@@ -19,6 +19,8 @@ typedef enum TokenType {
   LCBRACKET,
   RCBRACKET,
   SEMICOLON,
+  ASSIGN, 
+  TYPE
 } TokenType;
 
 typedef struct Token {

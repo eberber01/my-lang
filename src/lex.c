@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <ctype.h>
 #include "lex.h"
@@ -52,6 +53,10 @@ Token* tokenize(FILE *f, int *token_len) {
       t.type = RCBRACKET;
       t.value = "}";
       break;
+    case '=':
+      t.type = ASSIGN;
+      t.value = "=";
+      break;
     case ' ':
       break;
     case '\n':
@@ -74,6 +79,9 @@ Token* tokenize(FILE *f, int *token_len) {
         //free this 
         Token* ident_token =  tokenize_ident(c, f);
         t.type = ident_token->type;
+        if(!strcmp("int", ident_token -> value)){
+          t.type = TYPE;
+        }
         t.value = ident_token->value;
         free(ident_token);
         break;
