@@ -64,12 +64,38 @@ void* my_realloc(void* ptr,size_t bytes){
 }
 
 
+void* vector_new(){
+    //Allocate struct
+    Vector* vector = my_malloc(sizeof(Vector));
+
+    //Allocate inital size
+    void** array = my_malloc(sizeof(void*) * 10);
+
+    vector->array = array;
+    vector->size = 10;
+    vector->length = 0;
+
+    return vector;
+}
+void vector_push(Vector* vector, void* ptr){
+
+    if(vector->length >= (vector->size)){
+      vector->size *= 2;
+      void** new_array = my_realloc(vector->array, sizeof(void*) * (vector->size));
+      vector->array = new_array;
+      new_array = NULL;
+    }
+    vector->array[vector->length] = ptr;
+    vector->length += 1;
+}
+
+
 String* string_new(){
 
     //Allocate struct
     String* string = my_malloc(sizeof(String));
     //Allocate inital string
-    char* str = my_malloc(sizeof(char) * 10);
+    Vector* vector = vector_new();
 
     //Null terminate
     *str = '\0';
