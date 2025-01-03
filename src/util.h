@@ -25,7 +25,6 @@ typedef struct Vector{
 typedef struct String{
     Vector* vector;    
     size_t length;
-    size_t size;
 } String;
 
 void* vector_new();
@@ -33,7 +32,9 @@ void vector_push(Vector* vector, void* ptr);
 
 String* string_new();
 void string_append(String* string, char c);
-void str_resize();
+char* as_str(String* string);
+
+void* vector_get(Vector* vector, size_t index);
 
 void* my_malloc(size_t bytes);
 void* my_realloc(void* ptr, size_t bytes);

@@ -1,56 +1,52 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <ctype.h>
 #include "lex.h"
 #include "util.h"
 
-Token* tokenize(FILE *f, int *token_len) {
+Vector* tokenize(FILE *f) {
   char c;
-  Token t;
-
-  int token_size = 5;
-  *token_len = 0;
-  Token* tokens = my_malloc(sizeof(Token) * token_size);
+  Vector* vector = vector_new();
 
   int pos = 0;
   int line = 0;
   while ((c = next(f))) {
+    Token* t = my_malloc(sizeof(Token));
     switch (c) {
     case '+':
-      t.type = ADD;
-      t.value = "+";
+      t->type = ADD;
+      t->value = "+";
       break;
     case '-':
-      t.type = SUB;
-      t.value = "-";
+      t->type = SUB;
+      t->value = "-";
       break;
     case '*':
-      t.type = MULT;
-      t.value = "*";
+      t->type = MULT;
+      t->value = "*";
       break; case '/':
-      t.type = DIV;
-      t.value = "/";
+      t->type = DIV;
+      t->value = "/";
       break;
     case ';':
-      t.type = SEMICOLON;
-      t.value = ";";
+      t->type = SEMICOLON;
+      t->value = ";";
       break;
     case '(':
-      t.type = LPAREN;
-      t.value = "(";
+      t->type = LPAREN;
+      t->value = "(";
       break;
     case ')':
-      t.type = RPAREN;
-      t.value = ")";
+      t->type = RPAREN;
+      t->value = ")";
       break;
     case '{':
-      t.type = LCBRACKET;
-      t.value = "{";
+      t->type = LCBRACKET;
+      t->value = "{";
       break;
     case '}':
-      t.type = RCBRACKET;
-      t.value = "}";
+      t->type = RCBRACKET;
+      t->value = "}";
       break;
     case ' ':
       break;
@@ -58,14 +54,14 @@ Token* tokenize(FILE *f, int *token_len) {
       line += 1;
       pos = 0;
       break;
-    default:
+    default:  
 
       if(isdigit(c)){
 
         //free this 
         Token* digit_token = tokenize_digit(c, f);
-        t.type = digit_token->type;
-        t.value = digit_token->value;
+        t->type = digit_token->type;
+        t->value = digit_token->value;
         free(digit_token);
         break;
       }
@@ -73,8 +69,8 @@ Token* tokenize(FILE *f, int *token_len) {
       if(is_ident_start(c)){
         //free this 
         Token* ident_token =  tokenize_ident(c, f);
-        t.type = ident_token->type;
-        t.value = ident_token->value;
+        t->type = ident_token->type;
+        t->value = ident_token->value;
         free(ident_token);
         break;
       }
@@ -86,21 +82,11 @@ Token* tokenize(FILE *f, int *token_len) {
 
     pos += 1;
     if(c != ' ' && c != '\n'){
-
-      if(*token_len >= token_size){
-        token_size *= 2; //New size
-        Token* new_tokens = my_realloc(tokens, sizeof(Token) * token_size);
-        tokens = new_tokens;
-        new_tokens = NULL;
-      }
-
-      tokens[*token_len].type = t.type;
-      tokens[*token_len].value = t.value;
-      *token_len += 1;
+      vector_push(vector,  t);
     }
 
   }
-  return tokens;
+  return vector;
 }
 
 Token* tokenize_digit(char c, FILE *f){
@@ -140,7 +126,7 @@ Token* tokenize_ident(char c, FILE* f){
     fseek(f, -sizeof(char), SEEK_CUR);
   }
 
-  char* value = ident->str;
+  char* value = as_str(ident);
   free(ident);
   return make_token(IDENT, value);
 }
@@ -163,8 +149,8 @@ Token* make_token(int type, char* value){
   return t;
 }
 
-void print_token(Token t) {
-  printf("<TOKEN TYPE=%d VALUE=%s>\n", t.type, t.value);
+void print_token(Token* t) {
+  printf("<TOKEN TYPE=%d VALUE=%s>\n", t->type, t->value);
 }
 
 char* int_to_str(int num, int size){

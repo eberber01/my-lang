@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "util.h"
 
 typedef enum TokenType {
   KEYWORD,
@@ -26,7 +27,7 @@ typedef struct Token {
   char* value;
 } Token;
 
-void print_token(Token t);
+void print_token(Token* t);
 
 
 char* int_to_str(int num, int size);
@@ -46,6 +47,6 @@ int is_ident_char(char c);
 Token* tokenize_ident(char c, FILE* f);
 
 
-Token* tokenize(FILE *f, int *token_len);
+Vector* tokenize(FILE *f);
 
 #endif

@@ -89,6 +89,21 @@ void vector_push(Vector* vector, void* ptr){
     vector->length += 1;
 }
 
+void vector_set(Vector* vector, size_t index, void*ptr){
+    if(index >= vector->length){
+        printf("Index out of range. %zu", index);
+        exit(1);
+    }
+    vector->array[index] = ptr;
+}
+
+void* vector_get(Vector* vector, size_t index){
+    if(index >= vector->length){
+        printf("Index out of range. %zu", index);
+        exit(1);
+    }
+    return vector->array[index];
+}
 
 String* string_new(){
 
@@ -97,36 +112,34 @@ String* string_new(){
     //Allocate inital string
     Vector* vector = vector_new();
 
-    //Null terminate
-    *str = '\0';
-
-    //Set data 
-    string->size = 10;
     string->length =0; 
-    string->str =str;
-    
+    string->vector =vector;
+
+    char* c = my_malloc(sizeof(char));
+    *c = '\0';
+    //Null terminate
+    vector_push(vector , (void*)c);
+
     return string;
 }
 
 
 void string_append(String* string, char c){
+    char* new_c = my_malloc(sizeof(char));
+    *new_c = c;
 
+    char* n = my_malloc(sizeof(char));
+    *n = '\0';
 
-    if(string->length >= (string->size - 1)){
-      char* new_string = my_realloc(string, sizeof(char) * (2 * string->size));
-
-      string->str = new_string;
-      new_string = NULL;
-    }
-
-    //Overwrite Null Character
-    (string->str)[string->length] = c;
-
-    //Terminate at next spot
-    (string->length)++;
-    (string->str)[string->length] = '\0';
-
-    //Set new size
-    string->size = string->size * 2;
+    vector_set(string->vector, string->length , (void*)new_c);
+    vector_push(string->vector,  (void*)n);
+    string->length += 1;
 }
 
+char* as_str(String *string){
+    char* s = my_malloc(sizeof(char) * string->length);
+    for(int i=0; i < string->length; i++) {
+            s[i] = *((char*)vector_get(string->vector,  i));
+    }
+    return s;
+}
