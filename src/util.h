@@ -15,11 +15,21 @@ typedef enum {
 
 str2int_errno str2int(int *out, char *s, int base);
 
+
+typedef struct Vector{
+    void** array;
+    size_t size;
+    size_t length;
+} Vector;
+
 typedef struct String{
-    char* str;    
+    Vector* vector;    
     size_t length;
     size_t size;
 } String;
+
+void* vector_new();
+void vector_push(Vector* vector, void* ptr);
 
 String* string_new();
 void string_append(String* string, char c);
