@@ -6,6 +6,13 @@
 
 int free_registers[7];
 char* registers[7] = {"t0", "t1", "t2", "t3", "t4", "t5", "t6"};
+int sp = 0;
+
+int stack_increase(size_t bytes, FILE* out){
+    fprintf(out,"\taddi sp, sp, -%zu\n", bytes);
+    sp += bytes;
+    return sp - bytes;
+}
 
 int alloc_register(){
     for(int i=0; i < 7; i++){
@@ -49,6 +56,11 @@ int load_register(int reg, int value, FILE* out){
     return reg;
 }
 
+
+void label_add(char* name, FILE* out){
+    fprintf(out,"%s:\n", name);
+}
+
 int asm_eval(AstNode* node, FILE* out){
     if(node->type == LITERAL){
         int lit;
@@ -58,6 +70,21 @@ int asm_eval(AstNode* node, FILE* out){
         return reg;
     }
 
+    if(node->type == FUNC_DECLARE){
+        label_add("main", out);
+        for(int i =0; i < node->body->length ; i++){
+            asm_eval((AstNode*)vector_get(node->body,  i),  out);
+        }
+        return -1;
+    }
+    if(node->type == VAR_DECLARE){
+        //make space on stack
+        int sp = stack_increase(sizeof(int),  out);
+        //store value on to stack
+        int r = asm_eval( node->left, out);
+        //stack_store();
+        return -1;
+    }
 
     int left = asm_eval(node->left, out);
     int right = asm_eval(node->right, out);
@@ -79,7 +106,7 @@ int asm_eval(AstNode* node, FILE* out){
 void gen_asm(AstNode* root){
     FILE* out = fopen("asm", "w");
     fprintf(out, ".globl main\n\n");
-    fprintf(out, "main:\n");
+    //fprintf(out, "main:\n");
     asm_eval(root, out);
     fclose(out);
 }

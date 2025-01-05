@@ -76,6 +76,10 @@ Vector* tokenize(FILE *f) {
         //free this 
         Token* ident_token =  tokenize_ident(c, f);
         t->type = ident_token->type;
+        if(!strcmp(ident_token->value , "int")){
+
+          t->type = TYPE;
+        }
         t->value = ident_token->value;
         free(ident_token);
         break;
@@ -113,15 +117,14 @@ Token* tokenize_digit(char c, FILE *f){
 }
 
 int is_ident_start(char c){
-  return (c >= 'A'   && c <= 'Z') || (c >= 'a'   && c <= 'z');
+  return (c >= 'A'   && c <= 'Z') || (c >= 'a'   && c <= 'z') || c == '_';
 }
 
 int is_ident_char(char c){
-  return (c >= 'A'   && c <= 'Z') || (c >= 'a'   && c <= 'z');
+  return (c >= 'A'   && c <= 'Z') || (c >= 'a'   && c <= 'z') || ( c >= '0' && c <= '9') || c == '-' || c == '_';
 }
 
 Token* tokenize_ident(char c, FILE* f){
-
   String* ident = string_new();
   while(c && is_ident_char(c)){
     string_append(ident, c);

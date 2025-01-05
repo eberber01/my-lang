@@ -33,9 +33,12 @@ int main(int argc, char **argv) {
   for(int i =0; i < tokens->length; i++){
     print_token((Token*)vector_get(tokens, i));
   }
+  SymTab* table = symtab_new();
+  symtab_init(table);
 
-  //AstNode* tree = parse(tokens, token_len);
-  //gen_asm(tree);
+  AstNode* tree = parse(tokens, table);
+  
+  gen_asm(tree);
 
   fclose(f);
 

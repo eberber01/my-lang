@@ -9,7 +9,7 @@ void print_ast_node(AstNode* node){
 }
 
 
-AstNode* make_ast_node(int type, char* value, AstNode* left, AstNode* right){
+AstNode* make_ast_node(int type, char* value, AstNode* left, AstNode* right, Vector* body){
   AstNode* n;
   n = my_malloc(sizeof(AstNode));
 
@@ -17,6 +17,7 @@ AstNode* make_ast_node(int type, char* value, AstNode* left, AstNode* right){
   n->value =value;
   n->left = left;
   n->right = right;
+  n->body = body;
   return n;
 }
 

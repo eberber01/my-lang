@@ -1,6 +1,6 @@
 #ifndef AST_H
 #define AST_H
-
+#include "util.h"
 typedef enum NodeType { 
         LITERAL, 
         IDENTIFIER, 
@@ -15,12 +15,13 @@ typedef struct AstNode{
     struct AstNode* left;
     struct AstNode* right;
     char* value;
+    Vector* body;
 } AstNode;
 
 void visit(AstNode* node);
 
 int ast_eval(AstNode* node);
-struct AstNode* make_ast_node(int type,char* value,AstNode* left, AstNode* right);
+struct AstNode* make_ast_node(int type,char* value,AstNode* left, AstNode* right, Vector* body);
 
 
 #endif

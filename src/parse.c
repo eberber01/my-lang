@@ -1,6 +1,7 @@
 //#include "ast.h"
 #include "ast.h"
 #include "lex.h"
+#include "symtab.h"
 #include "util.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -8,20 +9,22 @@
 
 
 Token* current_token(TokenStream* stream){
-    return stream->tokens + stream->current;
+    if(stream->current >= stream->tokens->length){
+        return NULL;
+    }
+    return (Token*)vector_get(stream->tokens,  stream->current);
 }
 void next_token(TokenStream* stream){
-    if(stream->current >= stream->size){
+    if(stream->current >= stream->tokens->length){
         return;
     }
     (stream->current)++;
 }
 
-TokenStream* make_token_stream(Token* tokens, size_t size){
+TokenStream* make_token_stream(Vector* tokens){
     TokenStream* stream = my_malloc(sizeof(TokenStream));
 
     stream->tokens = tokens;
-    stream->size = size;
     stream->current = 0;
     return stream;
 }
@@ -29,6 +32,9 @@ TokenStream* make_token_stream(Token* tokens, size_t size){
 
 Token* expect(TokenStream* stream, TokenType expect){
     Token* current = current_token(stream);
+    if(current == NULL){
+        return current;
+    }
     if(current->type == expect){
         next_token(stream);
         return current;
@@ -38,43 +44,43 @@ Token* expect(TokenStream* stream, TokenType expect){
 }
 
 
-AstNode* parse_expression(TokenStream* stream){
+AstNode* parse_expression(TokenStream* stream, SymTab* table){
 
-    AstNode* left= parse_term(stream);
-    Token* current = current_token(stream);
-    while(current->type == ADD || current->type == SUB){
+    AstNode* left= parse_term(stream, table);
+    Token* current;
+    while((current = current_token(stream)) && (current->type == ADD || current->type == SUB)){
         char* value = current->value;
         next_token(stream);
-        AstNode* right = parse_term(stream);
-        left = make_ast_node(BINARY_EXPR, value, left, right);
+        AstNode* right = parse_term(stream, table);
+        left = make_ast_node(BINARY_EXPR, value, left, right, NULL);
     }
     return left;
 
 }
 
-AstNode* parse_term(TokenStream* stream){
-    AstNode* left = parse_factor(stream);
-    Token* current = current_token(stream);
-    while(current->type == DIV || current->type == MULT){
+AstNode* parse_term(TokenStream* stream, SymTab* table){
+    AstNode* left = parse_factor(stream, table);
+    Token* current;
+    while((current = current_token(stream)) && (current->type == DIV || current->type == MULT)){
         char* value = current->value;
         next_token(stream);
-        AstNode* right = parse_factor(stream);
-        left = make_ast_node(BINARY_EXPR,value , left, right);
+        AstNode* right = parse_factor(stream, table);
+        left = make_ast_node(BINARY_EXPR,value , left, right, NULL);
     }
     return left;
 
 }
 
-AstNode* parse_factor(TokenStream* stream){
+AstNode* parse_factor(TokenStream* stream, SymTab* table){
     Token* current = current_token(stream); 
     if(current->type == NUM){
         char* value = current_token(stream)->value;
         next_token(stream);
-        return make_ast_node(LITERAL, value, NULL, NULL);
+        return make_ast_node(LITERAL, value, NULL, NULL, NULL);
     }
     else if( current->type == LPAREN){
         next_token(stream);
-        AstNode* ret =  parse_expression(stream);
+        AstNode* ret =  parse_expression(stream, table);
 
         //TODO: account for paren
         expect(stream, RPAREN);
@@ -84,36 +90,29 @@ AstNode* parse_factor(TokenStream* stream){
     return NULL;
 }
 
-AstNode* parse_statement(TokenStream* stream) {
+AstNode* parse_statement(TokenStream* stream, SymTab* table) {
     Token* current = current_token(stream);
 
     if (current->type == TYPE) {
         // Variable declaration/assignment
-        return parse_variable(stream);
+        return parse_variable(stream, table);
     }
-    else {
-        // Default to parsing an expression
-        AstNode* expr = parse_expression(stream);
-        expect(stream, SEMICOLON);
-        return expr;
-    }
+    return NULL;
 }
 
-List* parse_body(TokenStream* stream) {
-    List* body = create_list();
-    while (current_token(stream)->type != RCBRACKET) {
-        AstNode* stmt = parse_statement(stream);
-        add_to_list(body, stmt);
+Vector* parse_body(TokenStream* stream, SymTab* table) {
+    Vector* body = vector_new();
+    while (current_token(stream) && current_token(stream)->type != RCBRACKET) {
+        AstNode* stmt = parse_statement(stream, table);
+        vector_push(body, stmt);
     }
     return body;
 }
 
 
 
-AstNode* parse_function(TokenStream* stream){
+AstNode* parse_function(TokenStream* stream, SymTab* table){
     //Get return type
-    printf("PARSE\n");
-    print_token(*current_token(stream));
     Token* func_type = expect(stream, TYPE);
 
     Token* func_name = expect(stream, IDENT);
@@ -124,14 +123,14 @@ AstNode* parse_function(TokenStream* stream){
     // start of function
 
     expect(stream, LCBRACKET);
-    List* body = parse_body(stream); // Parse function body
+    //Ast list
+    Vector* body = parse_body(stream,  table); // Parse function body
 
     expect(stream, RCBRACKET);
-
-    return make_ast_node(FUNC_DECLARE, func_name->value, body);
+    return make_ast_node(FUNC_DECLARE, func_name->value, NULL, NULL ,  body);
 }
 
-AstNode* parse_variable(TokenStream* stream){
+AstNode* parse_variable(TokenStream* stream, SymTab* table){
     // get type
     TokenType type = expect(stream, TYPE)->type;
     // get variable name
@@ -139,14 +138,15 @@ AstNode* parse_variable(TokenStream* stream){
     AstNode* init = NULL;
     if(current_token(stream)->type == ASSIGN){
         next_token(stream);
-        init =  parse_expression(stream);
+        init =  parse_expression(stream, table);
     }
 
     // expect semicolon
     expect(stream, SEMICOLON);
-    return make_ast_node(VAR_DECLARE, name, init, NULL); 
+    return make_ast_node(VAR_DECLARE, name, init, NULL, NULL ); 
 }
 
-AstNode* parse(TokenStream* stream){
-    return parse_function(stream);
+AstNode* parse(Vector* tokens, SymTab* table){
+    TokenStream * stream = make_token_stream(tokens);
+    return parse_function(stream, table);
 }
