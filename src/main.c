@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "ast.h"
+#include "util.h"
 #include "lex.h"
 #include "parse.h"
 #include "asm.h"
@@ -26,13 +27,11 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  int token_len;
-  Token * tokens;
-  tokens = tokenize(f, &token_len);
+  Vector * tokens = tokenize(f);
 
 
-  for(int i =0; i < token_len; i++){
-    print_token(tokens[i]);
+  for(int i =0; i < tokens->length; i++){
+    print_token((Token*)vector_get(tokens, i));
   }
 
   TokenStream* stream = make_token_stream(tokens,  token_len);
@@ -41,9 +40,10 @@ int main(int argc, char **argv) {
 
   fclose(f);
 
-  for(int i =0; i < token_len; i++){
-    if(tokens[i].type == IDENT || tokens[i].type == NUM){
-      free(tokens[i].value);
+  for(int i =0; i < tokens->length; i++){
+    Token* token = (Token*)vector_get(tokens, i);
+    if(token->type == IDENT || token->type == NUM){
+      free(token->value);
     }
   }
   free(tokens);
