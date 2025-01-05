@@ -34,8 +34,7 @@ int main(int argc, char **argv) {
     print_token((Token*)vector_get(tokens, i));
   }
 
-  TokenStream* stream = make_token_stream(tokens,  token_len);
-  AstNode* tree = parse(stream);
+  //AstNode* tree = parse(tokens, token_len);
   //gen_asm(tree);
 
   fclose(f);

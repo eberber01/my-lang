@@ -47,12 +47,12 @@ Vector* tokenize(FILE *f) {
       t->value = "{";
       break;
     case '}':
-      t.type = RCBRACKET;
-      t.value = "}";
+      t->type = RCBRACKET;
+      t->value = "}";
       break;
     case '=':
-      t.type = ASSIGN;
-      t.value = "=";
+      t->type = ASSIGN;
+      t->value = "=";
       break;
     case ' ':
       break;
@@ -77,11 +77,6 @@ Vector* tokenize(FILE *f) {
         Token* ident_token =  tokenize_ident(c, f);
         t->type = ident_token->type;
         t->value = ident_token->value;
-        t.type = ident_token->type;
-        if(!strcmp("int", ident_token -> value)){
-          t.type = TYPE;
-        }
-        t.value = ident_token->value;
         free(ident_token);
         break;
       }
