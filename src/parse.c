@@ -115,7 +115,13 @@ AstNode* parse_function(TokenStream* stream, SymTab* table){
     //Get return type
     Token* func_type = expect(stream, TYPE);
 
-    Token* func_name = expect(stream, IDENT);
+    char* func_name = expect(stream, IDENT)->value;
+
+    // Check if symbol exists
+    if(symtab_get(table,  func_name)){
+        perror("Redefinition of function.");
+        exit(1);
+    }
 
     // TODO: Parse args here
     expect(stream, LPAREN);
@@ -127,7 +133,7 @@ AstNode* parse_function(TokenStream* stream, SymTab* table){
     Vector* body = parse_body(stream,  table); // Parse function body
 
     expect(stream, RCBRACKET);
-    return make_ast_node(FUNC_DECLARE, func_name->value, NULL, NULL ,  body);
+    return make_ast_node(FUNC_DECLARE, func_name, NULL, NULL ,  body);
 }
 
 AstNode* parse_variable(TokenStream* stream, SymTab* table){
@@ -135,14 +141,23 @@ AstNode* parse_variable(TokenStream* stream, SymTab* table){
     TokenType type = expect(stream, TYPE)->type;
     // get variable name
     char* name = expect(stream, IDENT)->value;
+
+    // Check if symbol exists
+    if(symtab_get(table,  name)){
+        perror("Redefinition of variable.");
+        exit(1);
+    }
+
     AstNode* init = NULL;
     if(current_token(stream)->type == ASSIGN){
         next_token(stream);
         init =  parse_expression(stream, table);
     }
 
-    // expect semicolon
     expect(stream, SEMICOLON);
+
+    //Successfull parse
+    symtab_add(table, make_symtab_entry(name, "int", TYPE));
     return make_ast_node(VAR_DECLARE, name, init, NULL, NULL ); 
 }
 
