@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "ast.h"
+#include "symtab.h"
 #include "util.h"
 #include "asm.h"
 
@@ -11,7 +12,34 @@ int sp = 0;
 int stack_increase(size_t bytes, FILE* out){
     fprintf(out,"\taddi sp, sp, -%zu\n", bytes);
     sp += bytes;
-    return sp - bytes;
+    return sp;
+}
+
+
+int stack_get(int offset,  FILE* out){
+    int reg = alloc_register();
+    fprintf(out,"\tlw %s, %d(sp)\n", registers[reg], sp - offset);
+    return reg;
+}
+
+void stack_store(int offset, int reg, FILE* out){
+    fprintf(out,"\tsw %s, %d(sp)\n", registers[reg], sp - offset);
+}
+
+void pring_newline(FILE * out){
+    fprintf(out, "\tli a7, 11\n" );          // service 11 is print integer
+    int r = alloc_register();
+    load_register(r, 10, out);
+    fprintf(out, "\tadd a0, %s, zero\n", registers[r]);  // load desired value into argument register a0, using pseudo-op
+    fprintf(out, "\tecall\n");
+    free_register(r);
+
+}
+
+void print_regsiter(int reg, FILE* out){
+    fprintf(out, "\tli  a7, 1\n" );          // service 1 is print integer
+    fprintf(out, "\tadd a0, %s, zero\n", registers[reg]);  // load desired value into argument register a0, using pseudo-op
+    fprintf(out, "\tecall\n");
 }
 
 int alloc_register(){
@@ -61,7 +89,7 @@ void label_add(char* name, FILE* out){
     fprintf(out,"%s:\n", name);
 }
 
-int asm_eval(AstNode* node, FILE* out){
+int asm_eval(AstNode* node, SymTab* table, FILE* out){
     if(node->type == LITERAL){
         int lit;
         str2int(&lit, node->value,10);
@@ -69,25 +97,44 @@ int asm_eval(AstNode* node, FILE* out){
         load_register(reg,lit,out);
         return reg;
     }
-
     if(node->type == FUNC_DECLARE){
         label_add("main", out);
         for(int i =0; i < node->body->length ; i++){
-            asm_eval((AstNode*)vector_get(node->body,  i),  out);
+            asm_eval((AstNode*)vector_get(node->body,  i), table,  out);
         }
         return -1;
     }
     if(node->type == VAR_DECLARE){
         //make space on stack
-        int sp = stack_increase(sizeof(int),  out);
+        int offset = stack_increase(sizeof(int),  out);
         //store value on to stack
-        int r = asm_eval( node->left, out);
-        //stack_store();
+        int r = asm_eval( node->left,table, out);
+        stack_store(offset, r, out);
+        free_register(r);
+
+        int reg_to_print = stack_get(offset, out);
+        print_regsiter(reg_to_print, out);
+        pring_newline(out);
+        free_register(reg_to_print);
+
+        //Store location in symbol table
+        symtab_get(table, node->value)->offset = offset;
         return -1;
     }
+    if(node->type == VAR){
+        //Store location in symbol table
+        SymTabEntry* var = symtab_get(table,  node->value);
 
-    int left = asm_eval(node->left, out);
-    int right = asm_eval(node->right, out);
+        if(var == NULL){
+            perror("Cannot use undefined variable.");
+            exit(1);
+        }
+        int reg = stack_get(var->offset, out);
+        return reg; 
+    }
+
+    int left = asm_eval(node->left, table, out);
+    int right = asm_eval(node->right, table, out);
     switch (*(node->value)) {
         case '+':
             return reg_add(left, right, out);
@@ -103,10 +150,10 @@ int asm_eval(AstNode* node, FILE* out){
     }
 }
 
-void gen_asm(AstNode* root){
-    FILE* out = fopen("asm", "w");
+void gen_asm(AstNode* root, SymTab* table){
+    FILE* out = fopen("../asm", "w");
     fprintf(out, ".globl main\n\n");
     //fprintf(out, "main:\n");
-    asm_eval(root, out);
+    asm_eval(root, table, out);
     fclose(out);
 }

@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
 
   AstNode* tree = parse(tokens, table);
   
-  gen_asm(tree);
+  gen_asm(tree, table);
 
   fclose(f);
   for(int i =0; i < tokens->length; i++){

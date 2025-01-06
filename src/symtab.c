@@ -43,7 +43,7 @@ static uint64_t hash(const char* key) {
 SymTabEntry* find(TableNode* node, char* key){
     TableNode* curr = node;
     while(curr != NULL){
-        if(!strcmp(node->data->key, key)){
+        if(!strcmp(curr->data->key, key)){
             return curr->data;
         }
         curr = curr->next;
@@ -63,12 +63,13 @@ void insert(TableNode** node, SymTabEntry* entry){
     }
 
     TableNode* curr = *node;
-
-    while(curr->next != NULL){
+    TableNode* prev;
+    while(curr != NULL){
+        prev = curr;
         curr = curr->next;
     }
 
-    curr->next = n;
+    prev->next = n;
 }
 
 void symtab_add(SymTab* table,SymTabEntry* entry){
@@ -104,7 +105,6 @@ void symtab_free(SymTab* table){
         TableNode* curr = table->map[i];
 
             while(curr){
-                printf("here");
                 prev = curr; 
                 curr = curr->next;
                 free(prev->data);

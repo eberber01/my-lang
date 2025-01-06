@@ -11,6 +11,7 @@ typedef struct SymTabEntry{
     enum TokenType type;
     char* value;
     char* key;
+    int offset; 
 }SymTabEntry;
 
 typedef struct TableNode{

@@ -74,9 +74,17 @@ AstNode* parse_term(TokenStream* stream, SymTab* table){
 AstNode* parse_factor(TokenStream* stream, SymTab* table){
     Token* current = current_token(stream); 
     if(current->type == NUM){
-        char* value = current_token(stream)->value;
         next_token(stream);
-        return make_ast_node(LITERAL, value, NULL, NULL, NULL);
+        return make_ast_node(LITERAL, current->value, NULL, NULL, NULL);
+    }
+    else if(current->type == IDENT){
+        if(symtab_get(table,  current->value) == NULL){
+            perror("Cannot used undefined variable");
+            exit(1);
+        }
+        next_token(stream);
+        return make_ast_node(VAR, current->value, NULL, NULL, NULL);
+
     }
     else if( current->type == LPAREN){
         next_token(stream);

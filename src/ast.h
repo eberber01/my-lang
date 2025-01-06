@@ -7,6 +7,7 @@ typedef enum NodeType {
         BINARY_EXPR,
         FUNC_DECLARE, 
         VAR_DECLARE,
+        VAR,
 }NodeType;
 
 
