@@ -28,3 +28,22 @@ This is my attempt at creating a C compiler. The motivation for this is to learn
 
 ### ASM
 - [ ] stack 
+
+
+## Build
+
+### Requirements
+- cmake
+```
+    git clone https://github.com/eberber01/my-lang.git
+
+    cd ./my-lang
+    mkdir build
+
+    cd build
+    cmake .. & make
+
+    ../my-lang path-to-file
+```
+
+Assembly file will be created at the root of the git directory. 
