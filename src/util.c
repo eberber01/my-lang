@@ -105,6 +105,19 @@ void* vector_get(Vector* vector, size_t index){
     return vector->array[index];
 }
 
+void vector_free(Vector* vector){
+    for(int i = 0; i < vector->length; i++){
+        free(vector->array[i]);
+    }
+    free(vector->array);
+    free(vector);
+}
+
+void string_free(String* string){
+    vector_free(string->vector);
+    free(string);
+}
+
 String* string_new(){
 
     //Allocate struct

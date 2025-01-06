@@ -31,6 +31,7 @@ void insert(TableNode** node, SymTabEntry* entry);
 void symtab_add(SymTab* table,SymTabEntry* entry);
 SymTabEntry* symtab_get(SymTab* table, char* key);
 SymTab* symtab_new();
+void symtab_free(SymTab* table);
 
 
 #endif

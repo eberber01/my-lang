@@ -41,14 +41,14 @@ int main(int argc, char **argv) {
   gen_asm(tree);
 
   fclose(f);
-
   for(int i =0; i < tokens->length; i++){
     Token* token = (Token*)vector_get(tokens, i);
-    if(token->type == IDENT || token->type == NUM){
+    if(token->type == IDENT || token->type == NUM || token->type == TYPE || token->type == NUM){
       free(token->value);
     }
   }
-  free(tokens);
-
+  vector_free(tokens);
+  ast_free(tree);
+  symtab_free(table);
   return 0;
 }

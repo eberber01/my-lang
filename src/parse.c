@@ -163,5 +163,7 @@ AstNode* parse_variable(TokenStream* stream, SymTab* table){
 
 AstNode* parse(Vector* tokens, SymTab* table){
     TokenStream * stream = make_token_stream(tokens);
-    return parse_function(stream, table);
+    AstNode* root = parse_function(stream, table);
+    free(stream);
+    return root;
 }

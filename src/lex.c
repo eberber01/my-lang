@@ -136,7 +136,7 @@ Token* tokenize_ident(char c, FILE* f){
   }
 
   char* value = as_str(ident);
-  free(ident);
+  string_free(ident);
   return make_token(IDENT, value);
 }
 

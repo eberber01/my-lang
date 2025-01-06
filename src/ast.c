@@ -21,6 +21,26 @@ AstNode* make_ast_node(int type, char* value, AstNode* left, AstNode* right, Vec
   return n;
 }
 
+void _ast_free(AstNode* node){
+    if(node == NULL){
+        return  ;
+    }
+    _ast_free(node->left);
+    _ast_free(node->right);
+
+
+    free(node);
+    free(node->body);
+}
+
+void ast_free(AstNode* root){
+    if(root->body){
+        for(int i=0 ; i < root->body->length ; i++){
+            _ast_free(vector_get(root->body,  i));
+        }
+    }
+}
+
 int ast_eval(AstNode* node){
     if( node == NULL){
         return 0;

@@ -28,8 +28,10 @@ typedef struct String{
 } String;
 
 void* vector_new();
+void vector_free(Vector *);
 void vector_push(Vector* vector, void* ptr);
 
+void string_free(String* string);
 String* string_new();
 void string_append(String* string, char c);
 char* as_str(String* string);

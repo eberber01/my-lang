@@ -89,10 +89,30 @@ SymTabEntry* symtab_get(SymTab* table, char* key){
 
 SymTab* symtab_new(){
     SymTab* table = my_malloc(sizeof(SymTab));
-    TableNode** map = my_malloc(sizeof(TableNode*) * TABLE_SIZE);
+    TableNode** map = calloc(sizeof(TableNode*), TABLE_SIZE);
 
     table->map = map;
     table->size = TABLE_SIZE;
+
+
     return table;
+}
+
+void symtab_free(SymTab* table){
+    for(int i=0; i <  table->size; i++ ){
+        TableNode* prev;
+        TableNode* curr = table->map[i];
+
+            while(curr){
+                printf("here");
+                prev = curr; 
+                curr = curr->next;
+                free(prev->data);
+                free(prev);
+            }
+
+    }   
+    free(table->map);
+    free(table);
 }
 

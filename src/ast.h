@@ -19,7 +19,7 @@ typedef struct AstNode{
 } AstNode;
 
 void visit(AstNode* node);
-
+void ast_free(AstNode* root);
 int ast_eval(AstNode* node);
 struct AstNode* make_ast_node(int type,char* value,AstNode* left, AstNode* right, Vector* body);
 
