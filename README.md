@@ -4,9 +4,9 @@ This is my attempt at creating a C compiler. The motivation for this is to learn
 
 
 ## Progress
-    The current version of this compiler supports a single main function with integer declarations. Basic arithmitec needs to be worked on further, accounting for division operations. Current target code generation is for RISCV. 
+The current version of this compiler supports a single main function with integer declarations. Basic arithmitec needs to be worked on further, accounting for division operations. Current target code generation is for RISCV. 
 
-    In the future, I am planning to add support for key C features as well as additional CPU targets. Looking ahead, I also plan to write an assembler and linker.
+In the future, I am planning to add support for key C features as well as additional CPU targets. Looking ahead, I also plan to write an assembler and linker.
 
 ## Todo
 
