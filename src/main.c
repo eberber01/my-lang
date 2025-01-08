@@ -9,7 +9,7 @@
 #include "symtab.h"
 
 void symtab_init(SymTab* table){
-  symtab_add(table, make_symtab_entry("int", "", TYPE));
+  symtab_add(table, make_symtab_entry("int", "", TYPE, NULL));
 }
 
 int main(int argc, char **argv) {

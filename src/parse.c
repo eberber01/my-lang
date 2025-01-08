@@ -99,8 +99,7 @@ AstNode* parse_factor(TokenStream* stream, SymTab* table){
 }
 
 AstNode* parse_statement(TokenStream* stream, SymTab* table) {
-    Token* current = current_token(stream);
-
+    Token* current;
     if (current->type == TYPE) {
         // Variable declaration/assignment
         return parse_variable(stream, table);
@@ -117,6 +116,24 @@ Vector* parse_body(TokenStream* stream, SymTab* table) {
     return body;
 }
 
+Vector* parse_func_args(TokenStream *stream, SymTab *table){
+    Vector* args = vector_new();
+    Token* current;
+    while((current = current_token(stream)) && current_token(stream)->type == TYPE) {
+        Token* type = expect(stream, TYPE);
+
+        //argument name
+        expect(stream, IDENT);
+        if(current_token(stream)->type == RPAREN){
+           break; 
+        }
+        expect(stream, COMMA);
+
+        vector_push(args,  type->value);
+    }
+
+    return args;
+}
 
 
 AstNode* parse_function(TokenStream* stream, SymTab* table){
@@ -133,15 +150,20 @@ AstNode* parse_function(TokenStream* stream, SymTab* table){
 
     // TODO: Parse args here
     expect(stream, LPAREN);
+    Vector* args = parse_func_args( stream,  table);
     expect(stream, RPAREN);
-    // start of function
 
+    //Insert args into symbol table
+    // TODO: Make Symbol type to replace
+    symtab_add(table, make_symtab_entry( func_name,  "func",  VAR_DEF, args));
+
+    // start of function
     expect(stream, LCBRACKET);
     //Ast list
     Vector* body = parse_body(stream,  table); // Parse function body
 
     expect(stream, RCBRACKET);
-    return make_ast_node(FUNC_DECLARE, func_name, NULL, NULL ,  body);
+    return make_ast_node(FUNC_DEF, func_name, NULL, NULL ,  body);
 }
 
 AstNode* parse_variable(TokenStream* stream, SymTab* table){
@@ -165,8 +187,8 @@ AstNode* parse_variable(TokenStream* stream, SymTab* table){
     expect(stream, SEMICOLON);
 
     //Successfull parse
-    symtab_add(table, make_symtab_entry(name, "int", TYPE));
-    return make_ast_node(VAR_DECLARE, name, init, NULL, NULL ); 
+    symtab_add(table, make_symtab_entry(name, "int", TYPE, NULL));
+    return make_ast_node(VAR_DEF, name, init, NULL, NULL ); 
 }
 
 AstNode* parse(Vector* tokens, SymTab* table){

@@ -11,6 +11,7 @@ typedef struct SymTabEntry{
     enum TokenType type;
     char* value;
     char* key;
+    Vector* args;
     int offset; 
 }SymTabEntry;
 
@@ -24,7 +25,7 @@ typedef struct SymTab{
     struct TableNode** map;
 } SymTab;
 
-SymTabEntry* make_symtab_entry(char* key, char* value, TokenType type);
+SymTabEntry* make_symtab_entry(char* key, char* value, TokenType type, Vector* args);
 TableNode* make_node(TableNode* next,SymTabEntry* data);
 static uint64_t hash(const char* key);
 SymTabEntry* find(TableNode* node, char* key);

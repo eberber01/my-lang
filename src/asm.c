@@ -97,14 +97,14 @@ int asm_eval(AstNode* node, SymTab* table, FILE* out){
         load_register(reg,lit,out);
         return reg;
     }
-    if(node->type == FUNC_DECLARE){
+    if(node->type == FUNC_DEF){
         label_add("main", out);
         for(int i =0; i < node->body->length ; i++){
             asm_eval((AstNode*)vector_get(node->body,  i), table,  out);
         }
         return -1;
     }
-    if(node->type == VAR_DECLARE){
+    if(node->type == VAR_DEF){
         //make space on stack
         int offset = stack_increase(sizeof(int),  out);
         //store value on to stack
@@ -121,7 +121,7 @@ int asm_eval(AstNode* node, SymTab* table, FILE* out){
         symtab_get(table, node->value)->offset = offset;
         return -1;
     }
-    if(node->type == VAR){
+    if(node->type == VAR ){
         //Store location in symbol table
         SymTabEntry* var = symtab_get(table,  node->value);
 

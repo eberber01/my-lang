@@ -54,6 +54,10 @@ Vector* tokenize(FILE *f) {
       t->type = ASSIGN;
       t->value = "=";
       break;
+    case ',':
+      t->type = ASSIGN;
+      t->value = ",";
+      break;
     case ' ':
       break;
     case '\n':
