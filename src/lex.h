@@ -28,6 +28,8 @@ typedef enum TokenType {
 typedef struct Token {
   int type;
   char* value;
+  int pos;
+  int line;
 } Token;
 
 void print_token(Token* t);
@@ -35,7 +37,7 @@ void print_token(Token* t);
 
 char* int_to_str(int num, int size);
 
-Token* make_token(int type, char* value);
+Token* make_token(int type, char* value, int pos, int line);
 
 int is_operator(char c);
 

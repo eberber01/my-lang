@@ -56,7 +56,9 @@ int alloc_register(){
 void free_register(int reg){
     free_registers[reg] = 0;
 }
-
+int reg_ret(FILE* out){
+    fprintf(out,"\tret\n");
+}
 int reg_add(int a, int b, FILE* out){
     fprintf(out,"\tadd %s, %s, %s\n", registers[a],registers[a], registers[b]);
     free_register(b);
@@ -90,64 +92,80 @@ void label_add(char* name, FILE* out){
 }
 
 int asm_eval(AstNode* node, SymTab* table, FILE* out){
-    if(node->type == LITERAL){
-        int lit;
-        str2int(&lit, node->value,10);
-        int reg = alloc_register();
-        load_register(reg,lit,out);
-        return reg;
-    }
-    if(node->type == FUNC_DEF){
-        label_add("main", out);
-        for(int i =0; i < node->body->length ; i++){
-            asm_eval((AstNode*)vector_get(node->body,  i), table,  out);
-        }
-        return -1;
-    }
-    if(node->type == VAR_DEF){
-        //make space on stack
-        int offset = stack_increase(sizeof(int),  out);
-        //store value on to stack
-        int r = asm_eval( node->left,table, out);
-        stack_store(offset, r, out);
-        free_register(r);
+    int lit;
+    int reg;
+    int offset;
+    int left, right;
+    SymTabEntry* var;
+    switch(node->type){
 
-        int reg_to_print = stack_get(offset, out);
-        print_regsiter(reg_to_print, out);
-        pring_newline(out);
-        free_register(reg_to_print);
+        case STATEMENT:
 
-        //Store location in symbol table
-        symtab_get(table, node->value)->offset = offset;
-        return -1;
-    }
-    if(node->type == VAR ){
-        //Store location in symbol table
-        SymTabEntry* var = symtab_get(table,  node->value);
+            for(int i =0; i < node->body->length ; i++){
+                asm_eval((AstNode*)vector_get(node->body,  i), table,  out);
+            }
+            return -1;
+        
+        case LITERAL: 
+            str2int(&lit, node->value,10);
+            reg = alloc_register();
+            load_register(reg,lit,out);
+            return reg;
 
-        if(var == NULL){
-            perror("Cannot use undefined variable.");
-            exit(1);
-        }
-        int reg = stack_get(var->offset, out);
-        return reg; 
-    }
+        case FUNC_DEF:
+            label_add(node->value, out);
+            for(int i =0; i < node->body->length ; i++){
+                asm_eval((AstNode*)vector_get(node->body,  i), table,  out);
+            }
+            return -1;
 
-    int left = asm_eval(node->left, table, out);
-    int right = asm_eval(node->right, table, out);
-    switch (*(node->value)) {
-        case '+':
-            return reg_add(left, right, out);
-        case '-':
-            return reg_sub(left, right, out);
-        case '*':
-            return reg_mult(left, right, out);
-        case '/':
-            return reg_div(left, right, out);
+        case VAR_DEF:
+        
+            //make space on stack
+            offset = stack_increase(sizeof(int),  out);
+            //store value on to stack
+            reg = asm_eval( node->left,table, out);
+            stack_store(offset, reg, out);
+            free_register(reg);
+
+            //int reg_to_print = stack_get(offset, out);
+            //print_regsiter(reg_to_print, out);
+            //pring_newline(out);
+            //free_register(reg_to_print);
+
+            //Store location in symbol table
+            symtab_get(table, node->value)->offset = offset;
+            return -1;
+        case VAR:
+            //Store location in symbol table
+            var = symtab_get(table,  node->value);
+
+            if(var == NULL){
+                perror("Cannot use undefined variable.");
+                exit(1);
+            }
+            int re = stack_get(var->offset, out);
+            return re; 
+
         default:
-            perror("Unexpected node type.");
-            exit(1);
+            left = asm_eval(node->left, table, out);
+            right = asm_eval(node->right, table, out);
+            switch (*(node->value)) {
+                case '+':
+                    return reg_add(left, right, out);
+                case '-':
+                    return reg_sub(left, right, out);
+                case '*':
+                    return reg_mult(left, right, out);
+                case '/':
+                    return reg_div(left, right, out);
+                default:
+                    perror("Unexpected node type.");
+                    exit(1);
+            }
+
     }
+
 }
 
 void gen_asm(AstNode* root, SymTab* table){

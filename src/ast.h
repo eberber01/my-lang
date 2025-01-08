@@ -9,7 +9,8 @@ typedef enum NodeType {
         FUNC_DEC,
         VAR_DEF,
         VAR_DEC,
-        VAR
+        VAR,
+        STATEMENT,
 }NodeType;
 
 

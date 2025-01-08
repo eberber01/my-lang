@@ -93,7 +93,8 @@ Vector* tokenize(FILE *f) {
       perror("Unexpected char.");
       exit(1);
     }
-
+    t->pos = pos;
+    t->line = line;
     pos += 1;
     if(c != ' ' && c != '\n'){
       vector_push(vector,  t);
@@ -117,7 +118,7 @@ Token* tokenize_digit(char c, FILE *f){
     // if not end of stream putback last char 
     fseek(f, -sizeof(char), SEEK_CUR);
   }
-  return make_token(NUM, int_to_str(digit, size)); 
+  return make_token(NUM, int_to_str(digit, size), 0, 0); 
 }
 
 int is_ident_start(char c){
@@ -141,7 +142,7 @@ Token* tokenize_ident(char c, FILE* f){
 
   char* value = as_str(ident);
   string_free(ident);
-  return make_token(IDENT, value);
+  return make_token(IDENT, value, 0, 0);
 }
 
 char next(FILE *f) {
@@ -153,17 +154,19 @@ char next(FILE *f) {
   return c;
 }
 
-Token* make_token(int type, char* value){
+Token* make_token(int type, char* value, int pos, int line){
   Token* t;
   t = my_malloc(sizeof(Token));
 
   t->type = type;
   t->value = value;
+  t->pos = pos;
+  t->line = line;
   return t;
 }
 
 void print_token(Token* t) {
-  printf("<TOKEN TYPE=%d VALUE=%s>\n", t->type, t->value);
+  printf("<TOKEN TYPE=%d VALUE=%s POS=%d LINE=%d>\n", t->type, t->value, t->pos, t->line);
 }
 
 char* int_to_str(int num, int size){
