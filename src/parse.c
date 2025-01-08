@@ -127,6 +127,7 @@ AstNode* parse_statement(TokenStream* stream, SymTab* table) {
     Token* current;
     Vector* body = vector_new(); 
     while((current = current_token(stream)) && current_token(stream)-> type != RCBRACKET){
+        print_token(current_token(stream));
         if (is_func_dec_start(stream)) {
             // Variable declaration/assignment
             AstNode* func = parse_function( stream,  table);
@@ -136,6 +137,10 @@ AstNode* parse_statement(TokenStream* stream, SymTab* table) {
             // Variable declaration/assignment
             AstNode* var = parse_variable( stream,  table);
             vector_push(body,  var);
+        }
+        else{
+            perror("Syntax Error");
+            exit(1);
         }
     }
     return make_ast_node(STATEMENT, "STATEMENT", NULL,  NULL, body);

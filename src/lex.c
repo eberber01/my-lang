@@ -26,10 +26,23 @@ Vector* tokenize(FILE *f, SymTab* table) {
     case '*':
       t->type = MULT;
       t->value = "*";
-      break; case '/':
-      t->type = DIV;
-      t->value = "/";
-      break;
+      break; 
+      case '/':
+        char peek;
+        if((peek = next(f)) == '/'){
+          while(peek && peek != '\n'){
+              peek = next(f);
+          }
+          c = peek;
+          line += 1;
+          pos = 0;
+        }
+        else{
+          fseek(f, -sizeof(char), SEEK_CUR);
+          t->type = DIV;
+          t->value = "/";
+        }
+        break;
     case ';':
       t->type = SEMICOLON;
       t->value = ";";
