@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "symtab.h"
 #include "util.h"
 
 typedef enum TokenType {
-  KEYWORD,
   IDENT,
   NUM,
   ADD,
@@ -52,6 +52,6 @@ int is_ident_char(char c);
 Token* tokenize_ident(char c, FILE* f);
 
 
-Vector* tokenize(FILE *f);
+Vector* tokenize(FILE *f, SymTab* table);
 
 #endif

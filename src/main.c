@@ -9,7 +9,7 @@
 #include "symtab.h"
 
 void symtab_init(SymTab* table){
-  symtab_add(table, make_symtab_entry("int", "", TYPE, NULL));
+  symtab_add(table, make_symtab_entry("int", INT, KEYWORD, NULL));
 }
 
 int main(int argc, char **argv) {
@@ -27,14 +27,15 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  Vector * tokens = tokenize(f);
+  SymTab* table = symtab_new();
+  symtab_init(table);
+
+  Vector * tokens = tokenize(f, table);
 
 
   for(int i =0; i < tokens->length; i++){
     print_token((Token*)vector_get(tokens, i));
   }
-  SymTab* table = symtab_new();
-  symtab_init(table);
 
   AstNode* tree = parse(tokens, table);
   

@@ -171,7 +171,6 @@ int asm_eval(AstNode* node, SymTab* table, FILE* out){
 void gen_asm(AstNode* root, SymTab* table){
     FILE* out = fopen("../asm", "w");
     fprintf(out, ".globl main\n\n");
-    //fprintf(out, "main:\n");
     asm_eval(root, table, out);
     fclose(out);
 }

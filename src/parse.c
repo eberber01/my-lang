@@ -188,7 +188,7 @@ AstNode* parse_function(TokenStream* stream, SymTab* table){
 
     //Insert args into symbol table
     // TODO: Make Symbol type to replace
-    symtab_add(table, make_symtab_entry( func_name,  "func",  VAR_DEF, args));
+    symtab_add(table, make_symtab_entry( func_name,  symtab_get(table, func_type->value)->type,  FUNCTION, args));
 
     // start of function
     expect(stream, LCBRACKET);
@@ -201,7 +201,7 @@ AstNode* parse_function(TokenStream* stream, SymTab* table){
 
 AstNode* parse_variable(TokenStream* stream, SymTab* table){
     // get type
-    TokenType type = expect(stream, TYPE)->type;
+    Token* var_type = expect(stream, TYPE);
     // get variable name
     char* name = expect(stream, IDENT)->value;
 
@@ -220,7 +220,7 @@ AstNode* parse_variable(TokenStream* stream, SymTab* table){
     expect(stream, SEMICOLON);
 
     //Successfull parse
-    symtab_add(table, make_symtab_entry(name, "int", TYPE, NULL));
+    symtab_add(table, make_symtab_entry(name, symtab_get(table,  var_type->value)->type, VARIABLE, NULL));
     return make_ast_node(VAR_DEF, name, init, NULL, NULL ); 
 }
 

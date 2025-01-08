@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <ctype.h>
 #include "lex.h"
+#include "symtab.h"
 #include "util.h"
 
-Vector* tokenize(FILE *f) {
+Vector* tokenize(FILE *f, SymTab* table) {
   char c;
   Vector* vector = vector_new();
 
@@ -80,8 +80,10 @@ Vector* tokenize(FILE *f) {
         //free this 
         Token* ident_token =  tokenize_ident(c, f);
         t->type = ident_token->type;
-        if(!strcmp(ident_token->value , "int")){
-
+        printf("%d", symtab_get(table, "int")->type);
+        SymTabEntry* entry;
+        entry = symtab_get(table, ident_token->value);
+        if(entry){
           t->type = TYPE;
         }
         t->value = ident_token->value;

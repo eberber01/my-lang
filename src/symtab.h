@@ -1,15 +1,24 @@
 #ifndef SYMTAB_H 
 #define SYMTAB_H
-#include "lex.h"
 #include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 
+typedef enum SymbolType{
+    FUNCTION,
+    VARIABLE,
+    KEYWORD,
+} SymbolType;
+
+typedef enum Type {
+    INT
+} Type;
+
 typedef struct SymTabEntry{
-    enum TokenType type;
-    char* value;
+    SymbolType symbol;
+    Type type;
     char* key;
     Vector* args;
     int offset; 
@@ -25,7 +34,7 @@ typedef struct SymTab{
     struct TableNode** map;
 } SymTab;
 
-SymTabEntry* make_symtab_entry(char* key, char* value, TokenType type, Vector* args);
+SymTabEntry* make_symtab_entry(char* key,  Type type, SymbolType symbol, Vector* args);
 TableNode* make_node(TableNode* next,SymTabEntry* data);
 static uint64_t hash(const char* key);
 SymTabEntry* find(TableNode* node, char* key);

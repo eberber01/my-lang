@@ -12,11 +12,11 @@
 #define TABLE_SIZE 100
 
 
-SymTabEntry* make_symtab_entry(char* key, char* value, TokenType type, Vector* args){
+SymTabEntry* make_symtab_entry(char* key,  Type type, SymbolType symbol, Vector* args){
     SymTabEntry* entry = my_malloc(sizeof(SymTabEntry));
     entry->key = key;
-    entry->value = value;
     entry->type = type;
+    entry->symbol = symbol;
     entry->args = args;
     return entry;
 }
