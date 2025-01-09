@@ -13,7 +13,7 @@ int reg_div(int a, int b, FILE* out);
 
 int load_register(int reg, int value, FILE* out);
 
-int asm_eval(AstNode* node,SymTab* table, FILE* out);
+int asm_eval(AstNode* node,SymTab* table, StackFrame* frame,FILE* out);
 
 void gen_asm(AstNode* root, SymTab* table);
 

@@ -10,19 +10,43 @@ int free_registers[7];
 char* registers[8] = {"t0", "t1", "t2", "t3", "t4", "t5", "t6", "ra"};
 int sp = 0;
 
-int stack_increase(size_t bytes, FILE* out){
-    fprintf(out,"\taddi sp, sp, -%zu\n", bytes);
-    sp += bytes;
-    return sp;
+StackFrame* make_stack_frame(){
+    StackFrame* frame = my_malloc(sizeof(StackFrame));
+    Vector* variables = vector_new();
+
+    frame->size = 0;
+    frame->variables = variables;
+    return frame;
+}
+//Returns the offset of the 
+int stackframe_add(StackFrame* frame, char* var_name, Type var_type){
+    vector_push(frame->variables, var_name);
+
+    //Change for different Types
+    int tmp = frame->size;
+    frame->size += 4;
+
+
+    return tmp; 
 }
 
+void sp_increase(size_t bytes, FILE* out){
+    fprintf(out,"\taddi sp, sp, -%zu\n", bytes);
+    sp += bytes;
+}
+void sp_decrease(size_t bytes, FILE* out){
+    fprintf(out,"\taddi sp, sp, %zu\n", bytes);
+    sp -= bytes;
+}
 
-int stack_get(int reg, int offset,  FILE* out){
+//Load value at sp offset into reg
+int sp_load(int reg, int offset,  FILE* out){
     fprintf(out,"\tlw %s, %d(sp)\n", registers[reg], sp - offset);
     return reg;
 }
 
-void stack_store(int offset, int reg, FILE* out){
+//Store value at reg at sp plus offset
+void sp_store(int offset, int reg, FILE* out){
     fprintf(out,"\tsw %s, %d(sp)\n", registers[reg], sp - offset);
 }
 
@@ -97,7 +121,8 @@ void label_add(char* name, FILE* out){
     fprintf(out,"%s:\n", name);
 }
 
-int asm_eval(AstNode* node, SymTab* table, FILE* out){
+
+int asm_eval(AstNode* node, SymTab* table, StackFrame* frame,FILE* out){
     int lit;
     int reg;
     int offset;
@@ -105,15 +130,28 @@ int asm_eval(AstNode* node, SymTab* table, FILE* out){
     SymTabEntry* var;
     switch(node->type){
         case FUNC_CALL:
+            //Allocate space for return address 
+            sp_increase(sizeof(void*), out);
+            sp_store(0,  7,  out);
+
+            //Get frame and allocate enough space for call
+            size_t bytes = symtab_get(table,  node->value)->frame->size;
+            sp_increase(bytes, out);
+
             //TODO: parameter passing
             jump_to_label(node->value, out);
 
-            perror("Implement Function calls.");
-            return reg;
+            //restore return address
+            sp_decrease(bytes, out);
+            sp_decrease(sizeof(void*), out);
+            sp_load(7,  0,  out);
+
+            //TODO load register with return value
+            return -1; 
         case STATEMENT:
 
             for(int i =0; i < node->body->length ; i++){
-                asm_eval((AstNode*)vector_get(node->body,  i), table,  out);
+                asm_eval((AstNode*)vector_get(node->body,  i), table,frame,  out);
             }
             return -1;
         
@@ -125,24 +163,33 @@ int asm_eval(AstNode* node, SymTab* table, FILE* out){
 
         case FUNC_DEF:
             label_add(node->value, out);
+            //Create New StackFrame
+            StackFrame* f = make_stack_frame();
             for(int i =0; i < node->body->length ; i++){
-                asm_eval((AstNode*)vector_get(node->body,  i), table,  out);
+                asm_eval((AstNode*)vector_get(node->body,  i), table, f, out);
+            }
+            //Store function frame
+            symtab_get(table,node->value)->frame = f;
+            
+            if(strcmp(node->value, "main")){
+                //return 
+                fprintf(out,"\tjalr ra\n");
             }
             return -1;
 
         case VAR_DEF:
-        
-            //make space on stack
-            offset = stack_increase(sizeof(int),  out);
+            //Increase stack frame size
+            offset = stackframe_add(frame, node->value,  symtab_get(table,  node->value)->type);
+
             //store value on to stack
-            reg = asm_eval( node->left,table, out);
-            stack_store(offset, reg, out);
+            reg = asm_eval( node->left,table, frame, out);
+            sp_store(offset, reg, out);
             free_register(reg);
 
-            //int reg_to_print = stack_get(offset, out);
-            //print_regsiter(reg_to_print, out);
-            //pring_newline(out);
-            //free_register(reg_to_print);
+            int reg_to_print = sp_load(alloc_register(), offset, out);
+            print_regsiter(reg_to_print, out);
+            pring_newline(out);
+            free_register(reg_to_print);
 
             //Store location in symbol table
             symtab_get(table, node->value)->offset = offset;
@@ -155,14 +202,14 @@ int asm_eval(AstNode* node, SymTab* table, FILE* out){
                 perror("Cannot use undefined variable.");
                 exit(1);
             }
+            //Load value from sp
             reg = alloc_register();
-            int re = stack_get(reg, var->offset, out);
-            free_register(reg);
-            return re; 
+            sp_load(reg, var->offset, out);
+            return reg;
 
         default:
-            left = asm_eval(node->left, table, out);
-            right = asm_eval(node->right, table, out);
+            left = asm_eval(node->left, table, frame,out);
+            right = asm_eval(node->right, table, frame, out);
             switch (*(node->value)) {
                 case '+':
                     return reg_add(left, right, out);
@@ -184,7 +231,7 @@ int asm_eval(AstNode* node, SymTab* table, FILE* out){
 void gen_asm(AstNode* root, SymTab* table){
     FILE* out = fopen("../asm", "w");
     fprintf(out, ".globl main\n\n");
-    fprintf(out, "\tjal main\n");
-    asm_eval(root, table, out);
+    fprintf(out, "\tj main\n");
+    asm_eval(root, table, NULL, out);
     fclose(out);
 }

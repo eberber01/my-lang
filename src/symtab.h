@@ -6,6 +6,11 @@
 #include <stdint.h>
 #include <string.h>
 
+typedef struct StackFrame {
+    Vector* variables; // Vectory of variable names
+    size_t size; // Size of frame
+} StackFrame;
+
 typedef enum SymbolType{
     FUNCTION,
     VARIABLE,
@@ -26,6 +31,7 @@ typedef struct SymTabEntry{
     Type type;
     char* key;
     Vector* args;
+    StackFrame* frame;
     int offset; 
 }SymTabEntry;
 
