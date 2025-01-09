@@ -150,8 +150,8 @@ void string_append(String* string, char c){
 }
 
 char* as_str(String *string){
-    char* s = my_malloc(sizeof(char) * string->length);
-    for(int i=0; i < string->length; i++) {
+    char* s = my_malloc(sizeof(char) * string->length + 1);
+    for(int i=0; i < string->length + 1; i++) {
             s[i] = *((char*)vector_get(string->vector,  i));
     }
     return s;
