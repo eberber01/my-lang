@@ -1,12 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "ast.h"
 #include "symtab.h"
 #include "util.h"
 #include "asm.h"
 
 int free_registers[7];
-char* registers[7] = {"t0", "t1", "t2", "t3", "t4", "t5", "t6"};
+char* registers[8] = {"t0", "t1", "t2", "t3", "t4", "t5", "t6", "ra"};
 int sp = 0;
 
 int stack_increase(size_t bytes, FILE* out){
@@ -16,8 +17,7 @@ int stack_increase(size_t bytes, FILE* out){
 }
 
 
-int stack_get(int offset,  FILE* out){
-    int reg = alloc_register();
+int stack_get(int reg, int offset,  FILE* out){
     fprintf(out,"\tlw %s, %d(sp)\n", registers[reg], sp - offset);
     return reg;
 }
@@ -86,6 +86,12 @@ int load_register(int reg, int value, FILE* out){
     return reg;
 }
 
+void jump_to_label(char* label, FILE* out){
+    fprintf(out, "\tjal %s\n", label);
+}
+void return_from_jump(FILE* out){
+    fprintf(out, "\tjalr ra\n");
+}
 
 void label_add(char* name, FILE* out){
     fprintf(out,"%s:\n", name);
@@ -98,7 +104,12 @@ int asm_eval(AstNode* node, SymTab* table, FILE* out){
     int left, right;
     SymTabEntry* var;
     switch(node->type){
+        case FUNC_CALL:
+            //TODO: parameter passing
+            jump_to_label(node->value, out);
 
+            perror("Implement Function calls.");
+            return reg;
         case STATEMENT:
 
             for(int i =0; i < node->body->length ; i++){
@@ -144,7 +155,9 @@ int asm_eval(AstNode* node, SymTab* table, FILE* out){
                 perror("Cannot use undefined variable.");
                 exit(1);
             }
-            int re = stack_get(var->offset, out);
+            reg = alloc_register();
+            int re = stack_get(reg, var->offset, out);
+            free_register(reg);
             return re; 
 
         default:
@@ -171,6 +184,7 @@ int asm_eval(AstNode* node, SymTab* table, FILE* out){
 void gen_asm(AstNode* root, SymTab* table){
     FILE* out = fopen("../asm", "w");
     fprintf(out, ".globl main\n\n");
+    fprintf(out, "\tjal main\n");
     asm_eval(root, table, out);
     fclose(out);
 }

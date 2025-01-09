@@ -93,7 +93,6 @@ Vector* tokenize(FILE *f, SymTab* table) {
         //free this 
         Token* ident_token =  tokenize_ident(c, f);
         t->type = ident_token->type;
-        printf("%d", symtab_get(table, "int")->type);
         SymTabEntry* entry;
         entry = symtab_get(table, ident_token->value);
         if(entry){

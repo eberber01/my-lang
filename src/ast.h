@@ -11,6 +11,7 @@ typedef enum NodeType {
         VAR_DEC,
         VAR,
         STATEMENT,
+        FUNC_CALL
 }NodeType;
 
 
@@ -20,12 +21,13 @@ typedef struct AstNode{
     struct AstNode* right;
     char* value;
     Vector* body;
+    Vector* args;
 } AstNode;
 
 void visit(AstNode* node);
 void ast_free(AstNode* root);
 int ast_eval(AstNode* node);
-struct AstNode* make_ast_node(int type,char* value,AstNode* left, AstNode* right, Vector* body);
+struct AstNode* make_ast_node(int type,char* value,AstNode* left, AstNode* right, Vector* body, Vector* args);
 
 
 #endif

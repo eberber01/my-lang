@@ -37,7 +37,6 @@ int main(int argc, char **argv) {
 
   Vector * tokens = tokenize(f, table);
 
-
   for(int i =0; i < tokens->length; i++){
     print_token((Token*)vector_get(tokens, i));
   }
