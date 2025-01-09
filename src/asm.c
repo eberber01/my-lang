@@ -129,39 +129,74 @@ int asm_eval(AstNode* node, SymTab* table, StackFrame* frame,FILE* out){
     int left, right;
     SymTabEntry* var;
     switch(node->type){
-        case FUNC_CALL:
+        case AST_FUNC_CALL:
             //Allocate space for return address 
             sp_increase(sizeof(void*), out);
             sp_store(0,  7,  out);
+
+
+            //Save registers
+            for(int i =0; i < 7; i++){
+                if(free_registers[i] == 1){
+                    // 
+                    sp_increase(sizeof(void*), out);
+                    sp_store(0, i, out);
+                }
+            }
+
 
             //Get frame and allocate enough space for call
             size_t bytes = symtab_get(table,  node->value)->frame->size;
             sp_increase(bytes, out);
 
+
             //TODO: parameter passing
             jump_to_label(node->value, out);
+            
+            //Restore stack
+            sp_decrease(bytes, out);
+
+            //Restore registers
+            for(int i =0; i < 7; i++){
+                if(free_registers[i] == 1){
+                    sp_decrease(sizeof(void*), out);
+                    sp_load(i, 0, out);
+                }
+            }
 
             //restore return address
-            sp_decrease(bytes, out);
             sp_decrease(sizeof(void*), out);
             sp_load(7,  0,  out);
 
             //TODO load register with return value
-            return -1; 
-        case STATEMENT:
+            reg = alloc_register();
+            fprintf(out, "\tadd %s, zero, a0\n", registers[reg]);
+            return reg;
+
+        case AST_RET:
+
+            //return val
+            reg = asm_eval(node->left, table,frame, out);
+
+            // move to return a0
+            fprintf(out, "\tadd a0, %s, zero\n", registers[reg]);
+            free_register(reg);
+            return -1;
+
+        case AST_STATEMENT:
 
             for(int i =0; i < node->body->length ; i++){
-                asm_eval((AstNode*)vector_get(node->body,  i), table,frame,  out);
+                 asm_eval((AstNode*)vector_get(node->body,  i), table,frame,  out);
             }
             return -1;
         
-        case LITERAL: 
+        case AST_LITERAL: 
             str2int(&lit, node->value,10);
             reg = alloc_register();
             load_register(reg,lit,out);
             return reg;
 
-        case FUNC_DEF:
+        case AST_FUNC_DEF:
             label_add(node->value, out);
             //Create New StackFrame
             StackFrame* f = make_stack_frame();
@@ -177,7 +212,7 @@ int asm_eval(AstNode* node, SymTab* table, StackFrame* frame,FILE* out){
             }
             return -1;
 
-        case VAR_DEF:
+        case AST_VAR_DEF:
             //Increase stack frame size
             offset = stackframe_add(frame, node->value,  symtab_get(table,  node->value)->type);
 
@@ -186,15 +221,15 @@ int asm_eval(AstNode* node, SymTab* table, StackFrame* frame,FILE* out){
             sp_store(offset, reg, out);
             free_register(reg);
 
-            int reg_to_print = sp_load(alloc_register(), offset, out);
-            print_regsiter(reg_to_print, out);
-            pring_newline(out);
-            free_register(reg_to_print);
+            // int reg_to_print = sp_load(alloc_register(), offset, out);
+            // print_regsiter(reg_to_print, out);
+            // pring_newline(out);
+            // free_register(reg_to_print);
 
             //Store location in symbol table
             symtab_get(table, node->value)->offset = offset;
             return -1;
-        case VAR:
+        case AST_VAR:
             //Store location in symbol table
             var = symtab_get(table,  node->value);
 

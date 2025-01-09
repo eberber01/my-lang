@@ -98,6 +98,9 @@ Vector* tokenize(FILE *f, SymTab* table) {
         if(entry){
           t->type = TYPE;
         }
+        if(!strcmp(ident_token->value, "return")){
+          t->type = RETURN;
+        }
         t->value = ident_token->value;
         free(ident_token);
         break;

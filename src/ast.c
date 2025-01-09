@@ -46,7 +46,7 @@ int ast_eval(AstNode* node){
     if( node == NULL){
         return 0;
     }
-    if(node->type == LITERAL){
+    if(node->type == AST_LITERAL){
         int out;
         str2int(&out, node->value,10);
         return out;

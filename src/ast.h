@@ -2,16 +2,17 @@
 #define AST_H
 #include "util.h"
 typedef enum NodeType { 
-        LITERAL, 
-        IDENTIFIER, 
-        BINARY_EXPR,
-        FUNC_DEF, 
-        FUNC_DEC,
-        VAR_DEF,
-        VAR_DEC,
-        VAR,
-        STATEMENT,
-        FUNC_CALL
+        AST_LITERAL, 
+        AST_IDENTIFIER, 
+        AST_BINARY_EXPR,
+        AST_FUNC_DEF, 
+        AST_FUNC_DEC,
+        AST_VAR_DEF,
+        AST_VAR_DEC,
+        AST_VAR,
+        AST_STATEMENT,
+        AST_FUNC_CALL,
+        AST_RET
 }NodeType;
 
 

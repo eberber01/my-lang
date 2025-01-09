@@ -7,7 +7,7 @@ Factor  -> NUM | '(' Expr ')'
 
 Program       -> Statement*
 
-Statement     -> VarAssign | FuncDef | Expr ';'
+Statement     -> VarAssign | FuncDef | Expr ';' | Return Expr ';'
 
 VarAssign     -> IDENT '=' Expr ';'
 

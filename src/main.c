@@ -15,6 +15,7 @@ void symtab_init(SymTab* table){
   symtab_add(table, make_symtab_entry("float", FLOAT, KEYWORD, NULL));
   symtab_add(table, make_symtab_entry("double", DOUBLE, KEYWORD, NULL));
   symtab_add(table, make_symtab_entry("long", LONG, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("return", VOID, KEYWORD, NULL));
 }
 
 int main(int argc, char **argv) {

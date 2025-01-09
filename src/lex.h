@@ -23,6 +23,7 @@ typedef enum TokenType {
   ASSIGN, 
   TYPE, 
   COMMA,
+  RETURN,
 } TokenType;
 
 typedef struct Token {
