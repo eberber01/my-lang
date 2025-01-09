@@ -14,7 +14,11 @@ typedef enum SymbolType{
 
 typedef enum Type {
     INT,
-    VOID
+    VOID,
+    CHAR,
+    LONG,
+    DOUBLE,
+    FLOAT
 } Type;
 
 typedef struct SymTabEntry{
