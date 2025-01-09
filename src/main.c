@@ -10,6 +10,7 @@
 
 void symtab_init(SymTab* table){
   symtab_add(table, make_symtab_entry("int", INT, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("void", VOID, KEYWORD, NULL));
 }
 
 int main(int argc, char **argv) {
