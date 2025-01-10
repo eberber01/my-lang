@@ -6,12 +6,16 @@
 #include "symtab.h"
 #include "util.h"
 
+// Parse each character in input and
+// return a Vector of tokens from contents
+// Uses Symbol table to get standard types
 Vector* tokenize(FILE *f, SymTab* table) {
   char c;
   Vector* vector = vector_new();
 
-  int pos = 0;
-  int line = 0;
+  int pos = 1;
+  int line = 1;
+  char peek;
   while ((c = next(f))) {
     Token* t = my_malloc(sizeof(Token));
     switch (c) {
@@ -28,17 +32,17 @@ Vector* tokenize(FILE *f, SymTab* table) {
       t->value = "*";
       break; 
       case '/':
-        char peek;
+        // Handle Comments
         if((peek = next(f)) == '/'){
           while(peek && peek != '\n'){
               peek = next(f);
           }
           c = peek;
           line += 1;
-          pos = 0;
+          pos = 1;
         }
         else{
-          fseek(f, -sizeof(char), SEEK_CUR);
+          back(f);
           t->type = DIV;
           t->value = "/";
         }
@@ -75,13 +79,11 @@ Vector* tokenize(FILE *f, SymTab* table) {
       break;
     case '\n':
       line += 1;
-      pos = 0;
+      pos = 1;
       break;
     default:  
 
       if(isdigit(c)){
-
-        //free this 
         Token* digit_token = tokenize_digit(c, f);
         t->type = digit_token->type;
         t->value = digit_token->value;
@@ -90,22 +92,20 @@ Vector* tokenize(FILE *f, SymTab* table) {
       }
 
       if(is_ident_start(c)){
-        //free this 
         Token* ident_token =  tokenize_ident(c, f);
         t->type = ident_token->type;
         SymTabEntry* entry;
         entry = symtab_get(table, ident_token->value);
-        if(entry){
-          t->type = TYPE;
-        }
-        if(!strcmp(ident_token->value, "return")){
-          t->type = RETURN;
-        }
+          if(entry){
+            t->type = TYPE;
+          }
+          if(!strcmp(ident_token->value, "return")){
+            t->type = RETURN;
+          }
         t->value = ident_token->value;
         free(ident_token);
         break;
       }
-
 
       perror("Unexpected char.");
       exit(1);
@@ -121,6 +121,7 @@ Vector* tokenize(FILE *f, SymTab* table) {
   return vector;
 }
 
+//Parse digit token
 Token* tokenize_digit(char c, FILE *f){
   int size = 1;
   int digit = 0;
@@ -131,30 +132,24 @@ Token* tokenize_digit(char c, FILE *f){
     c = next(f);
     size += 1;
   }
+  //Put back last char if end of stream
   if(c != '\0'){
-    // if not end of stream putback last char 
-    fseek(f, -sizeof(char), SEEK_CUR);
+    back(f);
   }
   return make_token(NUM, int_to_str(digit, size), 0, 0); 
 }
 
-int is_ident_start(char c){
-  return (c >= 'A'   && c <= 'Z') || (c >= 'a'   && c <= 'z') || c == '_';
-}
-
-int is_ident_char(char c){
-  return (c >= 'A'   && c <= 'Z') || (c >= 'a'   && c <= 'z') || ( c >= '0' && c <= '9') || c == '-' || c == '_';
-}
-
+//Parse Identifier token
 Token* tokenize_ident(char c, FILE* f){
   String* ident = string_new();
   while(c && is_ident_char(c)){
     string_append(ident, c);
     c = next(f);
   }
+
+  //Put back last char if end of stream
   if(c != '\0'){
-    // if not end of stream putback last char 
-    fseek(f, -sizeof(char), SEEK_CUR);
+    back(f);
   }
 
   char* value = as_str(ident);
@@ -162,6 +157,12 @@ Token* tokenize_ident(char c, FILE* f){
   return make_token(IDENT, value, 0, 0);
 }
 
+//Put back character in stream
+void back(FILE *f){
+  fseek(f, -sizeof(char), SEEK_CUR);
+}
+
+//Get next character in stream
 char next(FILE *f) {
   char c;
   int n = fread(&c, sizeof(char), 1, f);
@@ -186,10 +187,10 @@ void print_token(Token* t) {
   printf("<TOKEN TYPE=%d VALUE=%s POS=%d LINE=%d>\n", t->type, t->value, t->pos, t->line);
 }
 
-char* int_to_str(int num, int size){
-  char *str = my_malloc((sizeof(char) * size ) + 1);
-  snprintf(str, size, "%d", num); 
-  return str;
+int is_ident_char(char c){
+  return (c >= 'A'   && c <= 'Z') || (c >= 'a'   && c <= 'z') || ( c >= '0' && c <= '9') || c == '_';
 }
 
-int is_operator(char c) { return c == '+' || c == '-' || c == '*' || c == '/'; }
+int is_ident_start(char c){
+  return (c >= 'A'   && c <= 'Z') || (c >= 'a'   && c <= 'z') || c == '_';
+}

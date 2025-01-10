@@ -27,16 +27,13 @@ typedef enum TokenType {
 } TokenType;
 
 typedef struct Token {
-  int type;
+  TokenType type;
   char* value;
   int pos;
   int line;
 } Token;
 
 void print_token(Token* t);
-
-
-char* int_to_str(int num, int size);
 
 Token* make_token(int type, char* value, int pos, int line);
 
@@ -52,7 +49,7 @@ int is_ident_char(char c);
 
 Token* tokenize_ident(char c, FILE* f);
 
-
 Vector* tokenize(FILE *f, SymTab* table);
 
+void back(FILE* );
 #endif

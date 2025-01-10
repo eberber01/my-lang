@@ -27,6 +27,7 @@ typedef struct String{
     size_t length;
 } String;
 
+char* int_to_str(int num, int size);
 void* vector_new();
 void vector_free(Vector *);
 void vector_push(Vector* vector, void* ptr);

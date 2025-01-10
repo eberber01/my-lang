@@ -156,3 +156,9 @@ char* as_str(String *string){
     }
     return s;
 }
+
+char* int_to_str(int num, int size){
+  char *str = my_malloc((sizeof(char) * size ) + 1);
+  snprintf(str, size, "%d", num); 
+  return str;
+}
