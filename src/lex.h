@@ -17,13 +17,15 @@ typedef enum TokenType {
   RBRACKET,
   LPAREN,
   RPAREN,
-  LCBRACKET,
-  RCBRACKET,
+  LBRACE,
+  RBRACE,
   SEMICOLON,
   ASSIGN, 
   TYPE, 
   COMMA,
   RETURN,
+  IF,
+  EQUAL
 } TokenType;
 
 typedef struct Token {

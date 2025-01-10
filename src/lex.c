@@ -60,19 +60,27 @@ Vector* tokenize(FILE *f, SymTab* table) {
       t->value = ")";
       break;
     case '{':
-      t->type = LCBRACKET;
+      t->type = LBRACE;
       t->value = "{";
       break;
     case '}':
-      t->type = RCBRACKET;
+      t->type = RBRACE;
       t->value = "}";
       break;
     case '=':
-      t->type = ASSIGN;
-      t->value = "=";
+      char peek;
+      if((peek = next(f)) == '='){
+        t->type = EQUAL;
+        t->value = "==";
+      }
+      else{
+        back(f);
+        t->type = ASSIGN;
+        t->value = "=";
+      }
       break;
     case ',':
-      t->type = ASSIGN;
+      t->type = COMMA;
       t->value = ",";
       break;
     case ' ':
@@ -152,12 +160,14 @@ void tokenize_ident( char c,Token* token, SymTab* table,  FILE* f){
   SymTabEntry* entry;
   entry = symtab_get(table, value);
 
-  printf("%s\n", value);
   // Handle Keywords
   if(entry && entry->symbol  == KEYWORD){
     token->type = TYPE;
     if(!strcmp(value, "return")){
       token->type = RETURN;
+    }
+    if(!strcmp(value, "if")){
+      token->type = IF;
     }
     //Set value to Pre defined string 
     token->value = entry->key;

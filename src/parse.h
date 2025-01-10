@@ -22,6 +22,8 @@ AstNode* parse_variable(TokenStream* stream, SymTab* table);
 
 AstNode* parse_function(TokenStream* stream, SymTab* table);
 
+Vector* parse_body(TokenStream* stream, SymTab* table);
+
 Token* current_token(TokenStream* stream);
 
 void next_token(TokenStream* stream);

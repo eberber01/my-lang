@@ -172,6 +172,26 @@ int asm_eval(AstNode* node, SymTab* table, StackFrame* frame,FILE* out){
             reg = alloc_register();
             fprintf(out, "\tadd %s, zero, a0\n", registers[reg]);
             return reg;
+        case AST_IF:
+            // Add label
+            label_add("if_start", out);
+
+            //eval bool expression, reg = 0 for false and reg = 1 for true
+           reg = asm_eval(node->left, table, frame, out);
+
+            //cmp and branch to end label
+            fprintf(out, "\tbeq %s, zero, if_end\n", registers[reg]);
+            label_add("if_body", out);
+            //eval body
+            for(int i =0; i < node->body->length ; i++){
+                 asm_eval((AstNode*)vector_get(node->body,  i), table,frame,  out);
+            }
+
+            //add other label
+            label_add("if_end", out);
+            free_register(reg);
+            return -1; 
+
 
         case AST_RET:
 
@@ -186,7 +206,7 @@ int asm_eval(AstNode* node, SymTab* table, StackFrame* frame,FILE* out){
         case AST_STATEMENT:
 
             for(int i =0; i < node->body->length ; i++){
-                 asm_eval((AstNode*)vector_get(node->body,  i), table,frame,  out);
+                asm_eval((AstNode*)vector_get(node->body,  i), table,frame,  out);
             }
             return -1;
         
@@ -221,11 +241,6 @@ int asm_eval(AstNode* node, SymTab* table, StackFrame* frame,FILE* out){
             sp_store(offset, reg, out);
             free_register(reg);
 
-            // int reg_to_print = sp_load(alloc_register(), offset, out);
-            // print_regsiter(reg_to_print, out);
-            // pring_newline(out);
-            // free_register(reg_to_print);
-
             //Store location in symbol table
             symtab_get(table, node->value)->offset = offset;
             return -1;
@@ -242,6 +257,22 @@ int asm_eval(AstNode* node, SymTab* table, StackFrame* frame,FILE* out){
             sp_load(reg, var->offset, out);
             return reg;
 
+        case AST_BOOL_EXPR:
+            //  evaulte expr
+            left = asm_eval(node->left, table, frame,out);
+            right = asm_eval(node->right, table, frame, out);
+
+            reg = alloc_register();
+            load_register(reg, 0, out);
+            // == Check if equal 
+            fprintf(out, "\tbne %s, %s, bool_end\n", registers[left], registers[right]);
+
+            //load register with One if true
+            load_register(reg, 1, out);
+
+            label_add("bool_end", out);
+
+            return reg;
         default:
             left = asm_eval(node->left, table, frame,out);
             right = asm_eval(node->right, table, frame, out);
@@ -267,6 +298,7 @@ void gen_asm(AstNode* root, SymTab* table){
     FILE* out = fopen("../asm", "w");
     fprintf(out, ".globl main\n\n");
     fprintf(out, "\tj main\n");
+
     asm_eval(root, table, NULL, out);
     fclose(out);
 }

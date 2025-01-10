@@ -12,7 +12,9 @@ typedef enum AstNodeType {
         AST_VAR,
         AST_STATEMENT,
         AST_FUNC_CALL,
-        AST_RET
+        AST_RET,
+        AST_IF,
+        AST_BOOL_EXPR
 }AstNodeType;
 
 

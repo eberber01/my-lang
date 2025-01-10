@@ -55,7 +55,6 @@ Token* expect(TokenStream* stream, TokenType expect){
         next_token(stream);
         return current;
     }
-    printf("Expected token: %d", expect);
     exit(1);
 }
 
@@ -154,10 +153,37 @@ int is_var_dec_start(TokenStream* stream){
     return var_type->type == TYPE && var_name->type == IDENT && assign->type == ASSIGN;
 }
 
+
+AstNode* parse_boolean_expression(TokenStream* stream, SymTab* table){
+    Token* current;
+    AstNode* left = parse_expression(stream, table);
+    while((current = current_token(stream)) && (current->type == EQUAL)){
+        char* value = current->value;
+        next_token(stream);
+        AstNode* right = parse_expression(stream, table);
+        left = make_ast_node(AST_BOOL_EXPR, value, left, right, NULL, NULL);
+    }
+    return left;
+}
+
+AstNode* parse_if_statement(TokenStream* stream, SymTab* table){
+    expect(stream, IF);
+    expect(stream, LPAREN);
+    AstNode*  expr = parse_boolean_expression(stream, table);
+
+    expect(stream, RPAREN);
+    expect(stream, LBRACE);
+
+    Vector* if_body = parse_body(stream, table);
+
+    expect(stream, RBRACE);
+    return  make_ast_node(AST_IF,  "if", expr, NULL, if_body, NULL);
+}
+
 AstNode* parse_statement(TokenStream* stream, SymTab* table) {
     Token* current;
     Vector* body = vector_new(); 
-    while( (current = current_token(stream)) && current_token(stream)-> type != RCBRACKET){
+    while( (current = current_token(stream)) && current_token(stream)-> type != RBRACE){
         if (is_func_dec_start(stream)) {
             // Variable declaration/assignment
             AstNode* func = parse_function( stream,  table);
@@ -177,6 +203,11 @@ AstNode* parse_statement(TokenStream* stream, SymTab* table) {
             vector_push(body,  ret_node);
             expect(stream, SEMICOLON);
         }
+        else if(current->type == IF){
+            AstNode* if_state = parse_if_statement(stream, table);
+            vector_push(body,  if_state);
+        
+        }
         else{
             AstNode* expr = parse_expression( stream,  table);
             vector_push(body,  expr);
@@ -188,7 +219,7 @@ AstNode* parse_statement(TokenStream* stream, SymTab* table) {
 
 Vector* parse_body(TokenStream* stream, SymTab* table) {
     Vector* body = vector_new();
-    while (current_token(stream) && current_token(stream)->type != RCBRACKET) {
+    while (current_token(stream) && current_token(stream)->type != RBRACE) {
         AstNode* stmt = parse_statement(stream, table);
         vector_push(body, stmt);
     }
@@ -233,9 +264,9 @@ AstNode* parse_function(TokenStream* stream, SymTab* table){
     symtab_add(table, entry);
 
     //Parse function body
-    expect(stream, LCBRACKET);
+    expect(stream, LBRACE);
     Vector* body = parse_body(stream,  table);
-    expect(stream, RCBRACKET);
+    expect(stream, RBRACE);
 
     return make_ast_node(AST_FUNC_DEF, func_name->value, NULL, NULL ,  body, NULL);
 }
