@@ -8,7 +8,8 @@
 #include <time.h>
 #include "parse.h"
 
-
+//Get current token in stream 
+//Returns NULL if end of stream
 Token* current_token(TokenStream* stream){
     if(stream->current >= stream->tokens->length  ){
         return NULL;
@@ -16,6 +17,8 @@ Token* current_token(TokenStream* stream){
     return (Token*)vector_get(stream->tokens,  stream->current);
 }
 
+//Get next nth token in stream
+//Returns NULL if outside of stream size
 Token* peek(TokenStream* stream, int n){
     if(n + stream->current >= stream->tokens->length){
         return NULL;
@@ -24,6 +27,7 @@ Token* peek(TokenStream* stream, int n){
 
 }
 
+//Set next token in stream
 void next_token(TokenStream* stream){
     if(stream->current >= stream->tokens->length){
         return;
@@ -39,7 +43,9 @@ TokenStream* make_token_stream(Vector* tokens){
     return stream;
 }
 
-
+// Returns current token in stream 
+// if TokenType matches 'expect'
+// errors otherwise
 Token* expect(TokenStream* stream, TokenType expect){
     Token* current = current_token(stream);
     if(current == NULL){
@@ -65,7 +71,6 @@ AstNode* parse_expression(TokenStream* stream, SymTab* table){
         left = make_ast_node(AST_BINARY_EXPR, value, left, right, NULL, NULL);
     }
     return left;
-
 }
 
 AstNode* parse_term(TokenStream* stream, SymTab* table){
@@ -78,7 +83,6 @@ AstNode* parse_term(TokenStream* stream, SymTab* table){
         left = make_ast_node(AST_BINARY_EXPR,value , left, right, NULL, NULL);
     }
     return left;
-
 }
 
 int is_func_call_start(TokenStream* stream, SymTab* table){
@@ -86,10 +90,10 @@ int is_func_call_start(TokenStream* stream, SymTab* table){
     Token* lparen = peek(stream,  1);
     return func_name->type == IDENT && lparen->type == LPAREN; 
 }
+
 AstNode* parse_func_call(TokenStream* stream, SymTab* table){
-    //Func name 
     Token* name = expect(stream,  IDENT);
-    //CHECK IF DEFINED IN SYMBOL TABLE
+    //TODO:CHECK IF DEFINED IN SYMBOL TABLE
 
     expect(stream,  LPAREN);
 
@@ -127,7 +131,6 @@ AstNode* parse_factor(TokenStream* stream, SymTab* table){
         next_token(stream);
         AstNode* ret =  parse_expression(stream, table);
 
-        //TODO: account for paren
         expect(stream, RPAREN);
 
         return ret;
@@ -138,7 +141,6 @@ AstNode* parse_factor(TokenStream* stream, SymTab* table){
 }
 
 int is_func_dec_start(TokenStream* stream){
-
     Token* func_type = current_token(stream);
     Token* func_name = peek(stream, 1);
     Token* paren = peek(stream, 2);
@@ -146,7 +148,6 @@ int is_func_dec_start(TokenStream* stream){
 }
 
 int is_var_dec_start(TokenStream* stream){
-
     Token* var_type = current_token(stream);
     Token* var_name = peek(stream, 1);
     Token* assign = peek(stream, 2);
@@ -198,65 +199,58 @@ Vector* parse_func_args(TokenStream *stream, SymTab *table){
     Vector* args = vector_new();
     Token* current;
     while((current = current_token(stream)) && current_token(stream)->type == TYPE) {
-        Token* type = expect(stream, TYPE);
-
-        //argument name
+        Token* arg_type = expect(stream, TYPE);
         expect(stream, IDENT);
         if(current_token(stream)->type == RPAREN){
            break; 
         }
         expect(stream, COMMA);
 
-        vector_push(args,  type->value);
+        vector_push(args,  arg_type->value);
     }
 
     return args;
 }
 
-
 AstNode* parse_function(TokenStream* stream, SymTab* table){
-    //Get return type
     Token* func_type = expect(stream, TYPE);
+    Token* func_name = expect(stream, IDENT);
 
-    char* func_name = expect(stream, IDENT)->value;
-
-    // Check if symbol exists
-    if(symtab_get(table,  func_name)){
+    // Check if symbol exists in table
+    if(symtab_get(table,  func_name->value)){
         perror("Redefinition of function.");
         exit(1);
     }
 
-    // TODO: Parse args here
+    //Parse function args
     expect(stream, LPAREN);
     Vector* args = parse_func_args( stream,  table);
     expect(stream, RPAREN);
 
     //Insert args into symbol table
-    // TODO: Make Symbol type to replace
     Type ret_type = symtab_get(table, func_type->value)->type;
-    symtab_add(table, make_symtab_entry( func_name,  ret_type,  FUNCTION, args));
+    SymTabEntry* entry = make_symtab_entry( func_name->value,  ret_type,  FUNCTION, args);
+    symtab_add(table, entry);
 
-    // start of function
+    //Parse function body
     expect(stream, LCBRACKET);
-    //Ast list
-    Vector* body = parse_body(stream,  table); // Parse function body
-
+    Vector* body = parse_body(stream,  table);
     expect(stream, RCBRACKET);
-    return make_ast_node(AST_FUNC_DEF, func_name, NULL, NULL ,  body, NULL);
+
+    return make_ast_node(AST_FUNC_DEF, func_name->value, NULL, NULL ,  body, NULL);
 }
 
 AstNode* parse_variable(TokenStream* stream, SymTab* table){
-    // get type
     Token* var_type = expect(stream, TYPE);
-    // get variable name
-    char* name = expect(stream, IDENT)->value;
+    Token* var_name = expect(stream, IDENT);
 
-    // Check if symbol exists
-    if(symtab_get(table,  name)){
+    // Check if symbol exists in table
+    if(symtab_get(table,  var_name->value)){
         perror("Redefinition of variable.");
         exit(1);
     }
 
+    //Parse init expression
     AstNode* init = NULL;
     if(current_token(stream)->type == ASSIGN){
         next_token(stream);
@@ -265,11 +259,14 @@ AstNode* parse_variable(TokenStream* stream, SymTab* table){
 
     expect(stream, SEMICOLON);
 
-    //Successfull parse
-    symtab_add(table, make_symtab_entry(name, symtab_get(table,  var_type->value)->type, VARIABLE, NULL));
-    return make_ast_node(AST_VAR_DEF, name, init, NULL, NULL, NULL ); 
+    //Successfull parse add to table
+    SymTabEntry* entry = make_symtab_entry(var_name->value, symtab_get(table,  var_type->value)->type, VARIABLE, NULL);
+    symtab_add(table, entry);
+
+    return make_ast_node(AST_VAR_DEF, var_name->value, init, NULL, NULL, NULL ); 
 }
 
+//Returns root AstNode representing program
 AstNode* parse(Vector* tokens, SymTab* table){
     TokenStream * stream = make_token_stream(tokens);
     AstNode* root = parse_statement(stream, table);
