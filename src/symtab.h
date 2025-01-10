@@ -7,8 +7,10 @@
 #include <string.h>
 
 typedef struct StackFrame {
-    Vector* variables; // Vectory of variable names
-    size_t size; // Size of frame
+    //List of variable names as strings (char*)
+    Vector* variables; 
+    // Size of frame
+    size_t size; 
 } StackFrame;
 
 typedef enum SymbolType{
@@ -27,12 +29,20 @@ typedef enum Type {
 } Type;
 
 typedef struct SymTabEntry{
-    SymbolType symbol;
-    Type type;
     char* key;
+    SymbolType symbol;
+
+    //Function return type or Variable type
+    Type type;
+
+    //Function args, list of types as strings (char *) 
     Vector* args;
+
+    //Amount of bytes needed for function call
     StackFrame* frame;
-    int offset; 
+
+    //Variable location, offset from sp in bytes
+    size_t offset; 
 }SymTabEntry;
 
 typedef struct TableNode{

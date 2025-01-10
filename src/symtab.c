@@ -40,7 +40,8 @@ static uint64_t hash(const char* key) {
     return hash;
 }
 
-
+// Return first entry matching key
+// and NULL otherwise 
 SymTabEntry* find(TableNode* node, char* key){
     TableNode* curr = node;
     while(curr != NULL){
@@ -52,17 +53,17 @@ SymTabEntry* find(TableNode* node, char* key){
     return NULL;
 }
 
-// Insert node at next empty spot
+// Insert node at end of list
 void insert(TableNode** node, SymTabEntry* entry){ 
     TableNode* n = make_node(NULL, entry);
 
-    //Point to new node if first hash
-
+    //Set node if first item
     if(*node == NULL){
         *node = n;
         return;
     }
-
+    
+    //Find end of list
     TableNode* curr = *node;
     TableNode* prev;
     while(curr != NULL){
@@ -70,9 +71,11 @@ void insert(TableNode** node, SymTabEntry* entry){
         curr = curr->next;
     }
 
+    //Insert new node at end of list
     prev->next = n;
 }
 
+//Add symbol to table, overwrites matching key values
 void symtab_add(SymTab* table,SymTabEntry* entry){
     int h = hash(entry->key);
     size_t index = (size_t)(h & (uint64_t)(table->size - 1));
