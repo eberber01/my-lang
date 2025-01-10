@@ -1,7 +1,7 @@
 #ifndef AST_H
 #define AST_H
 #include "util.h"
-typedef enum NodeType { 
+typedef enum AstNodeType { 
         AST_LITERAL, 
         AST_IDENTIFIER, 
         AST_BINARY_EXPR,
@@ -13,15 +13,21 @@ typedef enum NodeType {
         AST_STATEMENT,
         AST_FUNC_CALL,
         AST_RET
-}NodeType;
+}AstNodeType;
 
 
 typedef struct AstNode{
-    int type;
+    AstNodeType type;
     struct AstNode* left;
     struct AstNode* right;
+
+    // Var name, Func name, Operator Value
     char* value;
+
+    // List of AstNode Statements
     Vector* body;
+
+    //Function call args
     Vector* args;
 } AstNode;
 

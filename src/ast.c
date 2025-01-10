@@ -3,11 +3,9 @@
 #include "ast.h"
 #include "util.h"
 
-
 void print_ast_node(AstNode* node){
     printf("<AST NODE TYPE=%d VALUE=%s >\n", node->type, node->value);
 }
-
 
 AstNode* make_ast_node(int type, char* value, AstNode* left, AstNode* right, Vector* body, Vector* args){
   AstNode* n;
@@ -39,30 +37,5 @@ void ast_free(AstNode* root){
         for(int i=0 ; i < root->body->length ; i++){
             _ast_free(vector_get(root->body,  i));
         }
-    }
-}
-
-int ast_eval(AstNode* node){
-    if( node == NULL){
-        return 0;
-    }
-    if(node->type == AST_LITERAL){
-        int out;
-        str2int(&out, node->value,10);
-        return out;
-    }
-
-
-    int left = ast_eval(node->left);
-    int right = ast_eval(node->right);
-    switch (*(node->value)) {
-        case '+':
-            return left + right;
-        case '-':
-            return left - right;
-        case '*':
-            return left * right;
-        case '/':
-            return left / right;
     }
 }
