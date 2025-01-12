@@ -121,8 +121,16 @@ void symtab_free(SymTab* table){
                     //Free params vector
                     free(params->array);
                     free(params);
+                    
+                    // Free function name
+                    free(curr->data->key);
 
                     //Free Stack Frame
+                    StackFrame* frame = curr->data->frame;
+                    //Free varaiables manually
+                    free(frame->variables->array);
+                    free(frame->variables);
+
                     free(curr->data->frame);
                 }
 

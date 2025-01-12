@@ -21,21 +21,30 @@ AstNode* make_ast_node(int type, char* value, AstNode* left, AstNode* right, Vec
 }
 
 void _ast_free(AstNode* node){
+}
+
+void ast_free(AstNode* node){
     if(node == NULL){
         return  ;
     }
-    _ast_free(node->left);
-    _ast_free(node->right);
+    if(node->body){
+        for(int i=0 ; i < node->body->length ; i++){
+            ast_free(vector_get(node->body,  i));
+        }
+        //Free Vector manually
+        // Since nodes are free'd
+        free(node->body->array);
+        free(node->body);
+    }
 
+    if(node->args){
+        //Free Vector manually 
+        // Values cleaned up by symbol table
+        free(node->args->array);
+        free(node->args);
+    }
+    ast_free(node->left);
+    ast_free(node->right);
 
     free(node);
-    free(node->body);
-}
-
-void ast_free(AstNode* root){
-    if(root->body){
-        for(int i=0 ; i < root->body->length ; i++){
-            _ast_free(vector_get(root->body,  i));
-        }
-    }
 }
