@@ -94,15 +94,19 @@ Vector* tokenize(FILE *f, SymTab* table) {
       if(is_ident_start(c)){
         Token* ident_token =  tokenize_ident(c, f);
         t->type = ident_token->type;
+        t->value = ident_token->value;
         SymTabEntry* entry;
         entry = symtab_get(table, ident_token->value);
           if(entry){
             t->type = TYPE;
+            //Set value to Pre defined string 
+            t->value = entry->key;
           }
           if(!strcmp(ident_token->value, "return")){
             t->type = RETURN;
+            //Set value to Pre defined string 
+            t->value = entry->key;
           }
-        t->value = ident_token->value;
         free(ident_token);
         break;
       }

@@ -105,14 +105,36 @@ SymTab* symtab_new(){
 
 void symtab_free(SymTab* table){
     for(int i=0; i <  table->size; i++ ){
-        TableNode* prev;
+        TableNode* tmp;
         TableNode* curr = table->map[i];
 
             while(curr){
-                prev = curr; 
-                curr = curr->next;
-                free(prev->data);
-                free(prev);
+                SymbolType sym = curr->data->symbol;
+
+                //Clean up Ident token allocated strings
+                if(sym == VARIABLE || sym == FUNCTION){
+                    free(curr->data->key);
+                }
+
+                if(sym == FUNCTION){
+                    Vector* args = curr->data->args;
+                    //Free  Arg vector
+                    free(args->array);
+                    free(args);
+
+                    //Free Stack Frame
+                    free(curr->data->frame);
+                }
+
+                //Free  Symbol entry
+                free(curr->data);
+
+                tmp = curr->next;
+
+                //Free Table Node
+                free(curr);
+
+                curr = tmp;
             }
 
     }   
