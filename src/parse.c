@@ -195,21 +195,21 @@ Vector* parse_body(TokenStream* stream, SymTab* table) {
     return body;
 }
 
-Vector* parse_func_args(TokenStream *stream, SymTab *table){
-    Vector* args = vector_new();
+Vector* parse_func_params(TokenStream *stream, SymTab *table){
+    Vector* params = vector_new();
     Token* current;
     while((current = current_token(stream)) && current_token(stream)->type == TYPE) {
-        Token* arg_type = expect(stream, TYPE);
+        Token* param_type = expect(stream, TYPE);
         expect(stream, IDENT);
         if(current_token(stream)->type == RPAREN){
            break; 
         }
         expect(stream, COMMA);
 
-        vector_push(args,  arg_type->value);
+        vector_push(params,  param_type->value);
     }
 
-    return args;
+    return params;
 }
 
 AstNode* parse_function(TokenStream* stream, SymTab* table){
@@ -224,12 +224,12 @@ AstNode* parse_function(TokenStream* stream, SymTab* table){
 
     //Parse function args
     expect(stream, LPAREN);
-    Vector* args = parse_func_args( stream,  table);
+    Vector* params = parse_func_params( stream,  table);
     expect(stream, RPAREN);
 
     //Insert args into symbol table
     Type ret_type = symtab_get(table, func_type->value)->type;
-    SymTabEntry* entry = make_symtab_entry( func_name->value,  ret_type,  FUNCTION, args);
+    SymTabEntry* entry = make_symtab_entry( func_name->value,  ret_type,  FUNCTION, params);
     symtab_add(table, entry);
 
     //Parse function body

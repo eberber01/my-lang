@@ -36,7 +36,7 @@ typedef struct SymTabEntry{
     Type type;
 
     //Function args, list of types as strings (char *) 
-    Vector* args;
+    Vector* params;
 
     //Amount of bytes needed for function call
     StackFrame* frame;

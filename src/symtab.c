@@ -12,12 +12,12 @@
 #define TABLE_SIZE 100
 
 
-SymTabEntry* make_symtab_entry(char* key,  Type type, SymbolType symbol, Vector* args){
+SymTabEntry* make_symtab_entry(char* key,  Type type, SymbolType symbol, Vector* params){
     SymTabEntry* entry = my_malloc(sizeof(SymTabEntry));
     entry->key = key;
     entry->type = type;
     entry->symbol = symbol;
-    entry->args = args;
+    entry->params = params;
     return entry;
 }
 
@@ -117,10 +117,10 @@ void symtab_free(SymTab* table){
                 }
 
                 if(sym == FUNCTION){
-                    Vector* args = curr->data->args;
-                    //Free  Arg vector
-                    free(args->array);
-                    free(args);
+                    Vector* params = curr->data->params;
+                    //Free params vector
+                    free(params->array);
+                    free(params);
 
                     //Free Stack Frame
                     free(curr->data->frame);
