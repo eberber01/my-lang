@@ -1,9 +1,11 @@
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
 #include <limits.h>
 #include <ctype.h>
 #include "util.h"
+#include "lex.h"
 
 
 /* Convert string s to int out.
@@ -128,32 +130,24 @@ String* string_new(){
     string->length =0; 
     string->vector =vector;
 
-    char* c = my_malloc(sizeof(char));
-    *c = '\0';
-    //Null terminate
-    vector_push(vector , (void*)c);
-
     return string;
 }
 
 
 void string_append(String* string, char c){
-    char* new_c = my_malloc(sizeof(char));
-    *new_c = c;
-
     char* n = my_malloc(sizeof(char));
-    *n = '\0';
+    *n = c;
 
-    vector_set(string->vector, string->length , (void*)new_c);
     vector_push(string->vector,  (void*)n);
     string->length += 1;
 }
 
 char* as_str(String *string){
-    char* s = my_malloc(sizeof(char) * string->length + 1);
-    for(int i=0; i < string->length + 1; i++) {
+    char* s = my_malloc(sizeof(char) * string->length + 1 );
+    for(int i=0; i < string->length; i++) {
             s[i] = *((char*)vector_get(string->vector,  i));
     }
+    s[string->length]  = '\0';
     return s;
 }
 

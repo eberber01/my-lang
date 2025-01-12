@@ -123,7 +123,7 @@ void symtab_free(SymTab* table){
                     free(params);
                     
                     // Free function name
-                    free(curr->data->key);
+                    //free(curr->data->key);
 
                     //Free Stack Frame
                     StackFrame* frame = curr->data->frame;
