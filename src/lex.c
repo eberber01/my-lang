@@ -84,33 +84,12 @@ Vector* tokenize(FILE *f, SymTab* table) {
     default:  
 
       if(isdigit(c)){
-        Token* digit_token = tokenize_digit(c, f);
-        t->type = digit_token->type;
-        t->value = digit_token->value;
-        free(digit_token);
+        tokenize_digit(c,t,  f);
         break;
       }
 
       if(is_ident_start(c)){
-        Token* ident_token =  tokenize_ident(c, f);
-
-        t->type = ident_token->type;
-        t->value = ident_token->value;
-
-        
-        SymTabEntry* entry;
-        entry = symtab_get(table, ident_token->value);
-          if(entry && entry->symbol  == KEYWORD){
-            t->type = TYPE;
-            if(!strcmp(ident_token->value, "return")){
-              t->type = RETURN;
-              printf("%s\n", entry->key);
-            }
-            //Set value to Pre defined string 
-            t->value = entry->key;
-            free(ident_token->value);
-          }
-        free(ident_token);
+        tokenize_ident(c, t, table, f);
         break;
       }
 
@@ -121,7 +100,11 @@ Vector* tokenize(FILE *f, SymTab* table) {
     t->line = line;
     pos += 1;
     if(c != ' ' && c != '\n'){
-      vector_push(vector,  t);
+      vector_push(vector,  (void*)t);
+    }
+
+    if(t->value == NULL){
+      free(t);
     }
 
   }
@@ -129,7 +112,7 @@ Vector* tokenize(FILE *f, SymTab* table) {
 }
 
 //Parse digit token
-Token* tokenize_digit(char c, FILE *f){
+void tokenize_digit(char c,Token* token, FILE *f){
   int size = 1;
   int digit = 0;
   int multiplier = 10;
@@ -143,11 +126,12 @@ Token* tokenize_digit(char c, FILE *f){
   if(c != '\0'){
     back(f);
   }
-  return make_token(NUM, int_to_str(digit, size), 0, 0); 
+  token->value = int_to_str(digit,  size);
+  token->type = NUM;
 }
 
 //Parse Identifier token
-Token* tokenize_ident(char c, FILE* f){
+void tokenize_ident( char c,Token* token, SymTab* table,  FILE* f){
   String* ident = string_new();
   while(c && is_ident_char(c)){
     string_append(ident, c);
@@ -161,7 +145,25 @@ Token* tokenize_ident(char c, FILE* f){
 
   char* value = as_str(ident);
   string_free(ident);
-  return make_token(IDENT, value, 0, 0);
+
+  token->value = value;     
+  token->type = IDENT;
+
+  SymTabEntry* entry;
+  entry = symtab_get(table, value);
+
+  printf("%s\n", value);
+  // Handle Keywords
+  if(entry && entry->symbol  == KEYWORD){
+    token->type = TYPE;
+    if(!strcmp(value, "return")){
+      token->type = RETURN;
+    }
+    //Set value to Pre defined string 
+    token->value = entry->key;
+    free(value);
+  }
+
 }
 
 //Put back character in stream

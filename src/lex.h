@@ -41,13 +41,13 @@ int is_operator(char c);
 
 char next(FILE *f);
 
-Token* tokenize_digit(char c, FILE *f);
+void tokenize_digit(char c, Token* token, FILE *f);
 
 int is_ident_start(char c);
 
 int is_ident_char(char c);
 
-Token* tokenize_ident(char c, FILE* f);
+void tokenize_ident(char c, Token* token, SymTab* table, FILE *f);
 
 Vector* tokenize(FILE *f, SymTab* table);
 

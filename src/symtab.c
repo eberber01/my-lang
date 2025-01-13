@@ -113,7 +113,7 @@ void symtab_free(SymTab* table){
 
                 //Clean up Ident token allocated strings
                 if(sym == VARIABLE || sym == FUNCTION){
-                    free(curr->data->key);
+                    //free(curr->data->key);
                 }
 
                 if(sym == FUNCTION){
