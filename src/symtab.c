@@ -111,20 +111,12 @@ void symtab_free(SymTab* table){
             while(curr){
                 SymbolType sym = curr->data->symbol;
 
-                //Clean up Ident token allocated strings
-                if(sym == VARIABLE || sym == FUNCTION){
-                    //free(curr->data->key);
-                }
-
                 if(sym == FUNCTION){
                     Vector* params = curr->data->params;
                     //Free params vector
                     free(params->array);
                     free(params);
                     
-                    // Free function name
-                    //free(curr->data->key);
-
                     //Free Stack Frame
                     StackFrame* frame = curr->data->frame;
                     //Free varaiables manually
