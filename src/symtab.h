@@ -11,6 +11,8 @@ typedef struct StackFrame {
     Vector* variables; 
     // Size of frame
     size_t size; 
+    //Name of function 
+    char* func;
 } StackFrame;
 
 typedef enum SymbolType{

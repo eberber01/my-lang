@@ -10,12 +10,13 @@ int free_registers[7];
 char* registers[8] = {"t0", "t1", "t2", "t3", "t4", "t5", "t6", "ra"};
 int sp = 0;
 
-StackFrame* make_stack_frame(){
+StackFrame* make_stack_frame(char* func){
     StackFrame* frame = my_malloc(sizeof(StackFrame));
     Vector* variables = vector_new();
 
     frame->size = 0;
     frame->variables = variables;
+    frame->func = func; 
     return frame;
 }
 //Returns the offset of the 
@@ -198,8 +199,16 @@ int asm_eval(AstNode* node, SymTab* table, StackFrame* frame,FILE* out){
             //return val
             reg = asm_eval(node->left, table,frame, out);
 
-            // move to return a0
-            fprintf(out, "\tadd a0, %s, zero\n", registers[reg]);
+            //Exit status 0, if main function 
+            if(!strcmp(frame->func, "main")){
+                //Syscall Exit 10
+                fprintf(out, "\tli  a7, 10\n" );   
+                fprintf(out, "\tecall\n");
+            }
+            else{
+                // move to return a0
+                fprintf(out, "\tadd a0, %s, zero\n", registers[reg]);
+            } 
             free_register(reg);
             return -1;
 
@@ -219,7 +228,7 @@ int asm_eval(AstNode* node, SymTab* table, StackFrame* frame,FILE* out){
         case AST_FUNC_DEF:
             label_add(node->value, out);
             //Create New StackFrame
-            StackFrame* f = make_stack_frame();
+            StackFrame* f = make_stack_frame(node->value);
             for(int i =0; i < node->body->length ; i++){
                 asm_eval((AstNode*)vector_get(node->body,  i), table, f, out);
             }
