@@ -182,26 +182,29 @@ Register* asm_eval(AstNode* node, SymTab* table, StackFrame* frame,RISCV* _asm){
                 reg = vector_get(_asm->temp, i)  ;
                 if(!reg->free){
                     sp_increase(sizeof(void*), _asm);
-                    sp_store(0, reg, _asm);
+                    sp_store(sizeof(void*), reg, _asm);
                 }
             }
 
-            //Get frame and allocate enough space for call
             size_t bytes = symtab_get(table,  node->value)->frame->size;
-            sp_increase(bytes, _asm);
+            if(bytes > 0 ){
+                sp_increase(bytes, _asm);
+            }
 
             //TODO: parameter passing
             jump_to_label(node->value, _asm);
             
             //Restore stack
-            sp_decrease(bytes, _asm);
+            if(bytes > 0 ){
+                sp_decrease(bytes, _asm);
+            }
 
             //Restore registers
             for(int i =0; i < _asm->temp->length; i++){
                 reg = vector_get(_asm->temp, i)  ;
                 if(!reg->free ){
                     sp_decrease(sizeof(void*), _asm);
-                    sp_load(reg, 0, _asm);
+                    sp_load(reg, sizeof(void*), _asm);
                 }
             }
 
