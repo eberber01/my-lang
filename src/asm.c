@@ -197,7 +197,7 @@ Register* asm_eval(AstNode* node, SymTab* table, StackFrame* frame,RISCV* _asm){
             sp_decrease(bytes, _asm);
 
             //Restore registers
-            for(int i =0; i < 8; i++){
+            for(int i =0; i < _asm->temp->length; i++){
                 reg = vector_get(_asm->temp, i)  ;
                 if(!reg->free ){
                     sp_decrease(sizeof(void*), _asm);
