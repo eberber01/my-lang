@@ -2,18 +2,42 @@
 #define ASM_H
 #include "ast.h" 
 #include "symtab.h"
+#include "util.h"
 #include<stdio.h>
-int alloc_register();
 
-void free_register(int reg);
-int reg_add(int a, int b, FILE* out);
-int reg_sub(int a, int b, FILE* out);
-int reg_mult(int a, int b, FILE* out);
-int reg_div(int a, int b, FILE* out);
+typedef struct Register{
+    //Name of register
+    char* label;
+    //Loaded value
+    int value;    
+    // 1 if free, 0 otherwise
+    int free;
+} Register;
 
-int load_register(int reg, int value, FILE* out);
+typedef struct RISCV {
+    // Temporary registers 
+    Vector* temp;
+    //Argument registers 
+    Vector* arg;
+    //Return register
+    Register* ret;
+    //Stack Pointer
+    Register* sp;
+    //Assembly file
+    FILE* out;
+} RISCV;
 
-int asm_eval(AstNode* node,SymTab* table, StackFrame* frame,FILE* out);
+Register* alloc_register(RISCV* _asm);
+
+void free_register(Register* reg);
+Register* reg_add(Register* reg1, Register* reg2, RISCV* _asm);
+Register* reg_sub(Register* reg1 , Register* reg2, RISCV* _asm);
+Register* reg_mult(Register*, Register* reg2, RISCV* _asm);
+Register* reg_div(Register*, Register* reg2, RISCV* _asm);
+
+Register* load_register(Register* reg, int value, RISCV* _asm);
+
+Register* asm_eval(AstNode* node,SymTab* table, StackFrame* frame, RISCV* riscv);
 
 void gen_asm(AstNode* root, SymTab* table);
 
