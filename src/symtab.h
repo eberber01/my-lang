@@ -57,7 +57,7 @@ typedef struct SymTab{
     struct TableNode** map;
 } SymTab;
 
-SymTabEntry* make_symtab_entry(char* key,  Type type, SymbolType symbol, Vector* args);
+SymTabEntry* make_symtab_entry(char* key,  Type type, SymbolType symbol, Vector* params);
 TableNode* make_node(TableNode* next,SymTabEntry* data);
 static uint64_t hash(const char* key);
 SymTabEntry* find(TableNode* node, char* key);

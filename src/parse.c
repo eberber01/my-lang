@@ -232,12 +232,12 @@ Vector* parse_func_params(TokenStream *stream, SymTab *table){
     while((current = current_token(stream)) && current_token(stream)->type == TYPE) {
         Token* param_type = expect(stream, TYPE);
         expect(stream, IDENT);
+        vector_push(params,  param_type->value);
+
         if(current_token(stream)->type == RPAREN){
            break; 
         }
         expect(stream, COMMA);
-
-        vector_push(params,  param_type->value);
     }
 
     return params;
