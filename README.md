@@ -16,6 +16,24 @@ In the future, I am planning to add support for key C features as well as additi
 
 ## Todo
 
+ - [ ] Structs
+ - [ ] Pointers
+ - [ ] typedef
+ - [ ] union
+ - [ ] Function args
+ - [x] Function call
+ - [x] Function definition
+ - [ ] if-else
+ - [ ] while
+ - [ ] for
+ - [ ] Symbol Table
+ - [x] Variable definition
+ - [x] int
+ - [ ] float
+ - [ ] string literal
+ - [ ] char
+ - [ ] Logical operations
+
 ## Build
 
 ### Requirements
