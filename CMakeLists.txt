@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.31)
 project(my-lang)
 
-
+set(CMAKE_C_STANDARD 99)
 
 include_directories(
         "${CMAKE_SOURCE_DIR}/src/"
@@ -21,4 +21,18 @@ add_executable(my-lang
     ../src/symtab.h
     ../src/util.c
     ../src/util.h
+)
+
+find_package(GTest REQUIRED)
+
+enable_testing()
+
+add_executable(
+    my-lang-tests
+  ../src/test/symtab.cpp
+)
+
+target_link_libraries(
+  my-lang-tests
+  GTest::gtest_main
 )
