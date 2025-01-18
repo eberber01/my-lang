@@ -44,14 +44,14 @@ StackFrame* make_stack_frame(char* func){
     frame->func = func; 
     return frame;
 }
-//Returns the offset of the 
+
+//Returns variable offset from current stack pointer
 int stackframe_add(StackFrame* frame, char* var_name, Type var_type){
     vector_push(frame->variables, var_name);
 
     //Change for different Types
     int tmp = frame->size;
     frame->size += 4;
-
 
     return tmp; 
 }
@@ -60,6 +60,7 @@ void sp_increase(size_t bytes, RISCV* _asm){
     fprintf(_asm->out,"\taddi sp, sp, -%zu\n", bytes);
     _asm->sp->value += bytes;
 }
+
 void sp_decrease(size_t bytes, RISCV* _asm){
     fprintf(_asm->out,"\taddi sp, sp, %zu\n", bytes);
     _asm->sp->value -= bytes;
