@@ -35,7 +35,7 @@ In the future, I am planning to add support for key C features as well as additi
 Assembly file will be created at the root of the git directory. 
 
 ## Example
-## Test File
+### Test File
 ```
 int one(){
     return 1;
@@ -51,7 +51,7 @@ int main(){
 }
 
 ```
-## RISCV Assembly
+### RISCV Assembly
 ```
 .globl main
 
