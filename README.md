@@ -33,3 +33,88 @@ In the future, I am planning to add support for key C features as well as additi
 ```
 
 Assembly file will be created at the root of the git directory. 
+
+## Example
+## Test File
+```
+int one(){
+    return 1;
+}
+
+int two(int o){
+    return one() + one();
+}
+
+int main(){
+    int num1 = 10;
+    return two(1) + two(1) * 2;
+}
+
+```
+## RISCV Assembly
+```
+.globl main
+
+	j main
+one:
+	addi t0, zero, 1
+	add a0, t0, zero
+	jalr ra
+two:
+	addi sp, sp, -8
+	sw ra, 8(sp)
+	jal one
+	addi sp, sp, 8
+	lw ra, 0(sp)
+	add t0, zero, a0
+	addi sp, sp, -8
+	sw ra, 8(sp)
+	addi sp, sp, -8
+	sw t0, 8(sp)
+	jal one
+	addi sp, sp, 8
+	lw t0, 0(sp)
+	addi sp, sp, 8
+	lw ra, 0(sp)
+	add t1, zero, a0
+	add t0, t0, t1
+	add a0, t0, zero
+	jalr ra
+main:
+	addi t0, zero, 10
+	sw t0, 0(sp)
+	addi t0, zero, 1
+	addi t1, zero, 1
+	add t0, t0, t1
+	addi t1, zero, 10
+	sub t0, t0, t1
+	addi sp, sp, -8
+	sw ra, 8(sp)
+	addi sp, sp, -8
+	sw t0, 8(sp)
+	jal two
+	addi sp, sp, 8
+	lw t0, 0(sp)
+	addi sp, sp, 8
+	lw ra, 0(sp)
+	add t1, zero, a0
+	addi sp, sp, -8
+	sw ra, 8(sp)
+	addi sp, sp, -8
+	sw t0, 8(sp)
+	addi sp, sp, -8
+	sw t1, 16(sp)
+	jal two
+	addi sp, sp, 8
+	lw t0, 8(sp)
+	addi sp, sp, 8
+	lw t1, 0(sp)
+	addi sp, sp, 8
+	lw ra, 0(sp)
+	add t2, zero, a0
+	addi t3, zero, 2
+	mul t2, t2, t3
+	add t1, t1, t2
+	li  a7, 10
+	ecall 
+```
