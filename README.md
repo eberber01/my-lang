@@ -4,31 +4,17 @@ This is my attempt at creating a C compiler. The motivation for this is to learn
 
 
 ## Progress
-The current version of this compiler supports a single main function with integer declarations. Basic arithmitec needs to be worked on further, accounting for division operations. Current target code generation is for RISCV. 
+
+The project is still in very early stages. The current version of this compiler only supports the int type with basic arthimetic expressions. Function definitions with parameters are able 
+to be parsed but assembly generation only supports function calls with zero parameters.
+
+I am still new to C development so I have been researching different tools. I am trying out CMake/Gtest for building and testing. 
+
+There is no strict roadmap, I just work on new features when I feel like it. However, I plan to only support int types until conditionals, loops, argument passing, are fully implemented. 
 
 In the future, I am planning to add support for key C features as well as additional CPU targets. Looking ahead, I also plan to write an assembler and linker.
 
 ## Todo
-
-### Lex
-
-- [x] int
-- [x] identifier
-- [x] unsigned int literal
-- [ ] signed int literal
-- [ ] string literal
-
-### Parse
-
-- [x] basic function 
-- [ ] function args
-
-### Symbol Table
-- [ ] expand keyword init 
-
-### ASM
-- [ ] stack 
-
 
 ## Build
 
