@@ -52,6 +52,12 @@ In the future, I am planning to add support for key C features as well as additi
 
 Assembly file will be created at the root of the git directory. 
 
+### Tests
+```
+    cd ./my-lang/build 
+    ./my-lang-tests
+```
+
 ## Example
 ### Test File
 ```
