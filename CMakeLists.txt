@@ -23,6 +23,22 @@ add_executable(my-lang
     ../src/util.h
 )
 
+
+add_library(my-lib  
+    ../src/asm.c
+    ../src/asm.h
+    ../src/ast.c
+    ../src/ast.h
+    ../src/lex.c
+    ../src/lex.h
+    ../src/parse.c
+    ../src/parse.h
+    ../src/symtab.c
+    ../src/symtab.h
+    ../src/util.c
+    ../src/util.h
+)
+
 find_package(GTest REQUIRED)
 
 enable_testing()
@@ -34,5 +50,6 @@ add_executable(
 
 target_link_libraries(
   my-lang-tests
+  my-lib
   GTest::gtest_main
 )
