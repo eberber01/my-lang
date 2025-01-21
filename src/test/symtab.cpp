@@ -17,7 +17,7 @@ TEST(SymbolTable, Add) {
 
   EXPECT_STREQ(entry->key, ret->key);
   EXPECT_EQ(entry->type, ret->type);
-  
+  symtab_free(table);
 }
 
 TEST(SymbolTable, Get){
@@ -27,5 +27,6 @@ TEST(SymbolTable, Get){
 
   entry = symtab_get(table, (char *)"entry");
   EXPECT_TRUE(entry == NULL);
+  symtab_free(table);
 
 }
