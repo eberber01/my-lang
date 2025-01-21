@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.31)
 project(my-lang)
 
 set(CMAKE_C_STANDARD 99)
-
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic")
 include_directories(
         "${CMAKE_SOURCE_DIR}/src/"
         "${CMAKE_SOURCE_DIR}/build/")
@@ -46,6 +46,7 @@ enable_testing()
 add_executable(
     my-lang-tests
   ../src/test/symtab.cpp
+  ../src/test/vector.cpp
 )
 
 target_link_libraries(

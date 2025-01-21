@@ -66,12 +66,12 @@ void* my_realloc(void* ptr,size_t bytes){
 }
 
 
-void* vector_new(){
+Vector* vector_new(){
     //Allocate struct
     Vector* vector = my_malloc(sizeof(Vector));
 
     //Allocate inital size
-    void** array = my_malloc(sizeof(void*) * 10);
+    void** array = my_malloc(sizeof(void*) * VECTOR_INIT_SIZE);
 
     vector->array = array;
     vector->size = 10;

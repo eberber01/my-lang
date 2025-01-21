@@ -6,6 +6,7 @@
 #include <limits.h>
 #include <ctype.h>
 
+#define VECTOR_INIT_SIZE 10
 typedef enum {
     STR2INT_SUCCESS,
     STR2INT_OVERFLOW,
@@ -28,7 +29,7 @@ typedef struct String{
 } String;
 
 char* int_to_str(int num, int size);
-void* vector_new();
+Vector* vector_new();
 void vector_free(Vector *);
 void vector_push(Vector* vector, void* ptr);
 
