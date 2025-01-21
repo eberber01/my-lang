@@ -47,6 +47,8 @@ add_executable(
     my-lang-tests
   ../src/test/symtab.cpp
   ../src/test/vector.cpp
+  ../src/test/string.cpp
+  ../src/test/parse.cpp
 )
 
 target_link_libraries(

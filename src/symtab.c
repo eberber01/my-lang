@@ -142,3 +142,13 @@ void symtab_free(SymTab* table){
     free(table);
 }
 
+void symtab_init(SymTab* table){
+  symtab_add(table, make_symtab_entry("int", INT, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("void", VOID, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("char", CHAR, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("float", FLOAT, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("double", DOUBLE, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("long", LONG, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("return", VOID, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("if", VOID, KEYWORD, NULL));
+}

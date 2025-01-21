@@ -66,6 +66,6 @@ void symtab_add(SymTab* table,SymTabEntry* entry);
 SymTabEntry* symtab_get(SymTab* table, char* key);
 SymTab* symtab_new();
 void symtab_free(SymTab* table);
-
+void symtab_init(SymTab* table);
 
 #endif
