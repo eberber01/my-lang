@@ -21,21 +21,21 @@ typedef enum SymbolType{
     KEYWORD,
 } SymbolType;
 
-typedef enum Type {
-    INT,
-    VOID,
-    CHAR,
-    LONG,
-    DOUBLE,
-    FLOAT
-} Type;
+typedef enum TypeSpecifier {
+    TS_INT,
+    TS_VOID,
+    TS_CHAR,
+    TS_LONG,
+    TS_DOUBLE,
+    TS_FLOAT
+} TypeSpecifier;
 
 typedef struct SymTabEntry{
     char* key;
     SymbolType symbol;
 
     //Function return type or Variable type
-    Type type;
+    TypeSpecifier type;
 
     //Function args, list of types as strings (char *) 
     Vector* params;
@@ -57,7 +57,7 @@ typedef struct SymTab{
     struct TableNode** map;
 } SymTab;
 
-SymTabEntry* make_symtab_entry(char* key,  Type type, SymbolType symbol, Vector* params);
+SymTabEntry* make_symtab_entry(char* key,  TypeSpecifier type, SymbolType symbol, Vector* params);
 TableNode* make_node(TableNode* next,SymTabEntry* data);
 static uint64_t hash(const char* key);
 SymTabEntry* find(TableNode* node, char* key);

@@ -12,7 +12,7 @@
 #define TABLE_SIZE 100
 
 
-SymTabEntry* make_symtab_entry(char* key,  Type type, SymbolType symbol, Vector* params){
+SymTabEntry* make_symtab_entry(char* key,  TypeSpecifier type, SymbolType symbol, Vector* params){
     SymTabEntry* entry = my_malloc(sizeof(SymTabEntry));
     entry->key = key;
     entry->type = type;
@@ -143,12 +143,12 @@ void symtab_free(SymTab* table){
 }
 
 void symtab_init(SymTab* table){
-  symtab_add(table, make_symtab_entry("int", INT, KEYWORD, NULL));
-  symtab_add(table, make_symtab_entry("void", VOID, KEYWORD, NULL));
-  symtab_add(table, make_symtab_entry("char", CHAR, KEYWORD, NULL));
-  symtab_add(table, make_symtab_entry("float", FLOAT, KEYWORD, NULL));
-  symtab_add(table, make_symtab_entry("double", DOUBLE, KEYWORD, NULL));
-  symtab_add(table, make_symtab_entry("long", LONG, KEYWORD, NULL));
-  symtab_add(table, make_symtab_entry("return", VOID, KEYWORD, NULL));
-  symtab_add(table, make_symtab_entry("if", VOID, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("int", TS_INT, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("void", TS_VOID, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("char", TS_CHAR, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("float", TS_FLOAT, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("double", TS_DOUBLE, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("long", TS_LONG, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("return", TS_VOID, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("if", TS_VOID, KEYWORD, NULL));
 }

@@ -46,7 +46,7 @@ StackFrame* make_stack_frame(char* func){
 }
 
 //Returns variable offset from current stack pointer
-int stackframe_add(StackFrame* frame, char* var_name, Type var_type){
+int stackframe_add(StackFrame* frame, char* var_name, TypeSpecifier var_type){
     vector_push(frame->variables, var_name);
 
     //Change for different Types

@@ -259,7 +259,7 @@ AstNode* parse_function(TokenStream* stream, SymTab* table){
     expect(stream, TOK_RPAREN);
 
     //Insert args into symbol table
-    Type ret_type = symtab_get(table, func_type->value)->type;
+    TypeSpecifier ret_type = symtab_get(table, func_type->value)->type;
     SymTabEntry* entry = make_symtab_entry( func_name->value,  ret_type,  FUNCTION, params);
     symtab_add(table, entry);
 
