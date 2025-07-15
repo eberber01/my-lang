@@ -7,25 +7,25 @@
 #include "util.h"
 
 typedef enum TokenType {
-  IDENT,
-  NUM,
-  ADD,
-  SUB,
-  MULT,
-  DIV,
-  LBRACKET,
-  RBRACKET,
-  LPAREN,
-  RPAREN,
-  LBRACE,
-  RBRACE,
-  SEMICOLON,
-  ASSIGN, 
-  TYPE, 
-  COMMA,
-  RETURN,
-  IF,
-  EQUAL
+  TOK_IDENT,
+  TOK_NUM,
+  TOK_ADD,
+  TOK_SUB,
+  TOK_MULT,
+  TOK_DIV,
+  TOK_LBRACKET,
+  TOK_RBRACKET,
+  TOK_LPAREN,
+  TOK_RPAREN,
+  TOK_LBRACE,
+  TOK_RBRACE,
+  TOK_SEMICOLON,
+  TOK_ASSIGN, 
+  TOK_TYPE, 
+  TOK_COMMA,
+  TOK_RETURN,
+  TOK_IF,
+  TOK_EQUAL
 } TokenType;
 
 typedef struct Token {

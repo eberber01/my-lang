@@ -20,15 +20,15 @@ Vector* tokenize(FILE *f, SymTab* table) {
     Token* t = my_malloc(sizeof(Token));
     switch (c) {
     case '+':
-      t->type = ADD;
+      t->type = TOK_ADD;
       t->value = "+";
       break;
     case '-':
-      t->type = SUB;
+      t->type = TOK_SUB;
       t->value = "-";
       break;
     case '*':
-      t->type = MULT;
+      t->type = TOK_MULT;
       t->value = "*";
       break; 
       case '/':
@@ -43,44 +43,44 @@ Vector* tokenize(FILE *f, SymTab* table) {
         }
         else{
           back(f);
-          t->type = DIV;
+          t->type = TOK_DIV;
           t->value = "/";
         }
         break;
     case ';':
-      t->type = SEMICOLON;
+      t->type = TOK_SEMICOLON;
       t->value = ";";
       break;
     case '(':
-      t->type = LPAREN;
+      t->type = TOK_LPAREN;
       t->value = "(";
       break;
     case ')':
-      t->type = RPAREN;
+      t->type = TOK_RPAREN;
       t->value = ")";
       break;
     case '{':
-      t->type = LBRACE;
+      t->type = TOK_LBRACE;
       t->value = "{";
       break;
     case '}':
-      t->type = RBRACE;
+      t->type = TOK_RBRACE;
       t->value = "}";
       break;
     case '=':
       char peek;
       if((peek = next(f)) == '='){
-        t->type = EQUAL;
+        t->type = TOK_EQUAL;
         t->value = "==";
       }
       else{
         back(f);
-        t->type = ASSIGN;
+        t->type = TOK_ASSIGN;
         t->value = "=";
       }
       break;
     case ',':
-      t->type = COMMA;
+      t->type = TOK_COMMA;
       t->value = ",";
       break;
     case ' ':
@@ -135,7 +135,7 @@ void tokenize_digit(char c,Token* token, FILE *f){
     back(f);
   }
   token->value = int_to_str(digit,  size);
-  token->type = NUM;
+  token->type = TOK_NUM;
 }
 
 //Parse Identifier token
@@ -155,19 +155,19 @@ void tokenize_ident( char c,Token* token, SymTab* table,  FILE* f){
   string_free(ident);
 
   token->value = value;     
-  token->type = IDENT;
+  token->type = TOK_IDENT;
 
   SymTabEntry* entry;
   entry = symtab_get(table, value);
 
   // Handle Keywords
   if(entry && entry->symbol  == KEYWORD){
-    token->type = TYPE;
+    token->type = TOK_TYPE;
     if(!strcmp(value, "return")){
-      token->type = RETURN;
+      token->type = TOK_RETURN;
     }
     if(!strcmp(value, "if")){
-      token->type = IF;
+      token->type = TOK_IF;
     }
     //Set value to Pre defined string 
     token->value = entry->key;

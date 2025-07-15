@@ -18,10 +18,10 @@ TEST(Parse, Variable){
     table = symtab_new();
     symtab_init(table);
 
-    vector_push(v, make_token(TYPE, (char*)"int", 0,0));
-    vector_push(v, make_token(IDENT, (char*)"var", 0,0));
-    vector_push(v, make_token(ASSIGN, (char*)"=", 0,0));
-    vector_push(v, make_token(NUM, (char*)"10", 0,0));
+    vector_push(v, make_token(TOK_TYPE, (char*)"int", 0,0));
+    vector_push(v, make_token(TOK_IDENT, (char*)"var", 0,0));
+    vector_push(v, make_token(TOK_ASSIGN, (char*)"=", 0,0));
+    vector_push(v, make_token(TOK_NUM, (char*)"10", 0,0));
 
     s = make_token_stream(v);
 

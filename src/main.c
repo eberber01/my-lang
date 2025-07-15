@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   fclose(f);
   for(int i =0; i < tokens->length; i++){
     Token* token = (Token*)vector_get(tokens, i);
-    if( token->type == NUM  || token->type == IDENT ){
+    if( token->type == TOK_NUM  || token->type == TOK_IDENT ){
       free(token->value);
     }
   }
