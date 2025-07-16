@@ -4,14 +4,15 @@
 #include "symtab.h"
 #include "util.h"
 #include<stdio.h>
+#include<stdbool.h>
 
 typedef struct Register{
     //Name of register
     char* label;
     //Loaded value
     int value;    
-    // 1 if free, 0 otherwise
-    int free;
+    
+    bool free;
 } Register;
 
 typedef struct RISCV {

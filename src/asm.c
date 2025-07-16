@@ -9,7 +9,7 @@
 Register* make_register(char* label){
     Register* reg = my_malloc(sizeof(Register));
     reg->label = label;
-    reg->free = 1;
+    reg->free = true;
     return reg;
 }
 
@@ -98,7 +98,7 @@ Register* alloc_register(RISCV* _asm){
     for(int i = 0; i < _asm->temp->length; i++){
         Register* reg = vector_get(_asm->temp,  i);
         if(reg->free){
-            reg->free = 0;
+            reg->free = false;
             return reg;
         }
     }
@@ -107,7 +107,7 @@ Register* alloc_register(RISCV* _asm){
 }
 
 void free_register(Register* reg){
-    reg->free = 1;
+    reg->free = true;
 }
 
 // Register Addition
