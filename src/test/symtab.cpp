@@ -10,7 +10,7 @@ TEST(SymbolTable, Add) {
   SymTab* table;
 
   table = symtab_new();
-  entry = make_symtab_entry((char*)"int", TS_INT,KEYWORD, NULL);
+  entry = make_symtab_entry((char*)"int", TS_INT,KEYWORD);
   symtab_add(table, entry); 
 
   ret = symtab_get(table,(char*)"int" );

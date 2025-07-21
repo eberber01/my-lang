@@ -37,9 +37,6 @@ typedef struct SymTabEntry{
     //Function return type or Variable type
     TypeSpecifier type;
 
-    //Function args, list of types as strings (char *) 
-    Vector* params;
-
     //Amount of bytes needed for function call
     StackFrame* frame;
 
@@ -57,7 +54,7 @@ typedef struct SymTab{
     struct TableNode** map;
 } SymTab;
 
-SymTabEntry* make_symtab_entry(char* key,  TypeSpecifier type, SymbolType symbol, Vector* params);
+SymTabEntry* make_symtab_entry(char* key,  TypeSpecifier type, SymbolType symbol);
 TableNode* make_node(TableNode* next,SymTabEntry* data);
 static uint64_t hash(const char* key);
 SymTabEntry* find(TableNode* node, char* key);

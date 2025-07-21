@@ -12,12 +12,11 @@
 #define TABLE_SIZE 100
 
 
-SymTabEntry* make_symtab_entry(char* key,  TypeSpecifier type, SymbolType symbol, Vector* params){
+SymTabEntry* make_symtab_entry(char* key,  TypeSpecifier type, SymbolType symbol){
     SymTabEntry* entry = my_malloc(sizeof(SymTabEntry));
     entry->key = key;
     entry->type = type;
     entry->symbol = symbol;
-    entry->params = params;
     return entry;
 }
 
@@ -112,10 +111,10 @@ void symtab_free(SymTab* table){
                 SymbolType sym = curr->data->symbol;
 
                 if(sym == FUNCTION){
-                    Vector* params = curr->data->params;
+                    //Vector* params = curr->data->params;
                     //Free params vector
-                    free(params->array);
-                    free(params);
+                    //free(params->array);
+                    //free(params);
                     
                     //Free Stack Frame
                     StackFrame* frame = curr->data->frame;
@@ -143,12 +142,12 @@ void symtab_free(SymTab* table){
 }
 
 void symtab_init(SymTab* table){
-  symtab_add(table, make_symtab_entry("int", TS_INT, KEYWORD, NULL));
-  symtab_add(table, make_symtab_entry("void", TS_VOID, KEYWORD, NULL));
-  symtab_add(table, make_symtab_entry("char", TS_CHAR, KEYWORD, NULL));
-  symtab_add(table, make_symtab_entry("float", TS_FLOAT, KEYWORD, NULL));
-  symtab_add(table, make_symtab_entry("double", TS_DOUBLE, KEYWORD, NULL));
-  symtab_add(table, make_symtab_entry("long", TS_LONG, KEYWORD, NULL));
-  symtab_add(table, make_symtab_entry("return", TS_VOID, KEYWORD, NULL));
-  symtab_add(table, make_symtab_entry("if", TS_VOID, KEYWORD, NULL));
+  symtab_add(table, make_symtab_entry("int", TS_INT, KEYWORD));
+  symtab_add(table, make_symtab_entry("void", TS_VOID, KEYWORD));
+  symtab_add(table, make_symtab_entry("char", TS_CHAR, KEYWORD));
+  symtab_add(table, make_symtab_entry("float", TS_FLOAT, KEYWORD));
+  symtab_add(table, make_symtab_entry("double", TS_DOUBLE, KEYWORD));
+  symtab_add(table, make_symtab_entry("long", TS_LONG, KEYWORD));
+  symtab_add(table, make_symtab_entry("return", TS_VOID, KEYWORD));
+  symtab_add(table, make_symtab_entry("if", TS_VOID, KEYWORD));
 }

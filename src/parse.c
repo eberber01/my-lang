@@ -260,14 +260,14 @@ AstNode* parse_function(TokenStream* stream, SymTab* table){
 
     //Insert args into symbol table
     TypeSpecifier ret_type = symtab_get(table, func_type->value)->type;
-    SymTabEntry* entry = make_symtab_entry( func_name->value,  ret_type,  FUNCTION, params);
+    SymTabEntry* entry = make_symtab_entry( func_name->value,  ret_type,  FUNCTION);
     symtab_add(table, entry);
 
     //Parse function body
     expect(stream, TOK_LBRACE);
     Vector* body = parse_body(stream,  table);
     expect(stream, TOK_RBRACE);
-    return make_ast_func_def(func_name->value, body);
+    return make_ast_func_def(func_name->value, body, params);
 }
 
 AstNode* parse_variable(TokenStream* stream, SymTab* table){
@@ -290,7 +290,7 @@ AstNode* parse_variable(TokenStream* stream, SymTab* table){
     expect(stream, TOK_SEMICOLON);
 
     //Successfull parse add to table
-    SymTabEntry* entry = make_symtab_entry(var_name->value, symtab_get(table,  var_type->value)->type, VARIABLE, NULL);
+    SymTabEntry* entry = make_symtab_entry(var_name->value, symtab_get(table,  var_type->value)->type, VARIABLE);
     symtab_add(table, entry);
 
     return make_ast_var_def(var_name->value, init); 

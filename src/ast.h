@@ -41,6 +41,7 @@ typedef struct AstBinExp{
 typedef struct AstFuncDef{
     char* value;
     Vector* body;
+    Vector* params;
 } AstFuncDef;
 
 typedef struct AstVar{
@@ -83,7 +84,7 @@ struct AstNode* make_ast_node(AstNodeType type, void* inner);
 AstNode* make_ast_stmt(Vector* body);
 AstNode* make_int_const(char* value);
 AstNode* make_ast_bin_exp(char* value, AstNode* left, AstNode* right);
-AstNode* make_ast_func_def(char* value, Vector* body);
+AstNode* make_ast_func_def(char* value, Vector* body, Vector* params);
 AstNode* make_ast_var(char* value);
 AstNode* make_ast_ret(AstNode* expr);
 AstNode* make_ast_func_call(char* value, Vector* args);

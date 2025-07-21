@@ -35,10 +35,11 @@ AstNode* make_ast_bin_exp(char* value, AstNode* left, AstNode* right){
     return make_ast_node(AST_BIN_EXP, bin_exp);
 }
 
-AstNode* make_ast_func_def(char* value, Vector* body){
+AstNode* make_ast_func_def(char* value, Vector* body, Vector* params){
     AstFuncDef* func_def = (AstFuncDef*)my_malloc(sizeof(AstFuncDef));
     func_def->body = body;
     func_def->value = value;
+    func_def->params = params;
     return make_ast_node(AST_FUNC_DEF, func_def);
 }
 
