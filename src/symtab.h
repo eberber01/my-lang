@@ -8,7 +8,7 @@
 
 typedef struct StackFrame {
     //List of variable names as strings (char*)
-    Vector* variables; 
+    //Vector* variables; 
     // Size of frame
     size_t size; 
     //Name of function 

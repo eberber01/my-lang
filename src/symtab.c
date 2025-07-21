@@ -119,8 +119,8 @@ void symtab_free(SymTab* table){
                     //Free Stack Frame
                     StackFrame* frame = curr->data->frame;
                     //Free varaiables manually
-                    free(frame->variables->array);
-                    free(frame->variables);
+                    //free(frame->variables->array);
+                    //free(frame->variables);
 
                     free(curr->data->frame);
                 }

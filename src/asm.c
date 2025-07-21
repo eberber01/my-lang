@@ -40,14 +40,12 @@ StackFrame* make_stack_frame(char* func){
     Vector* variables = vector_new();
 
     frame->size = 0;
-    frame->variables = variables;
     frame->func = func; 
     return frame;
 }
 
 //Returns variable offset from current stack pointer
 int stackframe_add(StackFrame* frame, char* var_name, TypeSpecifier var_type){
-    vector_push(frame->variables, var_name);
 
     //Change for different Types
     int tmp = frame->size;
@@ -161,6 +159,11 @@ void return_from_jump(RISCV* _asm){
 void label_add(char* name, RISCV* _asm){
     fprintf(_asm->out,"%s:\n", name);
 }
+// Move value from reg2 to reg2
+void move_register(Register* reg1, Register* reg2, RISCV* _asm){
+    fprintf(_asm->out, "\tmv %s, %s\n", reg1->label, reg2->label);
+    
+}
 
 //Recursively write AST representation to Assembly file
 Register* asm_eval(AstNode* node, SymTab* table, StackFrame* frame,RISCV* _asm){
@@ -187,6 +190,17 @@ Register* asm_eval(AstNode* node, SymTab* table, StackFrame* frame,RISCV* _asm){
                     sp_increase(sizeof(void*), _asm);
                     sp_store(sizeof(void*), reg, _asm);
                 }
+            }
+
+            if(func_call->args->length > 8){
+                perror("Max args reached");
+            }
+
+            for(int i = 0; i < func_call->args->length; i++){
+                AstNode* arg = (AstNode*)vector_get(func_call->args, i);
+                reg = asm_eval(arg, table, frame, _asm);
+                move_register(vector_get(_asm->arg, i), reg, _asm);
+                free_register(reg);
             }
 
             size_t bytes = symtab_get(table,  func_call->value)->frame->size;

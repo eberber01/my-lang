@@ -238,8 +238,12 @@ Vector* parse_func_params(TokenStream *stream, SymTab *table){
     Token* current;
     while((current = current_token(stream)) && current_token(stream)->type == TOK_TYPE) {
         Token* param_type = expect(stream, TOK_TYPE);
-        expect(stream, TOK_IDENT);
-        vector_push(params,  param_type->value);
+        Token* param_name = expect(stream, TOK_IDENT);
+
+        TypeSpecifier param_ts = symtab_get(table, param_type->value)->type;
+        symtab_add(table, make_symtab_entry(param_name->value, param_ts, VARIABLE));
+
+        vector_push(params,  param_name->value);
 
         if(current_token(stream)->type == TOK_RPAREN){
            break; 
