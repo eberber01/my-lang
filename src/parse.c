@@ -99,7 +99,14 @@ AstNode* parse_func_call(TokenStream* stream, SymTab* table){
     Vector* args = vector_new(); 
     while(current_token(stream)->type != TOK_RPAREN){
         //TODO Double check arg types
-        vector_push(args, expect(stream,  TOK_IDENT)->value);
+        AstNode* expr = parse_expression(stream, table); 
+
+        vector_push(args, expr);
+
+        if(current_token(stream)->type == TOK_RPAREN){
+            break;
+        }
+
         expect(stream,  TOK_COMMA);
     }
 
