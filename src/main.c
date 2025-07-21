@@ -38,14 +38,15 @@ int main(int argc, char **argv) {
   gen_asm(tree, table);
 
   fclose(f);
-  for(int i =0; i < tokens->length; i++){
-    Token* token = (Token*)vector_get(tokens, i);
-    if( token->type == TOK_NUM  || token->type == TOK_IDENT ){
-      free(token->value);
-    }
-  }
-  vector_free(tokens);
-  ast_free(tree);
-  symtab_free(table);
+  //Bruh what is this 
+  // for(int i =0; i < tokens->length; i++){
+  //   Token* token = (Token*)vector_get(tokens, i);
+  //   if( token->type == TOK_NUM  || token->type == TOK_IDENT ){
+  //     free(token->value);
+  //   }
+  // }
+  //vector_free(tokens);
+  //ast_free(tree);
+  //symtab_free(table);
   return 0;
 }

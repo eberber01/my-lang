@@ -2,41 +2,93 @@
 #define AST_H
 #include "util.h"
 typedef enum AstNodeType { 
-        AST_LITERAL, 
-        AST_IDENTIFIER, 
-        AST_BINARY_EXPR,
-        AST_FUNC_DEF, 
-        AST_FUNC_DEC,
-        AST_VAR_DEF,
-        AST_VAR_DEC,
-        AST_VAR,
-        AST_STATEMENT,
-        AST_FUNC_CALL,
-        AST_RET,
-        AST_IF,
-        AST_BOOL_EXPR
+    AST_INT_CONST, 
+    AST_IDENTIFIER, 
+    AST_BIN_EXP,
+    AST_FUNC_DEF, 
+    AST_FUNC_DEC,
+    AST_VAR_DEF,
+    AST_VAR_DEC,
+    AST_VAR,
+    AST_STATEMENT,
+    AST_FUNC_CALL,
+    AST_RET,
+    AST_IF,
+    AST_BOOL_EXPR
 }AstNodeType;
 
 
 typedef struct AstNode{
     AstNodeType type;
-    struct AstNode* left;
-    struct AstNode* right;
+    void* as; 
+} AstNode;
 
-    // Var name, Func name, Operator Value
-    char* value;
-
+typedef struct AstStatement{
     // List of AstNode Statements
     Vector* body;
+} AstStatement;
 
-    //Function call args
+typedef struct AstIntConst{
+    char* value;
+} AstIntConst;
+
+typedef struct AstBinExp{
+    char* value;
+    struct AstBinExp* left;
+    struct AstBinExp* right;
+} AstBinExp;
+
+typedef struct AstFuncDef{
+    char* value;
+    Vector* body;
+} AstFuncDef;
+
+typedef struct AstVar{
+    char* value;
+}AstVar;
+
+typedef struct AstRet{
+    AstNode* expr;
+}AstRet;
+
+typedef struct AstFuncCall{
+    char* value;
     Vector* args;
-} AstNode;
+} AstFuncCall;
+
+typedef struct AstVarDef{
+    char* value;
+    AstNode* expr;
+}AstVarDef;
+
+
+
+typedef struct AstBoolExpr{
+    char* value;
+    AstNode* left;
+    AstNode* right;
+} AstBoolExpr;
+
+typedef struct AstIf{
+    AstBoolExpr* expr;
+    Vector* body;
+}AstIf;
+
 
 void visit(AstNode* node);
 void ast_free(AstNode* root);
 int ast_eval(AstNode* node);
-struct AstNode* make_ast_node(int type,char* value,AstNode* left, AstNode* right, Vector* body, Vector* args);
+struct AstNode* make_ast_node(AstNodeType type, void* inner);
 
+AstNode* make_ast_stmt(Vector* body);
+AstNode* make_int_const(char* value);
+AstNode* make_ast_bin_exp(char* value, AstNode* left, AstNode* right);
+AstNode* make_ast_func_def(char* value, Vector* body);
+AstNode* make_ast_var(char* value);
+AstNode* make_ast_ret(AstNode* expr);
+AstNode* make_ast_func_call(char* value, Vector* args);
+AstNode* make_ast_var_def(char* value, AstNode* expr);
+AstNode* make_ast_bool_expr(char* value, AstNode* left, AstNode* right);
+AstNode* make_ast_if(AstBoolExpr* expr, Vector* body);
 
 #endif

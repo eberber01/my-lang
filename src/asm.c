@@ -172,6 +172,8 @@ Register* asm_eval(AstNode* node, SymTab* table, StackFrame* frame,RISCV* _asm){
     SymTabEntry* var;
     switch(node->type){
         case AST_FUNC_CALL:
+            AstFuncCall* func_call = (AstFuncCall*)node->as; 
+
             //Allocate space for return address 
             sp_increase(sizeof(void*), _asm);
             //Store return register
@@ -187,13 +189,13 @@ Register* asm_eval(AstNode* node, SymTab* table, StackFrame* frame,RISCV* _asm){
                 }
             }
 
-            size_t bytes = symtab_get(table,  node->value)->frame->size;
+            size_t bytes = symtab_get(table,  func_call->value)->frame->size;
             if(bytes > 0 ){
                 sp_increase(bytes, _asm);
             }
 
             //TODO: parameter passing
-            jump_to_label(node->value, _asm);
+            jump_to_label(func_call->value, _asm);
             
             //Restore stack
             if(bytes > 0 ){
@@ -218,30 +220,29 @@ Register* asm_eval(AstNode* node, SymTab* table, StackFrame* frame,RISCV* _asm){
             fprintf(_asm->out, "\tadd %s, zero, a0\n", reg->label);
             return reg;
         case AST_IF:
+            AstIf* if_stmt = (AstIf*)node->as;
             // Add label
             label_add("if_start", _asm);
 
             //eval bool expression, reg = 0 for false and reg = 1 for true
-           reg = asm_eval(node->left, table, frame, _asm);
+           reg = asm_eval(if_stmt->expr, table, frame, _asm);
 
             //cmp and branch to end label
             fprintf(_asm->out, "\tbeq %s, zero, if_end\n", reg->label);
             label_add("if_body", _asm);
             //eval body
-            for(int i =0; i < node->body->length ; i++){
-                 asm_eval((AstNode*)vector_get(node->body,  i), table,frame,  _asm);
+            for(int i =0; i < if_stmt->body->length ; i++){
+                 asm_eval((AstNode*)vector_get(if_stmt->body,  i), table,frame,  _asm);
             }
 
             //add other label
             label_add("if_end", _asm);
             free_register(reg);
             return NULL; 
-
-
         case AST_RET:
-
+            AstRet* ret  = (AstRet*)node->as;
             //return val
-            reg = asm_eval(node->left, table,frame, _asm);
+            reg = asm_eval(ret->expr, table,frame, _asm);
 
             //Exit status 0, if main function 
             if(!strcmp(frame->func, "main")){
@@ -257,50 +258,56 @@ Register* asm_eval(AstNode* node, SymTab* table, StackFrame* frame,RISCV* _asm){
             return NULL;
 
         case AST_STATEMENT:
+            AstStatement* stmt = (AstStatement*)node->as; 
 
-            for(int i =0; i < node->body->length ; i++){
-                asm_eval((AstNode*)vector_get(node->body,  i), table,frame,  _asm);
+            for(int i =0; i < stmt->body->length ; i++){
+                asm_eval((AstNode*)vector_get(stmt->body,  i), table,frame,  _asm);
             }
             return NULL;
         
-        case AST_LITERAL: 
-            str2int(&lit, node->value,10);
+        case AST_INT_CONST: 
+            AstIntConst* int_node = (AstIntConst*)node->as;
+
+            str2int(&lit, int_node->value,10);
             reg = alloc_register(_asm);
             load_register(reg,lit,_asm);
             return reg;
 
         case AST_FUNC_DEF:
-            label_add(node->value, _asm);
+            AstFuncDef* func_def = (AstFuncDef*)node->as;
+            label_add(func_def->value, _asm);
             //Create New StackFrame
-            StackFrame* f = make_stack_frame(node->value);
-            for(int i =0; i < node->body->length ; i++){
-                asm_eval((AstNode*)vector_get(node->body,  i), table, f, _asm);
+            StackFrame* f = make_stack_frame(func_def->value);
+            for(int i =0; i < func_def->body->length ; i++){
+                asm_eval((AstNode*)vector_get(func_def->body,  i), table, f, _asm);
             }
             //Store function frame
-            symtab_get(table,node->value)->frame = f;
+            symtab_get(table,func_def->value)->frame = f;
 
             //Not main function, return
-            if(strcmp(node->value, "main")){
+            if(strcmp(func_def->value, "main")){
                 return_from_jump(_asm);
             }
 
             return NULL;
 
         case AST_VAR_DEF:
+            AstVarDef* var_def = (AstVarDef*)node->as;
             //Increase stack frame size
-            offset = stackframe_add(frame, node->value,  symtab_get(table,  node->value)->type);
+            offset = stackframe_add(frame, var_def->value,  symtab_get(table,  var_def->value)->type);
 
             //store value on to stack
-            reg = asm_eval( node->left,table, frame, _asm);
+            reg = asm_eval( var_def->expr,table, frame, _asm);
             sp_store(offset, reg, _asm);
             free_register(reg);
 
             //Store location in symbol table
-            symtab_get(table, node->value)->offset = offset;
+            symtab_get(table, var_def->value)->offset = offset;
             return NULL; 
         case AST_VAR:
             //Store location in symbol table
-            var = symtab_get(table,  node->value);
+            AstVar* v_node = (AstVar*) node->as;
+            var = symtab_get(table,  v_node->value);
 
             if(var == NULL){
                 perror("Cannot use undefined variable.");
@@ -312,9 +319,10 @@ Register* asm_eval(AstNode* node, SymTab* table, StackFrame* frame,RISCV* _asm){
             return reg;
 
         case AST_BOOL_EXPR:
+            AstBoolExpr* bool_expr = (AstBoolExpr*) node->as;
             //  evaulte expr
-            left = asm_eval(node->left, table, frame,_asm);
-            right = asm_eval(node->right, table, frame, _asm);
+            left = asm_eval(bool_expr->left, table, frame,_asm);
+            right = asm_eval(bool_expr->right, table, frame, _asm);
 
             reg = alloc_register(_asm);
             load_register(reg, 0, _asm);
@@ -327,10 +335,11 @@ Register* asm_eval(AstNode* node, SymTab* table, StackFrame* frame,RISCV* _asm){
             label_add("bool_end", _asm);
 
             return reg;
-        default:
-            left = asm_eval(node->left, table, frame,_asm);
-            right = asm_eval(node->right, table, frame, _asm);
-            switch (*(node->value)) {
+        case AST_BIN_EXP:
+            AstBinExp* bin_exp = (AstBinExp*)node->as;
+            left = asm_eval(bin_exp->left, table, frame,_asm);
+            right = asm_eval(bin_exp->right, table, frame, _asm);
+            switch (*(bin_exp->value)) {
                 case '+':
                     return reg_add(left, right, _asm);
                 case '-':
@@ -343,6 +352,9 @@ Register* asm_eval(AstNode* node, SymTab* table, StackFrame* frame,RISCV* _asm){
                     perror("Unexpected node type.");
                     exit(1);
             }
+        default:
+            perror("unkown ast type");
+            exit(1);
 
     }
 

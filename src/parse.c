@@ -67,7 +67,7 @@ AstNode* parse_expression(TokenStream* stream, SymTab* table){
         char* value = current->value;
         next_token(stream);
         AstNode* right = parse_term(stream, table);
-        left = make_ast_node(AST_BINARY_EXPR, value, left, right, NULL, NULL);
+        left = make_ast_bin_exp(value, left, right);
     }
     return left;
 }
@@ -79,7 +79,7 @@ AstNode* parse_term(TokenStream* stream, SymTab* table){
         char* value = current->value;
         next_token(stream);
         AstNode* right = parse_factor(stream, table);
-        left = make_ast_node(AST_BINARY_EXPR,value , left, right, NULL, NULL);
+        left = make_ast_bin_exp(value , left, right);
     }
     return left;
 }
@@ -104,14 +104,14 @@ AstNode* parse_func_call(TokenStream* stream, SymTab* table){
     }
 
     expect(stream,  TOK_RPAREN);
-    return make_ast_node(AST_FUNC_CALL, name->value , NULL, NULL, NULL, args);
+    return make_ast_func_call(name->value, args);
 }
 
 AstNode* parse_factor(TokenStream* stream, SymTab* table){
     Token* current = current_token(stream); 
     if(current->type == TOK_NUM){
         next_token(stream);
-        return make_ast_node(AST_LITERAL, current->value, NULL, NULL, NULL, NULL);
+        return make_int_const(current->value);
     }
     else if(current->type == TOK_IDENT){
         if(is_func_call_start(stream,  table)){
@@ -123,7 +123,7 @@ AstNode* parse_factor(TokenStream* stream, SymTab* table){
             exit(1);
         }
         next_token(stream);
-        return make_ast_node(AST_VAR, current->value, NULL, NULL, NULL, NULL);
+        return make_ast_var(current->value);
 
     }
     else if( current->type == TOK_LPAREN){
@@ -161,7 +161,7 @@ AstNode* parse_boolean_expression(TokenStream* stream, SymTab* table){
         char* value = current->value;
         next_token(stream);
         AstNode* right = parse_expression(stream, table);
-        left = make_ast_node(AST_BOOL_EXPR, value, left, right, NULL, NULL);
+        left = make_ast_bool_expr(value, left, right);
     }
     return left;
 }
@@ -177,7 +177,7 @@ AstNode* parse_if_statement(TokenStream* stream, SymTab* table){
     Vector* if_body = parse_body(stream, table);
 
     expect(stream, TOK_RBRACE);
-    return  make_ast_node(AST_IF,  "if", expr, NULL, if_body, NULL);
+    return  make_ast_if(expr, if_body);
 }
 
 AstNode* parse_statement(TokenStream* stream, SymTab* table) {
@@ -199,7 +199,7 @@ AstNode* parse_statement(TokenStream* stream, SymTab* table) {
             expect(stream, TOK_RETURN);
             AstNode* expr = parse_expression(stream, table);
 
-            AstNode* ret_node = make_ast_node(AST_RET,  "ret", expr, NULL, NULL, NULL);
+            AstNode* ret_node = make_ast_ret(expr);
             vector_push(body,  ret_node);
             expect(stream, TOK_SEMICOLON);
         }
@@ -214,7 +214,7 @@ AstNode* parse_statement(TokenStream* stream, SymTab* table) {
             expect(stream,  TOK_SEMICOLON);
         }
     }
-    return make_ast_node(AST_STATEMENT, "STATEMENT", NULL,  NULL, body, NULL);
+    return make_ast_stmt(body);
 }
 
 Vector* parse_body(TokenStream* stream, SymTab* table) {
@@ -267,8 +267,7 @@ AstNode* parse_function(TokenStream* stream, SymTab* table){
     expect(stream, TOK_LBRACE);
     Vector* body = parse_body(stream,  table);
     expect(stream, TOK_RBRACE);
-
-    return make_ast_node(AST_FUNC_DEF, func_name->value, NULL, NULL ,  body, NULL);
+    return make_ast_func_def(func_name->value, body);
 }
 
 AstNode* parse_variable(TokenStream* stream, SymTab* table){
@@ -294,7 +293,7 @@ AstNode* parse_variable(TokenStream* stream, SymTab* table){
     SymTabEntry* entry = make_symtab_entry(var_name->value, symtab_get(table,  var_type->value)->type, VARIABLE, NULL);
     symtab_add(table, entry);
 
-    return make_ast_node(AST_VAR_DEF, var_name->value, init, NULL, NULL, NULL ); 
+    return make_ast_var_def(var_name->value, init); 
 }
 
 //Returns root AstNode representing program

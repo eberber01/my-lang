@@ -32,5 +32,5 @@ TEST(Parse, Variable){
     symtab_free(table);
     vector_free(v);
     free(s);
-    ast_free(var);
+    //ast_free(var);
 }
