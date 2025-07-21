@@ -25,7 +25,7 @@ TEST(Parse, Variable){
 
     s = make_token_stream(v);
 
-    var = parse_variable(s, table);
+    var = parse_var_def(s, table);
 
     EXPECT_EQ(AST_VAR_DEF, var->type);
 

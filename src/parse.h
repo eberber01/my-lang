@@ -18,9 +18,9 @@ AstNode* parse_term(TokenStream* stream, SymTab* table);
 
 AstNode* parse(Vector* tokens, SymTab* table);
 
-AstNode* parse_variable(TokenStream* stream, SymTab* table);
+AstNode* parse_var_def(TokenStream* stream, SymTab* table);
 
-AstNode* parse_function(TokenStream* stream, SymTab* table);
+AstNode* parse_func_def(TokenStream* stream, SymTab* table);
 
 Vector* parse_body(TokenStream* stream, SymTab* table);
 

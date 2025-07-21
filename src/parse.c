@@ -139,7 +139,7 @@ AstNode* parse_factor(TokenStream* stream, SymTab* table){
     }
 }
 
-int is_func_dec_start(TokenStream* stream){
+int is_func_def_start(TokenStream* stream){
     Token* func_type = current_token(stream);
     Token* func_name = peek(stream, 1);
     Token* paren = peek(stream, 2);
@@ -184,15 +184,15 @@ AstNode* parse_statement(TokenStream* stream, SymTab* table) {
     Token* current;
     Vector* body = vector_new(); 
     while( (current = current_token(stream)) && current_token(stream)-> type != TOK_RBRACE){
-        if (is_func_dec_start(stream)) {
+        if (is_func_def_start(stream)) {
             // Variable declaration/assignment
-            AstNode* func = parse_function( stream,  table);
+            AstNode* func = parse_func_def( stream,  table);
 
             vector_push(body, func);
         }
         else if (is_var_dec_start(stream)) {
             // Variable declaration/assignment
-            AstNode* var = parse_variable( stream,  table);
+            AstNode* var = parse_var_def( stream,  table);
             vector_push(body,  var);
         }
         else if(current->type == TOK_RETURN){
@@ -243,7 +243,7 @@ Vector* parse_func_params(TokenStream *stream, SymTab *table){
     return params;
 }
 
-AstNode* parse_function(TokenStream* stream, SymTab* table){
+AstNode* parse_func_def(TokenStream* stream, SymTab* table){
     Token* func_type = expect(stream, TOK_TYPE);
     Token* func_name = expect(stream, TOK_IDENT);
 
@@ -270,7 +270,7 @@ AstNode* parse_function(TokenStream* stream, SymTab* table){
     return make_ast_func_def(func_name->value, body, params);
 }
 
-AstNode* parse_variable(TokenStream* stream, SymTab* table){
+AstNode* parse_var_def(TokenStream* stream, SymTab* table){
     Token* var_type = expect(stream, TOK_TYPE);
     Token* var_name = expect(stream, TOK_IDENT);
 
