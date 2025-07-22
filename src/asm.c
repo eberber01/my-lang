@@ -21,10 +21,12 @@ RISCV *make_riscv()
     RISCV *riscv = my_malloc(sizeof(RISCV));
     Vector *temp_reg = vector_new();
     Vector *arg_reg = vector_new();
+    Vector *save_reg = vector_new();
 
     // Temp registers
     char *temp[7] = {"t0", "t1", "t2", "t3", "t4", "t5", "t6"};
     char *arg[8] = {"a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7"};
+    char *save[12] = {"s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11"};
     for (int i = 0; i < 7; i++)
     {
         vector_push(temp_reg, make_register(temp[i]));
@@ -33,8 +35,13 @@ RISCV *make_riscv()
     {
         vector_push(arg_reg, make_register(arg[i]));
     }
+    for (int i = 0; i < 12; i++)
+    {
+        vector_push(save_reg, make_register(save[i]));
+    }
     riscv->temp = temp_reg;
     riscv->arg = arg_reg;
+    riscv->save = save_reg;
     riscv->ret = make_register("ra");
     riscv->sp = make_register("sp");
     riscv->sp->value = 0;

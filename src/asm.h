@@ -26,6 +26,8 @@ typedef struct RISCV
     Vector *temp;
     // Argument registers
     Vector *arg;
+    // Saved register
+    Vector *save;
     // Return register
     Register *ret;
     // Stack Pointer
