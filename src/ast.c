@@ -78,7 +78,7 @@ AstNode* make_ast_bool_expr(char* value, AstNode* left, AstNode* right){
   return make_ast_node(AST_BOOL_EXPR, bool_expr);
 } 
 
-AstNode* make_ast_if(AstBoolExpr* expr, Vector* body){
+AstNode* make_ast_if(AstNode* expr, Vector* body){
   AstIf* if_stmt = (AstIf*) my_malloc(sizeof(AstIf));
   if_stmt->body = body;
   if_stmt->expr = expr;

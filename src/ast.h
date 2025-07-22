@@ -34,8 +34,8 @@ typedef struct AstIntConst{
 
 typedef struct AstBinExp{
     char* value;
-    struct AstBinExp* left;
-    struct AstBinExp* right;
+    struct AstNode* left;
+    struct AstNode* right;
 } AstBinExp;
 
 typedef struct AstFuncDef{
@@ -71,7 +71,7 @@ typedef struct AstBoolExpr{
 } AstBoolExpr;
 
 typedef struct AstIf{
-    AstBoolExpr* expr;
+    AstNode* expr;
     Vector* body;
 }AstIf;
 
@@ -90,6 +90,6 @@ AstNode* make_ast_ret(AstNode* expr);
 AstNode* make_ast_func_call(char* value, Vector* args);
 AstNode* make_ast_var_def(char* value, AstNode* expr);
 AstNode* make_ast_bool_expr(char* value, AstNode* left, AstNode* right);
-AstNode* make_ast_if(AstBoolExpr* expr, Vector* body);
+AstNode* make_ast_if(AstNode* expr, Vector* body);
 
 #endif
