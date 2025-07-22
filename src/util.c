@@ -1,12 +1,13 @@
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "util.h"
+
+#include <ctype.h>
 #include <errno.h>
 #include <limits.h>
-#include <ctype.h>
-#include "util.h"
-#include "lex.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "lex.h"
 
 /* Convert string s to int out.
  *
@@ -26,10 +27,13 @@
  * @param[in] base Base to interpret string in. Same range as strtol (2 to 36).
  *
  * @return Indicates if the operation succeeded, or why it failed.
- * 
+ *
  * CREDIT: https://stackoverflow.com/a/12923949
  */
-str2int_errno str2int(int *out, char *s, int base) { char *end; if (s[0] == '\0' || isspace(s[0]))
+str2int_errno str2int(int *out, char *s, int base)
+{
+    char *end;
+    if (s[0] == '\0' || isspace(s[0]))
         return STR2INT_INCONVERTIBLE;
     errno = 0;
     long l = strtol(s, &end, base);
@@ -44,34 +48,35 @@ str2int_errno str2int(int *out, char *s, int base) { char *end; if (s[0] == '\0'
     return STR2INT_SUCCESS;
 }
 
-
-void* my_malloc(size_t bytes){
-
-    void* ptr = malloc(bytes);
-    if(ptr == NULL){
+void *my_malloc(size_t bytes)
+{
+    void *ptr = malloc(bytes);
+    if (ptr == NULL)
+    {
         perror("Failed to allocate memory.");
         exit(1);
     };
     return ptr;
 }
 
-void* my_realloc(void* ptr,size_t bytes){
-
-    void* new_ptr = realloc(ptr, bytes);
-    if(new_ptr == NULL){
+void *my_realloc(void *ptr, size_t bytes)
+{
+    void *new_ptr = realloc(ptr, bytes);
+    if (new_ptr == NULL)
+    {
         perror("Failed to allocate memory.");
         exit(1);
     };
     return new_ptr;
 }
 
+Vector *vector_new()
+{
+    // Allocate struct
+    Vector *vector = my_malloc(sizeof(Vector));
 
-Vector* vector_new(){
-    //Allocate struct
-    Vector* vector = my_malloc(sizeof(Vector));
-
-    //Allocate inital size
-    void** array = my_malloc(sizeof(void*) * VECTOR_INIT_SIZE);
+    // Allocate inital size
+    void **array = my_malloc(sizeof(void *) * VECTOR_INIT_SIZE);
 
     vector->array = array;
     vector->size = 10;
@@ -79,80 +84,91 @@ Vector* vector_new(){
 
     return vector;
 }
-void vector_push(Vector* vector, void* ptr){
-
-    if(vector->length >= (vector->size)){
-      vector->size *= 2;
-      void** new_array = my_realloc(vector->array, sizeof(void*) * (vector->size));
-      vector->array = new_array;
-      new_array = NULL;
+void vector_push(Vector *vector, void *ptr)
+{
+    if (vector->length >= (vector->size))
+    {
+        vector->size *= 2;
+        void **new_array = my_realloc(vector->array, sizeof(void *) * (vector->size));
+        vector->array = new_array;
+        new_array = NULL;
     }
     vector->array[vector->length] = ptr;
     vector->length += 1;
 }
 
-void vector_set(Vector* vector, size_t index, void*ptr){
-    if(index >= vector->length){
+void vector_set(Vector *vector, size_t index, void *ptr)
+{
+    if (index >= vector->length)
+    {
         printf("Index out of range. %zu", index);
         exit(1);
     }
     vector->array[index] = ptr;
 }
 
-void* vector_get(Vector* vector, size_t index){
-    if(index >= vector->length){
+void *vector_get(Vector *vector, size_t index)
+{
+    if (index >= vector->length)
+    {
         printf("Index out of range. %zu", index);
         exit(1);
     }
     return vector->array[index];
 }
 
-void vector_free(Vector* vector){
-    for(int i = 0; i < vector->length; i++){
+void vector_free(Vector *vector)
+{
+    for (int i = 0; i < vector->length; i++)
+    {
         free(vector->array[i]);
     }
     free(vector->array);
     free(vector);
 }
 
-void string_free(String* string){
+void string_free(String *string)
+{
     vector_free(string->vector);
     free(string);
 }
 
-String* string_new(){
+String *string_new()
+{
+    // Allocate struct
+    String *string = my_malloc(sizeof(String));
+    // Allocate inital string
+    Vector *vector = vector_new();
 
-    //Allocate struct
-    String* string = my_malloc(sizeof(String));
-    //Allocate inital string
-    Vector* vector = vector_new();
-
-    string->length =0; 
-    string->vector =vector;
+    string->length = 0;
+    string->vector = vector;
 
     return string;
 }
 
-
-void string_append(String* string, char c){
-    char* n = my_malloc(sizeof(char));
+void string_append(String *string, char c)
+{
+    char *n = my_malloc(sizeof(char));
     *n = c;
 
-    vector_push(string->vector,  (void*)n);
+    vector_push(string->vector, (void *)n);
     string->length += 1;
 }
 
-char* as_str(String *string){
-    char* s = my_malloc(sizeof(char) * string->length + 1 );
-    for(int i=0; i < string->length; i++) {
-            s[i] = *((char*)vector_get(string->vector,  i));
+char *as_str(String *string)
+{
+    char *s = my_malloc(sizeof(char) * string->length + 1);
+    for (int i = 0; i < string->length; i++)
+    {
+        s[i] = *((char *)vector_get(string->vector, i));
     }
-    s[string->length]  = '\0';
+    s[string->length] = '\0';
     return s;
 }
 
-char* int_to_str(int num, int size){
-  char *str = my_malloc((sizeof(char) * size ) + 1);
-  snprintf(str, size, "%d", num); 
-  return str;
+char *int_to_str(int num, int size)
+{
+    char *str = my_malloc((sizeof(char) * size) + 1);
+    snprintf(str, size, "%d", num);
+    return str;
 }

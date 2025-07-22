@@ -1,38 +1,43 @@
-#include "lex.h"
-#include "util.h"
 #include "symtab.h"
+
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
+
+#include "lex.h"
+#include "util.h"
 
 #define FNV_OFFSET 14695981039346656037UL
 #define FNV_PRIME 1099511628211UL
 
 #define TABLE_SIZE 100
 
-
-SymTabEntry* make_symtab_entry(char* key,  TypeSpecifier type, SymbolType symbol){
-    SymTabEntry* entry = my_malloc(sizeof(SymTabEntry));
+SymTabEntry *make_symtab_entry(char *key, TypeSpecifier type, SymbolType symbol)
+{
+    SymTabEntry *entry = my_malloc(sizeof(SymTabEntry));
     entry->key = key;
     entry->type = type;
     entry->symbol = symbol;
     return entry;
 }
 
-TableNode* make_node(TableNode* next, SymTabEntry* data){
-    TableNode* node = my_malloc(sizeof(TableNode));
-    node->data = data; 
-    node->next = next; 
+TableNode *make_node(TableNode *next, SymTabEntry *data)
+{
+    TableNode *node = my_malloc(sizeof(TableNode));
+    node->data = data;
+    node->next = next;
     return node;
 }
 
 // Return 64-bit FNV-1a hash for key (NUL-terminated). See description:
 // https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function
 // https://benhoyt.com/writings/hash-table-in-c/
-static uint64_t hash(const char* key) {
+static uint64_t hash(const char *key)
+{
     uint64_t hash = FNV_OFFSET;
-    for (const char* p = key; *p; p++) {
+    for (const char *p = key; *p; p++)
+    {
         hash ^= (uint64_t)(unsigned char)(*p);
         hash *= FNV_PRIME;
     }
@@ -40,11 +45,14 @@ static uint64_t hash(const char* key) {
 }
 
 // Return first entry matching key
-// and NULL otherwise 
-SymTabEntry* find(TableNode* node, char* key){
-    TableNode* curr = node;
-    while(curr != NULL){
-        if(!strcmp(curr->data->key, key)){
+// and NULL otherwise
+SymTabEntry *find(TableNode *node, char *key)
+{
+    TableNode *curr = node;
+    while (curr != NULL)
+    {
+        if (!strcmp(curr->data->key, key))
+        {
             return curr->data;
         }
         curr = curr->next;
@@ -53,101 +61,109 @@ SymTabEntry* find(TableNode* node, char* key){
 }
 
 // Insert node at end of list
-void insert(TableNode** node, SymTabEntry* entry){ 
-    TableNode* n = make_node(NULL, entry);
+void insert(TableNode **node, SymTabEntry *entry)
+{
+    TableNode *n = make_node(NULL, entry);
 
-    //Set node if first item
-    if(*node == NULL){
+    // Set node if first item
+    if (*node == NULL)
+    {
         *node = n;
         return;
     }
-    
-    //Find end of list
-    TableNode* curr = *node;
-    TableNode* prev;
-    while(curr != NULL){
+
+    // Find end of list
+    TableNode *curr = *node;
+    TableNode *prev;
+    while (curr != NULL)
+    {
         prev = curr;
         curr = curr->next;
     }
 
-    //Insert new node at end of list
+    // Insert new node at end of list
     prev->next = n;
 }
 
-//Add symbol to table, overwrites matching key values
-void symtab_add(SymTab* table,SymTabEntry* entry){
+// Add symbol to table, overwrites matching key values
+void symtab_add(SymTab *table, SymTabEntry *entry)
+{
     int h = hash(entry->key);
     size_t index = (size_t)(h & (uint64_t)(table->size - 1));
-    TableNode** node = table->map + index;
+    TableNode **node = table->map + index;
     insert(node, entry);
 }
 
-//Return entry if it exists else null
-SymTabEntry* symtab_get(SymTab* table, char* key){
-    int h = hash( key);
+// Return entry if it exists else null
+SymTabEntry *symtab_get(SymTab *table, char *key)
+{
+    int h = hash(key);
     size_t index = (size_t)(h & (uint64_t)(table->size - 1));
-    TableNode** node = table->map + index;
+    TableNode **node = table->map + index;
     return find(*node, key);
 }
 
-
-SymTab* symtab_new(){
-    SymTab* table = my_malloc(sizeof(SymTab));
-    TableNode** map = calloc(sizeof(TableNode*), TABLE_SIZE);
+SymTab *symtab_new()
+{
+    SymTab *table = my_malloc(sizeof(SymTab));
+    TableNode **map = calloc(sizeof(TableNode *), TABLE_SIZE);
 
     table->map = map;
     table->size = TABLE_SIZE;
 
-
     return table;
 }
 
-void symtab_free(SymTab* table){
-    for(int i=0; i <  table->size; i++ ){
-        TableNode* tmp;
-        TableNode* curr = table->map[i];
+void symtab_free(SymTab *table)
+{
+    for (int i = 0; i < table->size; i++)
+    {
+        TableNode *tmp;
+        TableNode *curr = table->map[i];
 
-            while(curr){
-                SymbolType sym = curr->data->symbol;
+        while (curr)
+        {
+            SymbolType sym = curr->data->symbol;
 
-                if(sym == FUNCTION){
-                    //Vector* params = curr->data->params;
-                    //Free params vector
-                    //free(params->array);
-                    //free(params);
-                    
-                    //Free Stack Frame
-                    //StackFrame* frame = curr->data->frame;
-                    //Free varaiables manually
-                    //free(frame->variables->array);
-                    //free(frame->variables);
+            if (sym == FUNCTION)
+            {
+                // Vector* params = curr->data->params;
+                // Free params vector
+                // free(params->array);
+                // free(params);
 
-                    //free(curr->data->frame);
-                }
+                // Free Stack Frame
+                // StackFrame* frame = curr->data->frame;
+                // Free varaiables manually
+                // free(frame->variables->array);
+                // free(frame->variables);
 
-                //Free  Symbol entry
-                free(curr->data);
-
-                tmp = curr->next;
-
-                //Free Table Node
-                free(curr);
-
-                curr = tmp;
+                // free(curr->data->frame);
             }
 
-    }   
+            // Free  Symbol entry
+            free(curr->data);
+
+            tmp = curr->next;
+
+            // Free Table Node
+            free(curr);
+
+            curr = tmp;
+        }
+    }
     free(table->map);
     free(table);
 }
 
-void symtab_init(SymTab* table){
-  symtab_add(table, make_symtab_entry("int", TS_INT, KEYWORD));
-  symtab_add(table, make_symtab_entry("void", TS_VOID, KEYWORD));
-  symtab_add(table, make_symtab_entry("char", TS_CHAR, KEYWORD));
-  symtab_add(table, make_symtab_entry("float", TS_FLOAT, KEYWORD));
-  symtab_add(table, make_symtab_entry("double", TS_DOUBLE, KEYWORD));
-  symtab_add(table, make_symtab_entry("long", TS_LONG, KEYWORD));
-  symtab_add(table, make_symtab_entry("return", TS_VOID, KEYWORD));
-  symtab_add(table, make_symtab_entry("if", TS_VOID, KEYWORD));
+void symtab_init(SymTab *table)
+{
+    symtab_add(table, make_symtab_entry("int", TS_INT, KEYWORD));
+    symtab_add(table, make_symtab_entry("void", TS_VOID, KEYWORD));
+    symtab_add(table, make_symtab_entry("char", TS_CHAR, KEYWORD));
+    symtab_add(table, make_symtab_entry("float", TS_FLOAT, KEYWORD));
+    symtab_add(table, make_symtab_entry("double", TS_DOUBLE, KEYWORD));
+    symtab_add(table, make_symtab_entry("long", TS_LONG, KEYWORD));
+    symtab_add(table, make_symtab_entry("return", TS_VOID, KEYWORD));
+    symtab_add(table, make_symtab_entry("if", TS_VOID, KEYWORD));
 }
