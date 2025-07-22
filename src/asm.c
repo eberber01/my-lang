@@ -48,7 +48,7 @@ int stackframe_add(StackFrame* frame, char* var_name, TypeSpecifier var_type){
 
     //Change for different Types
     int tmp = frame->size;
-    frame->size += 4;
+    frame->size += INT_SIZE;
 
     return tmp; 
 }
@@ -171,7 +171,7 @@ Register* eval_func_call(AstNode* node, SymTab* table, StackFrame* frame,RISCV* 
     func_call = (AstFuncCall*)node->as; 
 
     //Allocate space for return address 
-    sp_increase(sizeof(void*), _asm);
+    sp_increase(REGISTER_SIZE, _asm);
     //Store return register
     sp_store(0,  _asm->ret,  _asm);
 
@@ -180,8 +180,8 @@ Register* eval_func_call(AstNode* node, SymTab* table, StackFrame* frame,RISCV* 
     for(int i =0; i < _asm->temp->length; i++){
         reg = vector_get(_asm->temp, i)  ;
         if(!reg->free){
-            sp_increase(sizeof(void*), _asm);
-            sp_store(sizeof(void*), reg, _asm);
+            sp_increase(REGISTER_SIZE, _asm);
+            sp_store(REGISTER_SIZE, reg, _asm);
         }
     }
 
@@ -203,13 +203,13 @@ Register* eval_func_call(AstNode* node, SymTab* table, StackFrame* frame,RISCV* 
     for(int i =0; i < _asm->temp->length; i++){
         reg = vector_get(_asm->temp, i)  ;
         if(!reg->free ){
-            sp_decrease(sizeof(void*), _asm);
-            sp_load(reg, sizeof(void*), _asm);
+            sp_decrease(REGISTER_SIZE, _asm);
+            sp_load(reg, REGISTER_SIZE, _asm);
         }
     }
 
     //restore return address
-    sp_decrease(sizeof(void*), _asm);
+    sp_decrease(REGISTER_SIZE, _asm);
     sp_load(_asm->ret,  0,  _asm);
 
     //TODO load register with return value
@@ -321,8 +321,6 @@ Register* eval_func_def(AstNode* node, SymTab* table, StackFrame* frame,RISCV* _
     for(int i =0; i < func_def->body->length ; i++){
         asm_eval((AstNode*)vector_get(func_def->body,  i), table, f, _asm);
     }
-    //Store function frame
-    //symtab_get(table,func_def->value)->frame = f;
 
     //Not main function, return
     if(strcmp(func_def->value, "main")){

@@ -6,6 +6,9 @@
 #include<stdio.h>
 #include<stdbool.h>
 
+#define REGISTER_SIZE 4
+#define INT_SIZE 4
+
 typedef struct Register{
     //Name of register
     char* label;
