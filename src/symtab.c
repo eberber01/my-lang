@@ -117,12 +117,12 @@ void symtab_free(SymTab* table){
                     //free(params);
                     
                     //Free Stack Frame
-                    StackFrame* frame = curr->data->frame;
+                    //StackFrame* frame = curr->data->frame;
                     //Free varaiables manually
                     //free(frame->variables->array);
                     //free(frame->variables);
 
-                    free(curr->data->frame);
+                    //free(curr->data->frame);
                 }
 
                 //Free  Symbol entry

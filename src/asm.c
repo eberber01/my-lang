@@ -196,19 +196,9 @@ Register* eval_func_call(AstNode* node, SymTab* table, StackFrame* frame,RISCV* 
         free_register(reg);
     }
 
-    size_t bytes = symtab_get(table,  func_call->value)->frame->size;
-    if(bytes > 0 ){
-        sp_increase(bytes, _asm);
-    }
-
     //TODO: parameter passing
     jump_to_label(func_call->value, _asm);
             
-    //Restore stack
-    if(bytes > 0 ){
-        sp_decrease(bytes, _asm);
-    }
-
     //Restore registers
     for(int i =0; i < _asm->temp->length; i++){
         reg = vector_get(_asm->temp, i)  ;
@@ -332,7 +322,7 @@ Register* eval_func_def(AstNode* node, SymTab* table, StackFrame* frame,RISCV* _
         asm_eval((AstNode*)vector_get(func_def->body,  i), table, f, _asm);
     }
     //Store function frame
-    symtab_get(table,func_def->value)->frame = f;
+    //symtab_get(table,func_def->value)->frame = f;
 
     //Not main function, return
     if(strcmp(func_def->value, "main")){

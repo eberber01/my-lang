@@ -37,9 +37,6 @@ typedef struct SymTabEntry{
     //Function return type or Variable type
     TypeSpecifier type;
 
-    //Amount of bytes needed for function call
-    StackFrame* frame;
-
     //Variable location, offset from sp in bytes
     size_t offset; 
 }SymTabEntry;
