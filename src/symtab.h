@@ -1,11 +1,11 @@
 #ifndef SYMTAB_H
 #define SYMTAB_H
+#include "util.h"
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#include "util.h"
 
 typedef struct StackFrame
 {
@@ -48,8 +48,8 @@ typedef struct SymTabEntry
     // Variable location, offset from sp in bytes
     size_t offset;
 
-    //Function param types (char*)
-    Vector* params;
+    // Function param types (char*)
+    Vector *params;
 } SymTabEntry;
 
 typedef struct TableNode

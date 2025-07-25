@@ -109,7 +109,8 @@ AstNode *parse_func_call(TokenStream *stream, SymTab *table)
     Token *name = expect(stream, TOK_IDENT);
     SymTabEntry *entry = symtab_get(table, name->value);
 
-    if(entry == NULL){
+    if (entry == NULL)
+    {
         fprintf(stderr, "Undefined function '%s' at line: %d\n", name->value, name->line);
         exit(1);
     }
@@ -117,7 +118,7 @@ AstNode *parse_func_call(TokenStream *stream, SymTab *table)
     expect(stream, TOK_LPAREN);
 
     Vector *args = vector_new();
-    Vector* params = entry->params;
+    Vector *params = entry->params;
     while (current_token(stream)->type != TOK_RPAREN)
     {
 
@@ -134,7 +135,8 @@ AstNode *parse_func_call(TokenStream *stream, SymTab *table)
         expect(stream, TOK_COMMA);
     }
 
-    if(params->length != args->length){
+    if (params->length != args->length)
+    {
         fprintf(stderr, "Mismatching args for function '%s' at line: %d\n", name->value, name->line);
         exit(1);
     }
@@ -324,7 +326,7 @@ AstNode *parse_func_def(TokenStream *stream, SymTab *table)
     // Insert params into symbol table
     TypeSpecifier ret_type = symtab_get(table, func_type->value)->type;
     SymTabEntry *entry = make_symtab_entry(func_name->value, ret_type, FUNCTION);
-    entry->params = params; 
+    entry->params = params;
     symtab_add(table, entry);
 
     // Parse function body

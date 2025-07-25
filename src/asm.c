@@ -210,29 +210,30 @@ Register *eval_func_call(AstNode *node, SymTab *table, StackFrame *frame, RISCV 
     sp_increase(REGISTER_SIZE, _asm);
     sp_store(0, _asm->ret, _asm);
 
-    //Save arg registers
-    for(int i = 0; i < _asm->arg->length;i ++){
-        
+    // Save arg registers
+    for (int i = 0; i < _asm->arg->length; i++)
+    {
         reg = vector_get(_asm->arg, i);
         sp_increase(REGISTER_SIZE, _asm);
         sp_store(0, reg, _asm);
     }
-    
-    //Save temp registers
+
+    // Save temp registers
     int freed[7] = {0};
     for (int i = 0; i < _asm->temp->length; i++)
     {
         reg = vector_get(_asm->temp, i);
-        if(!reg->free){
+        if (!reg->free)
+        {
 
-        sp_increase(REGISTER_SIZE, _asm);
-        sp_store(0, reg, _asm);
+            sp_increase(REGISTER_SIZE, _asm);
+            sp_store(0, reg, _asm);
             freed[i] = 1;
-        free_register(reg);
+            free_register(reg);
         }
     }
 
-    //Eval func args and move them into arg register
+    // Eval func args and move them into arg register
     for (int i = 0; i < func_call->args->length; i++)
     {
         AstNode *arg = (AstNode *)vector_get(func_call->args, i);
@@ -242,27 +243,30 @@ Register *eval_func_call(AstNode *node, SymTab *table, StackFrame *frame, RISCV 
         free_register(reg);
     }
 
-    //TODO move left over args to stack
+    // TODO move left over args to stack
 
     jump_to_label(func_call->value, _asm);
 
-    //Restore temp registers
-    for(int i = _asm->temp->length - 1; i>= 0; i--){
-        if(freed[i]){
-            reg = vector_get(_asm->temp,i);
-            sp_load(reg , 0, _asm);
+    // Restore temp registers
+    for (int i = _asm->temp->length - 1; i >= 0; i--)
+    {
+        if (freed[i])
+        {
+            reg = vector_get(_asm->temp, i);
+            sp_load(reg, 0, _asm);
             sp_decrease(REGISTER_SIZE, _asm);
             reg->free = false;
         }
     }
 
-    //Move return value to empty register
+    // Move return value to empty register
     reg = alloc_register(_asm);
     fprintf(_asm->out, "\tadd %s, zero, a0\n", reg->label);
 
-    //Restore arg registers
-    for(int i = _asm->arg->length - 1; i >= 0 ;i -- ){
-        
+    // Restore arg registers
+    for (int i = _asm->arg->length - 1; i >= 0; i--)
+    {
+
         sp_load(vector_get(_asm->arg, i), 0, _asm);
         sp_decrease(REGISTER_SIZE, _asm);
     }
@@ -271,7 +275,7 @@ Register *eval_func_call(AstNode *node, SymTab *table, StackFrame *frame, RISCV 
     sp_load(_asm->ret, 0, _asm);
     sp_decrease(REGISTER_SIZE, _asm);
 
-    //Return register with return value
+    // Return register with return value
     return reg;
 }
 
@@ -389,7 +393,8 @@ Register *eval_func_def(AstNode *node, SymTab *table, StackFrame *frame, RISCV *
     {
         perror("Max params reached");
     }
-    for(int i =0; i< func_def->params->length; i++){
+    for (int i = 0; i < func_def->params->length; i++)
+    {
         SymTabEntry *param = symtab_get(table, vector_get(func_def->params, i));
         param->is_arg_loaded = true;
         param->arg_reg = i;
@@ -445,8 +450,9 @@ Register *eval_var(AstNode *node, SymTab *table, StackFrame *frame, RISCV *_asm)
         exit(1);
     }
 
-    if(var->is_arg_loaded){
-        return (Register*)vector_get(_asm->arg, var->arg_reg);
+    if (var->is_arg_loaded)
+    {
+        return (Register *)vector_get(_asm->arg, var->arg_reg);
     }
 
     // Load value from sp
