@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "lex.h"
 #include "util.h"
@@ -19,6 +20,7 @@ SymTabEntry *make_symtab_entry(char *key, TypeSpecifier type, SymbolType symbol)
     entry->key = key;
     entry->type = type;
     entry->symbol = symbol;
+    entry->is_arg_loaded = false;
     return entry;
 }
 

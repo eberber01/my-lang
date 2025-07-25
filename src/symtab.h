@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdbool.h>
 #include "util.h"
 
 typedef struct StackFrame
@@ -42,8 +42,14 @@ typedef struct SymTabEntry
     // Function return type or Variable type
     TypeSpecifier type;
 
+    bool is_arg_loaded;
+    int arg_reg;
+
     // Variable location, offset from sp in bytes
     size_t offset;
+
+    //Function param types (char*)
+    Vector* params;
 } SymTabEntry;
 
 typedef struct TableNode

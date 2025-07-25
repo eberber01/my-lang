@@ -107,13 +107,20 @@ int is_func_call_start(TokenStream *stream, SymTab *table)
 AstNode *parse_func_call(TokenStream *stream, SymTab *table)
 {
     Token *name = expect(stream, TOK_IDENT);
-    // TODO:CHECK IF DEFINED IN SYMBOL TABLE
+    SymTabEntry *entry = symtab_get(table, name->value);
+
+    if(entry == NULL){
+        fprintf(stderr, "Undefined function '%s' at line: %d\n", name->value, name->line);
+        exit(1);
+    }
 
     expect(stream, TOK_LPAREN);
 
     Vector *args = vector_new();
+    Vector* params = entry->params;
     while (current_token(stream)->type != TOK_RPAREN)
     {
+
         // TODO Double check arg types
         AstNode *expr = parse_expression(stream, table);
 
@@ -125,6 +132,11 @@ AstNode *parse_func_call(TokenStream *stream, SymTab *table)
         }
 
         expect(stream, TOK_COMMA);
+    }
+
+    if(params->length != args->length){
+        fprintf(stderr, "Mismatching args for function '%s' at line: %d\n", name->value, name->line);
+        exit(1);
     }
 
     expect(stream, TOK_RPAREN);
@@ -280,7 +292,7 @@ Vector *parse_func_params(TokenStream *stream, SymTab *table)
         TypeSpecifier param_ts = symtab_get(table, param_type->value)->type;
         symtab_add(table, make_symtab_entry(param_name->value, param_ts, VARIABLE));
 
-        vector_push(params, param_name->value);
+        vector_push(params, param_type->value);
 
         if (current_token(stream)->type == TOK_RPAREN)
         {
@@ -300,7 +312,7 @@ AstNode *parse_func_def(TokenStream *stream, SymTab *table)
     // Check if symbol exists in table
     if (symtab_get(table, func_name->value))
     {
-        perror("Redefinition of function.");
+        fprintf(stderr, "Redefinition of function '%s' at line: %d\n", func_name->value, func_name->line);
         exit(1);
     }
 
@@ -309,9 +321,10 @@ AstNode *parse_func_def(TokenStream *stream, SymTab *table)
     Vector *params = parse_func_params(stream, table);
     expect(stream, TOK_RPAREN);
 
-    // Insert args into symbol table
+    // Insert params into symbol table
     TypeSpecifier ret_type = symtab_get(table, func_type->value)->type;
     SymTabEntry *entry = make_symtab_entry(func_name->value, ret_type, FUNCTION);
+    entry->params = params; 
     symtab_add(table, entry);
 
     // Parse function body
