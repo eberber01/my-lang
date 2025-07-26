@@ -246,7 +246,7 @@ void parse_enum(TokenStream *stream, SymTab *table)
     {
         enum_ident = expect(stream, TOK_IDENT);
 
-        entry = make_symtab_entry(enum_ident->value, TS_INT, CONST);
+        entry = make_symtab_entry(enum_ident->value, TS_INT, SYM_CONST);
         entry->const_value = enum_count;
 
         symtab_add(table, entry);
@@ -332,7 +332,7 @@ Vector *parse_func_params(TokenStream *stream, SymTab *table)
         Token *param_name = expect(stream, TOK_IDENT);
 
         TypeSpecifier param_ts = symtab_get(table, param_type->value)->type;
-        symtab_add(table, make_symtab_entry(param_name->value, param_ts, VARIABLE));
+        symtab_add(table, make_symtab_entry(param_name->value, param_ts, SYM_VARIABLE));
 
         vector_push(params, param_type->value);
 
@@ -365,7 +365,7 @@ AstNode *parse_func_def(TokenStream *stream, SymTab *table)
 
     // Insert params into symbol table
     TypeSpecifier ret_type = symtab_get(table, func_type->value)->type;
-    SymTabEntry *entry = make_symtab_entry(func_name->value, ret_type, FUNCTION);
+    SymTabEntry *entry = make_symtab_entry(func_name->value, ret_type, SYM_FUNCTION);
     entry->params = params;
     symtab_add(table, entry);
 
@@ -399,7 +399,7 @@ AstNode *parse_var_def(TokenStream *stream, SymTab *table)
     expect(stream, TOK_SEMICOLON);
 
     // Successfull parse add to table
-    SymTabEntry *entry = make_symtab_entry(var_name->value, symtab_get(table, var_type->value)->type, VARIABLE);
+    SymTabEntry *entry = make_symtab_entry(var_name->value, symtab_get(table, var_type->value)->type, SYM_VARIABLE);
     symtab_add(table, entry);
 
     return make_ast_var_def(var_name->value, init);

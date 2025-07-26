@@ -444,7 +444,7 @@ Register *eval_ident(AstNode *node, SymTab *table, StackFrame *frame, RISCV *_as
     ident_node = (AstIdent *)node->as;
     var = symtab_get(table, ident_node->value);
 
-    if (var->symbol == CONST)
+    if (var->symbol == SYM_CONST)
     {
         reg = alloc_register(_asm);
         load_register(reg, var->const_value, _asm);

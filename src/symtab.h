@@ -19,10 +19,10 @@ typedef struct StackFrame
 
 typedef enum SymbolType
 {
-    FUNCTION,
-    VARIABLE,
-    KEYWORD,
-    CONST
+    SYM_FUNCTION,
+    SYM_VARIABLE,
+    SYM_KEYWORD,
+    SYM_CONST
 } SymbolType;
 
 typedef enum TypeSpecifier
@@ -52,7 +52,7 @@ typedef struct SymTabEntry
     // Function param types (char*)
     Vector *params;
 
-    // Value for enum
+    //Value for enum
     int const_value;
 } SymTabEntry;
 

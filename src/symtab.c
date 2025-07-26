@@ -127,7 +127,7 @@ void symtab_free(SymTab *table)
         {
             SymbolType sym = curr->data->symbol;
 
-            if (sym == FUNCTION)
+            if (sym == SYM_FUNCTION)
             {
                 // Vector* params = curr->data->params;
                 // Free params vector
@@ -160,13 +160,13 @@ void symtab_free(SymTab *table)
 
 void symtab_init(SymTab *table)
 {
-    symtab_add(table, make_symtab_entry("int", TS_INT, KEYWORD));
-    symtab_add(table, make_symtab_entry("void", TS_VOID, KEYWORD));
-    symtab_add(table, make_symtab_entry("char", TS_CHAR, KEYWORD));
-    symtab_add(table, make_symtab_entry("float", TS_FLOAT, KEYWORD));
-    symtab_add(table, make_symtab_entry("double", TS_DOUBLE, KEYWORD));
-    symtab_add(table, make_symtab_entry("long", TS_LONG, KEYWORD));
-    symtab_add(table, make_symtab_entry("return", TS_VOID, KEYWORD));
-    symtab_add(table, make_symtab_entry("if", TS_VOID, KEYWORD));
-    symtab_add(table, make_symtab_entry("enum", TS_VOID, KEYWORD));
+    symtab_add(table, make_symtab_entry("int", TS_INT, SYM_KEYWORD));
+    symtab_add(table, make_symtab_entry("void", TS_VOID, SYM_KEYWORD));
+    symtab_add(table, make_symtab_entry("char", TS_CHAR, SYM_KEYWORD));
+    symtab_add(table, make_symtab_entry("float", TS_FLOAT, SYM_KEYWORD));
+    symtab_add(table, make_symtab_entry("double", TS_DOUBLE, SYM_KEYWORD));
+    symtab_add(table, make_symtab_entry("long", TS_LONG, SYM_KEYWORD));
+    symtab_add(table, make_symtab_entry("return", TS_VOID, SYM_KEYWORD));
+    symtab_add(table, make_symtab_entry("if", TS_VOID, SYM_KEYWORD));
+    symtab_add(table, make_symtab_entry("enum", TS_VOID, SYM_KEYWORD));
 }

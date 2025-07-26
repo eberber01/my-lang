@@ -11,7 +11,7 @@ TEST(SymbolTable, Add)
     SymTab *table;
 
     table = symtab_new();
-    entry = make_symtab_entry((char *)"int", TS_INT, KEYWORD);
+    entry = make_symtab_entry((char *)"int", TS_INT, SYM_KEYWORD);
     symtab_add(table, entry);
 
     ret = symtab_get(table, (char *)"int");

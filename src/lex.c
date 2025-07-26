@@ -180,7 +180,7 @@ void tokenize_ident(char c, Token *token, SymTab *table, FILE *f)
     entry = symtab_get(table, value);
 
     // Handle Keywords
-    if (entry && entry->symbol == KEYWORD)
+    if (entry && entry->symbol == SYM_KEYWORD)
     {
         token->type = TOK_TYPE;
         if (!strcmp(value, "return"))
