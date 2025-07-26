@@ -10,7 +10,7 @@ typedef enum AstNodeType
     AST_FUNC_DEC,
     AST_VAR_DEF,
     AST_VAR_DEC,
-    AST_VAR,
+    AST_IDENT,
     AST_STATEMENT,
     AST_FUNC_CALL,
     AST_RET,
@@ -49,10 +49,10 @@ typedef struct AstFuncDef
     Vector *params;
 } AstFuncDef;
 
-typedef struct AstVar
+typedef struct AstIdent
 {
     char *value;
-} AstVar;
+} AstIdent;
 
 typedef struct AstRet
 {
@@ -93,7 +93,7 @@ AstNode *make_ast_stmt(Vector *body);
 AstNode *make_int_const(char *value);
 AstNode *make_ast_bin_exp(char *value, AstNode *left, AstNode *right);
 AstNode *make_ast_func_def(char *value, Vector *body, Vector *params);
-AstNode *make_ast_var(char *value);
+AstNode *make_ast_ident(char *value);
 AstNode *make_ast_ret(AstNode *expr);
 AstNode *make_ast_func_call(char *value, Vector *args);
 AstNode *make_ast_var_def(char *value, AstNode *expr);

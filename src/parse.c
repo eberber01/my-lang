@@ -168,7 +168,7 @@ AstNode *parse_factor(TokenStream *stream, SymTab *table)
             exit(1);
         }
         next_token(stream);
-        return make_ast_var(current->value);
+        return make_ast_ident(current->value);
     }
     else if (current->type == TOK_LPAREN)
     {

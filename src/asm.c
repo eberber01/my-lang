@@ -434,15 +434,15 @@ Register *eval_var_def(AstNode *node, SymTab *table, StackFrame *frame, RISCV *_
     return NULL;
 }
 
-Register *eval_var(AstNode *node, SymTab *table, StackFrame *frame, RISCV *_asm)
+Register *eval_ident(AstNode *node, SymTab *table, StackFrame *frame, RISCV *_asm)
 {
-    AstVar *v_node;
+    AstIdent *ident_node;
     Register *reg;
     SymTabEntry *var;
 
     // Store location in symbol table
-    v_node = (AstVar *)node->as;
-    var = symtab_get(table, v_node->value);
+    ident_node = (AstIdent *)node->as;
+    var = symtab_get(table, ident_node->value);
 
     if (var->symbol == CONST)
     {
@@ -505,8 +505,8 @@ Register *asm_eval(AstNode *node, SymTab *table, StackFrame *frame, RISCV *_asm)
         return eval_func_def(node, table, frame, _asm);
     case AST_VAR_DEF:
         return eval_var_def(node, table, frame, _asm);
-    case AST_VAR:
-        return eval_var(node, table, frame, _asm);
+    case AST_IDENT:
+        return eval_ident(node, table, frame, _asm);
     case AST_BOOL_EXPR:
         return eval_bool_expr(node, table, frame, _asm);
     case AST_BIN_EXP:

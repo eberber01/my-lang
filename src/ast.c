@@ -50,11 +50,11 @@ AstNode *make_ast_func_def(char *value, Vector *body, Vector *params)
     return make_ast_node(AST_FUNC_DEF, func_def);
 }
 
-AstNode *make_ast_var(char *value)
+AstNode *make_ast_ident(char *value)
 {
-    AstVar *var = (AstVar *)my_malloc(sizeof(AstVar));
-    var->value = value;
-    return make_ast_node(AST_VAR, var);
+    AstIdent *ident = (AstIdent *)my_malloc(sizeof(AstIdent));
+    ident->value = value;
+    return make_ast_node(AST_IDENT, ident);
 }
 
 AstNode *make_ast_ret(AstNode *expr)
