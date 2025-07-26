@@ -27,7 +27,8 @@ typedef enum TokenType
     TOK_COMMA,
     TOK_RETURN,
     TOK_IF,
-    TOK_EQUAL
+    TOK_EQUAL,
+    TOK_ENUM,
 } TokenType;
 
 typedef struct Token

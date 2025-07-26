@@ -66,6 +66,8 @@ Token *expect(TokenStream *stream, TokenType expect)
         next_token(stream);
         return current;
     }
+
+    fprintf(stderr, "Expected token of type %d at line: %d\n", expect, current->line);
     exit(1);
 }
 
@@ -228,6 +230,39 @@ AstNode *parse_if_statement(TokenStream *stream, SymTab *table)
     return make_ast_if(expr, if_body);
 }
 
+void parse_enum(TokenStream *stream, SymTab *table)
+{
+    Token *curr;
+    Token *enum_ident;
+    Token *enum_name;
+    Token *peek_tok;
+    SymTabEntry *entry;
+    int enum_count = 0;
+
+    enum_name = expect(stream, TOK_IDENT);
+    expect(stream, TOK_LBRACE);
+
+    while ((curr = current_token(stream)) && curr->type != TOK_RBRACE)
+    {
+        enum_ident = expect(stream, TOK_IDENT);
+
+        entry = make_symtab_entry(enum_ident->value, TS_INT, CONST);
+        entry->const_value = enum_count;
+
+        symtab_add(table, entry);
+
+        if ((curr = current_token(stream)) && curr->type != TOK_COMMA)
+        {
+            break;
+        }
+
+        expect(stream, TOK_COMMA);
+        enum_count++;
+    }
+    expect(stream, TOK_RBRACE);
+    expect(stream, TOK_SEMICOLON);
+}
+
 AstNode *parse_statement(TokenStream *stream, SymTab *table)
 {
     Token *current;
@@ -260,6 +295,11 @@ AstNode *parse_statement(TokenStream *stream, SymTab *table)
         {
             AstNode *if_state = parse_if_statement(stream, table);
             vector_push(body, if_state);
+        }
+        else if (current->type == TOK_ENUM)
+        {
+            expect(stream, TOK_ENUM);
+            parse_enum(stream, table);
         }
         else
         {

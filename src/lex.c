@@ -191,6 +191,10 @@ void tokenize_ident(char c, Token *token, SymTab *table, FILE *f)
         {
             token->type = TOK_IF;
         }
+        if (!strcmp(value, "enum"))
+        {
+            token->type = TOK_ENUM;
+        }
         // Set value to Pre defined string
         token->value = entry->key;
         free(value);

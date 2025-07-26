@@ -168,4 +168,5 @@ void symtab_init(SymTab *table)
     symtab_add(table, make_symtab_entry("long", TS_LONG, KEYWORD));
     symtab_add(table, make_symtab_entry("return", TS_VOID, KEYWORD));
     symtab_add(table, make_symtab_entry("if", TS_VOID, KEYWORD));
+    symtab_add(table, make_symtab_entry("enum", TS_VOID, KEYWORD));
 }

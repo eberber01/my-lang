@@ -444,10 +444,11 @@ Register *eval_var(AstNode *node, SymTab *table, StackFrame *frame, RISCV *_asm)
     v_node = (AstVar *)node->as;
     var = symtab_get(table, v_node->value);
 
-    if (var == NULL)
+    if (var->symbol == CONST)
     {
-        perror("Cannot use undefined variable.");
-        exit(1);
+        reg = alloc_register(_asm);
+        load_register(reg, var->const_value, _asm);
+        return reg;
     }
 
     if (var->is_arg_loaded)

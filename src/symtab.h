@@ -22,6 +22,7 @@ typedef enum SymbolType
     FUNCTION,
     VARIABLE,
     KEYWORD,
+    CONST
 } SymbolType;
 
 typedef enum TypeSpecifier
@@ -50,6 +51,9 @@ typedef struct SymTabEntry
 
     // Function param types (char*)
     Vector *params;
+
+    // Value for enum
+    int const_value;
 } SymTabEntry;
 
 typedef struct TableNode
