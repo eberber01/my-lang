@@ -13,6 +13,8 @@ typedef struct TokenStream
 
 AstNode *parse_expression(TokenStream *stream, SymTab *table);
 
+AstNode *parse_statement(TokenStream *stream, SymTab *table);
+
 AstNode *parse_factor(TokenStream *stream, SymTab *table);
 
 AstNode *parse_term(TokenStream *stream, SymTab *table);

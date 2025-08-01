@@ -320,10 +320,7 @@ Register *eval_if(AstNode *node, SymTab *table, StackFrame *frame, RISCV *_asm)
     fprintf(_asm->out, "\tbeq %s, zero, if_end\n", reg->label);
     label_add("if_body", _asm);
     // eval body
-    for (int i = 0; i < if_stmt->body->length; i++)
-    {
-        asm_eval((AstNode *)vector_get(if_stmt->body, i), table, frame, _asm);
-    }
+    asm_eval(if_stmt->body, table, frame, _asm);
 
     // add other label
     label_add("if_end", _asm);
@@ -372,12 +369,10 @@ Register *eval_int_const(AstNode *node, SymTab *table, StackFrame *frame, RISCV 
 {
     Register *reg;
     AstIntConst *int_node;
-    int lit;
     int_node = (AstIntConst *)node->as;
 
-    str2int(&lit, int_node->value, 10);
     reg = alloc_register(_asm);
-    load_register(reg, lit, _asm);
+    load_register(reg, int_node->value, _asm);
     return reg;
 }
 
@@ -400,10 +395,7 @@ Register *eval_func_def(AstNode *node, SymTab *table, StackFrame *frame, RISCV *
         param->arg_reg = i;
     }
 
-    for (int i = 0; i < func_def->body->length; i++)
-    {
-        asm_eval((AstNode *)vector_get(func_def->body, i), table, f, _asm);
-    }
+    asm_eval(func_def->body, table, f, _asm);
 
     // Not main function, return
     if (strcmp(func_def->value, "main"))

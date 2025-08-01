@@ -152,8 +152,10 @@ AstNode *parse_factor(TokenStream *stream, SymTab *table)
     Token *current = current_token(stream);
     if (current->type == TOK_NUM)
     {
+        int lit;
         next_token(stream);
-        return make_int_const(current->value);
+        str2int(&lit, current->value, 10);
+        return make_int_const(lit);
     }
     else if (current->type == TOK_IDENT)
     {
@@ -224,7 +226,7 @@ AstNode *parse_if_statement(TokenStream *stream, SymTab *table)
     expect(stream, TOK_RPAREN);
     expect(stream, TOK_LBRACE);
 
-    Vector *if_body = parse_body(stream, table);
+    AstNode *if_body = parse_statement(stream, table);
 
     expect(stream, TOK_RBRACE);
     return make_ast_if(expr, if_body);
@@ -311,17 +313,6 @@ AstNode *parse_statement(TokenStream *stream, SymTab *table)
     return make_ast_stmt(body);
 }
 
-Vector *parse_body(TokenStream *stream, SymTab *table)
-{
-    Vector *body = vector_new();
-    while (current_token(stream) && current_token(stream)->type != TOK_RBRACE)
-    {
-        AstNode *stmt = parse_statement(stream, table);
-        vector_push(body, stmt);
-    }
-    return body;
-}
-
 Vector *parse_func_params(TokenStream *stream, SymTab *table)
 {
     Vector *params = vector_new();
@@ -371,7 +362,7 @@ AstNode *parse_func_def(TokenStream *stream, SymTab *table)
 
     // Parse function body
     expect(stream, TOK_LBRACE);
-    Vector *body = parse_body(stream, table);
+    AstNode *body = parse_statement(stream, table);
     expect(stream, TOK_RBRACE);
     return make_ast_func_def(func_name->value, body, params);
 }
