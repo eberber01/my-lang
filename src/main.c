@@ -37,8 +37,8 @@ int main(int argc, char **argv)
     }
 
     AstNode *tree = parse(tokens, table);
-
-    gen_asm(tree, table);
+    print_ast_tree(tree);
+    //gen_asm(tree, table);
 
     fclose(f);
     // Bruh what is this

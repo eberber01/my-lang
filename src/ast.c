@@ -8,65 +8,65 @@
 void printlvl(char* str,int level, ...){
     va_list args;
     va_start(args, level);
-    printf("%*s", level, "\t");
+    for(int i=0; i < level; i++)
+        printf("\t");
     vprintf(str, args);
+    printf("\n");
 }
 
 void _print_ast_tree(AstNode *node, int level){
     switch(node->type){
         case AST_FUNC_DEF:
             AstFuncDef * func_def = (AstFuncDef*)node->as;
-            printlvl("FuncDef(\n", level);
+            printlvl("FuncDef(", level);
 
-            printlvl("\tname='%s'\n", level, func_def->value);
-            printlvl("\tparams=[\n", level, func_def->params);
+            printlvl("\tname='%s'", level, func_def->value);
+            printlvl("\tparams=[", level, func_def->params);
             for(int i = 0; i< func_def->params->length; i++){
-                printlvl("\t\t'%s'\n",level, (char*)vector_get(func_def->params, i));
+                printlvl("\t\t'%s'",level, (char*)vector_get(func_def->params, i));
             }
-            printlvl("\t\t]\n", level);
+            printlvl("\t\t]", level);
 
-            printlvl("\tbody=[\n", level);
+            printlvl("\tbody=[", level);
             _print_ast_tree(func_def->body, level + 1);
 
-            printlvl("\t\t]\n", level);
-            printlvl(")\n", level);
+            printlvl("\t\t]", level);
+            printlvl(")", level);
             break;
         case AST_VAR_DEF:
             AstVarDef *var_def = (AstVarDef*)node->as;
-            printlvl("VarDef(\n", level);
+            printlvl("VarDef(", level);
 
-            printlvl("\tname='%s'\n", level,var_def->value);
+            printlvl("\tname='%s'", level,var_def->value);
 
-            printlvl("\tvalue=(\n",level);
+            printlvl("\tvalue=(",level);
             _print_ast_tree(var_def->expr, level+1);
-            printlvl(")\n", level);
+            printlvl(")", level);
             break;
         case AST_BIN_EXP:
             AstBinExp *bin_exp = (AstBinExp*)node->as;
-            printlvl("BinExp(\n",level);
-            printlvl("\top=%c\n", level, *(bin_exp->value));
+            printlvl("BinExp(",level);
+            printlvl("\top=%c", level, *(bin_exp->value));
 
-            printlvl("\tleft=(\n",level);
+            printlvl("\tleft=(",level);
             _print_ast_tree(bin_exp->left, level + 1);
-            printlvl("\t)\n",level);
+            printlvl("\t)",level);
 
-            printlvl("\tright=(\n",level);
+            printlvl("\tright=(",level);
             _print_ast_tree(bin_exp->right, level + 1);
-            printlvl("\t)\n",level);
+            printlvl("\t)",level);
 
-            printlvl(")\n", level);
+            printlvl(")", level);
             break;
 
         case AST_INT_CONST:
             AstIntConst *cons = (AstIntConst*)node->as;
-            int lit;
-            str2int(&lit, cons->value, 10);
-            printlvl("IntConst(%d)\n", level, lit);
+            printlvl("IntConst(%d)", level, cons->value);
             break;
         case AST_STATEMENT:
             AstStatement *stmt = (AstStatement*)node->as;
             for(int i=0; i < stmt->body->length; i++){
-                _print_ast_tree((AstNode*)vector_get(stmt->body, i), level + 1);
+                _print_ast_tree((AstNode*)vector_get(stmt->body, i), level );
             }
             break;
         default:
