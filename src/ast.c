@@ -2,8 +2,84 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <stdarg.h>
 #include "util.h"
+
+void printlvl(char* str,int level, ...){
+    va_list args;
+    va_start(args, level);
+    printf("%*s", level, "\t");
+    vprintf(str, args);
+}
+
+void _print_ast_tree(AstNode *node, int level){
+    switch(node->type){
+        case AST_FUNC_DEF:
+            AstFuncDef * func_def = (AstFuncDef*)node->as;
+            printlvl("FuncDef(\n", level);
+
+            printlvl("\tname='%s'\n", level, func_def->value);
+            printlvl("\tparams=[\n", level, func_def->params);
+            for(int i = 0; i< func_def->params->length; i++){
+                printlvl("\t\t'%s'\n",level, (char*)vector_get(func_def->params, i));
+            }
+            printlvl("\t\t]\n", level);
+
+            printlvl("\tbody=[\n", level);
+            _print_ast_tree(func_def->body, level + 1);
+
+            printlvl("\t\t]\n", level);
+            printlvl(")\n", level);
+            break;
+        case AST_VAR_DEF:
+            AstVarDef *var_def = (AstVarDef*)node->as;
+            printlvl("VarDef(\n", level);
+
+            printlvl("\tname='%s'\n", level,var_def->value);
+
+            printlvl("\tvalue=(\n",level);
+            _print_ast_tree(var_def->expr, level+1);
+            printlvl(")\n", level);
+            break;
+        case AST_BIN_EXP:
+            AstBinExp *bin_exp = (AstBinExp*)node->as;
+            printlvl("BinExp(\n",level);
+            printlvl("\top=%c\n", level, *(bin_exp->value));
+
+            printlvl("\tleft=(\n",level);
+            _print_ast_tree(bin_exp->left, level + 1);
+            printlvl("\t)\n",level);
+
+            printlvl("\tright=(\n",level);
+            _print_ast_tree(bin_exp->right, level + 1);
+            printlvl("\t)\n",level);
+
+            printlvl(")\n", level);
+            break;
+
+        case AST_INT_CONST:
+            AstIntConst *cons = (AstIntConst*)node->as;
+            int lit;
+            str2int(&lit, cons->value, 10);
+            printlvl("IntConst(%d)\n", level, lit);
+            break;
+        case AST_STATEMENT:
+            AstStatement *stmt = (AstStatement*)node->as;
+            for(int i=0; i < stmt->body->length; i++){
+                _print_ast_tree((AstNode*)vector_get(stmt->body, i), level + 1);
+            }
+            break;
+        default:
+            printf("type%d", node->type);
+            perror("not impl");
+
+    }
+}
+
+void print_ast_tree(AstNode *node)
+{
+    _print_ast_tree(node, 0);
+}
 
 void print_ast_node(AstNode *node)
 {
@@ -41,7 +117,7 @@ AstNode *make_ast_bin_exp(char *value, AstNode *left, AstNode *right)
     return make_ast_node(AST_BIN_EXP, bin_exp);
 }
 
-AstNode *make_ast_func_def(char *value, Vector *body, Vector *params)
+AstNode *make_ast_func_def(char *value, AstNode *body, Vector *params)
 {
     AstFuncDef *func_def = (AstFuncDef *)my_malloc(sizeof(AstFuncDef));
     func_def->body = body;
@@ -89,7 +165,7 @@ AstNode *make_ast_bool_expr(char *value, AstNode *left, AstNode *right)
     return make_ast_node(AST_BOOL_EXPR, bool_expr);
 }
 
-AstNode *make_ast_if(AstNode *expr, Vector *body)
+AstNode *make_ast_if(AstNode *expr, AstNode *body)
 {
     AstIf *if_stmt = (AstIf *)my_malloc(sizeof(AstIf));
     if_stmt->body = body;
