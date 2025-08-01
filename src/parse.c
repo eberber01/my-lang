@@ -152,8 +152,10 @@ AstNode *parse_factor(TokenStream *stream, SymTab *table)
     Token *current = current_token(stream);
     if (current->type == TOK_NUM)
     {
+        int lit;
         next_token(stream);
-        return make_int_const(current->value);
+        str2int(&lit, current->value, 10);
+        return make_int_const(lit);
     }
     else if (current->type == TOK_IDENT)
     {

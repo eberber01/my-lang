@@ -25,7 +25,7 @@ AstNode *make_ast_stmt(Vector *body)
     return make_ast_node(AST_STATEMENT, stmt);
 }
 
-AstNode *make_int_const(char *value)
+AstNode *make_int_const(int value)
 {
     AstIntConst *int_const = (AstIntConst *)my_malloc(sizeof(AstIntConst));
     int_const->value = value;

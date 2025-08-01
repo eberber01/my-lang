@@ -369,12 +369,10 @@ Register *eval_int_const(AstNode *node, SymTab *table, StackFrame *frame, RISCV 
 {
     Register *reg;
     AstIntConst *int_node;
-    int lit;
     int_node = (AstIntConst *)node->as;
-    //Double check this why did I store as a string ??
-    str2int(&lit, int_node->value, 10);
+
     reg = alloc_register(_asm);
-    load_register(reg, lit, _asm);
+    load_register(reg, int_node->value, _asm);
     return reg;
 }
 
