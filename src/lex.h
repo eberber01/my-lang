@@ -53,9 +53,9 @@ int is_ident_start(char c);
 
 int is_ident_char(char c);
 
-void tokenize_ident(char c, Token *token, SymTab *table, FILE *f);
+void tokenize_ident(char c, Token *token, FILE *f);
 
-Vector *tokenize(FILE *f, SymTab *table);
+Vector *tokenize(FILE *f);
 
 void back(FILE *);
 #endif

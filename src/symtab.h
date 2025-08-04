@@ -52,7 +52,7 @@ typedef struct SymTabEntry
     // Function param types (char*)
     Vector *params;
 
-    //Value for enum
+    // Value for enum
     int const_value;
 } SymTabEntry;
 

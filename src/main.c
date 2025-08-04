@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     SymTab *table = symtab_new();
     symtab_init(table);
 
-    Vector *tokens = tokenize(f, table);
+    Vector *tokens = tokenize(f);
 
     for (int i = 0; i < tokens->length; i++)
     {
