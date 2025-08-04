@@ -41,7 +41,7 @@ AstNode *make_ast_bin_exp(char *value, AstNode *left, AstNode *right)
     return make_ast_node(AST_BIN_EXP, bin_exp);
 }
 
-AstNode *make_ast_func_def(char *value, Vector *body, Vector *params)
+AstNode *make_ast_func_def(char *value, AstNode *body, Vector *params)
 {
     AstFuncDef *func_def = (AstFuncDef *)my_malloc(sizeof(AstFuncDef));
     func_def->body = body;
@@ -89,7 +89,7 @@ AstNode *make_ast_bool_expr(char *value, AstNode *left, AstNode *right)
     return make_ast_node(AST_BOOL_EXPR, bool_expr);
 }
 
-AstNode *make_ast_if(AstNode *expr, Vector *body)
+AstNode *make_ast_if(AstNode *expr, AstNode *body)
 {
     AstIf *if_stmt = (AstIf *)my_malloc(sizeof(AstIf));
     if_stmt->body = body;
