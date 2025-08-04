@@ -224,11 +224,9 @@ AstNode *parse_if_statement(TokenStream *stream, SymTab *table)
     AstNode *expr = parse_boolean_expression(stream, table);
 
     expect(stream, TOK_RPAREN);
-    expect(stream, TOK_LBRACE);
 
     AstNode *if_body = parse_statement(stream, table);
 
-    expect(stream, TOK_RBRACE);
     return make_ast_if(expr, if_body);
 }
 
@@ -265,52 +263,55 @@ void parse_enum(TokenStream *stream, SymTab *table)
     expect(stream, TOK_SEMICOLON);
 }
 
+AstNode *parse_comp_stmt(TokenStream *stream, SymTab *table){
+
+    Token *current;
+    AstNode* stmt;
+    Vector *body = vector_new();
+
+    expect(stream, TOK_LBRACE);
+    while ((current = current_token(stream)) && current_token(stream)->type != TOK_RBRACE){
+        stmt = parse_statement(stream,table);
+        vector_push(body, stmt);
+    }
+    expect(stream, TOK_RBRACE);
+    return make_ast_comp_stmt(body);
+}
+
 AstNode *parse_statement(TokenStream *stream, SymTab *table)
 {
     Token *current;
-    Vector *body = vector_new();
-    while ((current = current_token(stream)) && current_token(stream)->type != TOK_RBRACE)
+    while ((current = current_token(stream)))
     {
         if (is_func_def_start(stream))
-        {
-            // Variable declaration/assignment
-            AstNode *func = parse_func_def(stream, table);
-
-            vector_push(body, func);
-        }
+            return parse_func_def(stream, table);
         else if (is_var_dec_start(stream))
-        {
-            // Variable declaration/assignment
-            AstNode *var = parse_var_def(stream, table);
-            vector_push(body, var);
-        }
+            return parse_var_def(stream, table);
         else if (current->type == TOK_RETURN)
         {
             expect(stream, TOK_RETURN);
             AstNode *expr = parse_expression(stream, table);
 
             AstNode *ret_node = make_ast_ret(expr);
-            vector_push(body, ret_node);
             expect(stream, TOK_SEMICOLON);
+            return ret_node;
         }
         else if (current->type == TOK_IF)
-        {
-            AstNode *if_state = parse_if_statement(stream, table);
-            vector_push(body, if_state);
-        }
+            return parse_if_statement(stream, table);
         else if (current->type == TOK_ENUM)
         {
             expect(stream, TOK_ENUM);
             parse_enum(stream, table);
         }
+        else if(current->type == TOK_LBRACE)
+            return parse_comp_stmt(stream, table);
         else
         {
             AstNode *expr = parse_expression(stream, table);
-            vector_push(body, expr);
             expect(stream, TOK_SEMICOLON);
+            return expr;
         }
     }
-    return make_ast_stmt(body);
 }
 
 Vector *parse_func_params(TokenStream *stream, SymTab *table)
@@ -361,9 +362,7 @@ AstNode *parse_func_def(TokenStream *stream, SymTab *table)
     symtab_add(table, entry);
 
     // Parse function body
-    expect(stream, TOK_LBRACE);
-    AstNode *body = parse_statement(stream, table);
-    expect(stream, TOK_RBRACE);
+    AstNode *body = parse_comp_stmt(stream, table);
     return make_ast_func_def(func_name->value, body, params);
 }
 
@@ -396,11 +395,23 @@ AstNode *parse_var_def(TokenStream *stream, SymTab *table)
     return make_ast_var_def(var_name->value, init);
 }
 
-// Returns root AstNode representing program
-AstNode *parse(Vector *tokens, SymTab *table)
+Vector* parse_prog(TokenStream* stream, SymTab *table){
+    Token *curr;
+    AstNode* stmt;
+    Vector* prog = vector_new();
+    while((curr = current_token(stream)))
+    {
+        stmt = parse_statement(stream, table);
+        vector_push(prog, stmt);
+    }
+    return prog;
+}
+
+// Returns list of AstNode representing program
+Vector *parse(Vector *tokens, SymTab *table)
 {
     TokenStream *stream = make_token_stream(tokens);
-    AstNode *root = parse_statement(stream, table);
+    Vector *prog = parse_prog(stream, table);
     free(stream);
-    return root;
+    return prog;
 }

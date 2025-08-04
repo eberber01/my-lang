@@ -36,9 +36,9 @@ int main(int argc, char **argv)
         print_token((Token *)vector_get(tokens, i));
     }
 
-    AstNode *tree = parse(tokens, table);
+    Vector *prog = parse(tokens, table);
 
-    gen_asm(tree, table);
+    gen_asm(prog, table);
 
     fclose(f);
     // Bruh what is this

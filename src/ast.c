@@ -18,11 +18,11 @@ AstNode *make_ast_node(AstNodeType type, void *inner)
     return node;
 }
 
-AstNode *make_ast_stmt(Vector *body)
+AstNode *make_ast_comp_stmt(Vector *body)
 {
-    AstStatement *stmt = (AstStatement *)my_malloc(sizeof(AstStatement));
+    AstCompStmt *stmt = (AstCompStmt *)my_malloc(sizeof(AstCompStmt));
     stmt->body = body;
-    return make_ast_node(AST_STATEMENT, stmt);
+    return make_ast_node(AST_COMP_STMT, stmt);
 }
 
 AstNode *make_int_const(int value)

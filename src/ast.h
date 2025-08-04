@@ -11,7 +11,7 @@ typedef enum AstNodeType
     AST_VAR_DEF,
     AST_VAR_DEC,
     AST_IDENT,
-    AST_STATEMENT,
+    AST_COMP_STMT,
     AST_FUNC_CALL,
     AST_RET,
     AST_IF,
@@ -24,11 +24,11 @@ typedef struct AstNode
     void *as;
 } AstNode;
 
-typedef struct AstStatement
+typedef struct AstCompStmt
 {
     // List of AstNode Statements
     Vector *body;
-} AstStatement;
+} AstCompStmt;
 
 typedef struct AstIntConst
 {
@@ -89,7 +89,7 @@ void ast_free(AstNode *root);
 int ast_eval(AstNode *node);
 struct AstNode *make_ast_node(AstNodeType type, void *inner);
 
-AstNode *make_ast_stmt(Vector *body);
+AstNode *make_ast_comp_stmt(Vector *body);
 AstNode *make_int_const(int value);
 AstNode *make_ast_bin_exp(char *value, AstNode *left, AstNode *right);
 AstNode *make_ast_func_def(char *value, AstNode *body, Vector *params);

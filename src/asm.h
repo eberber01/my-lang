@@ -48,6 +48,6 @@ Register *load_register(Register *reg, int value, RISCV *_asm);
 
 Register *asm_eval(AstNode *node, SymTab *table, StackFrame *frame, RISCV *riscv);
 
-void gen_asm(AstNode *root, SymTab *table);
+void gen_asm(Vector *prog, SymTab *table);
 
 #endif

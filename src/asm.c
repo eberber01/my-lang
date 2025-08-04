@@ -353,14 +353,15 @@ Register *eval_ret(AstNode *node, SymTab *table, StackFrame *frame, RISCV *_asm)
     return NULL;
 }
 
-Register *eval_stmt(AstNode *node, SymTab *table, StackFrame *frame, RISCV *_asm)
+Register *eval_comp_stmt(AstNode *node, SymTab *table, StackFrame *frame, RISCV *_asm)
 {
-    AstStatement *stmt;
-    stmt = (AstStatement *)node->as;
+    AstCompStmt *comp_stmt;
+    comp_stmt = (AstCompStmt *)node->as;
 
-    for (int i = 0; i < stmt->body->length; i++)
+    for (int i = 0; i < comp_stmt->body->length; i++)
     {
-        asm_eval((AstNode *)vector_get(stmt->body, i), table, frame, _asm);
+        AstNode* stmt = (AstNode *)vector_get(comp_stmt->body, i);
+        asm_eval(stmt, table, frame, _asm);
     }
     return NULL;
 }
@@ -489,8 +490,8 @@ Register *asm_eval(AstNode *node, SymTab *table, StackFrame *frame, RISCV *_asm)
         return eval_if(node, table, frame, _asm);
     case AST_RET:
         return eval_ret(node, table, frame, _asm);
-    case AST_STATEMENT:
-        return eval_stmt(node, table, frame, _asm);
+    case AST_COMP_STMT:
+        return eval_comp_stmt(node, table, frame, _asm);
     case AST_INT_CONST:
         return eval_int_const(node, table, frame, _asm);
     case AST_FUNC_DEF:
@@ -529,10 +530,12 @@ void asm_free(RISCV *riscv)
 }
 
 // Generate Assembly file from AST
-void gen_asm(AstNode *root, SymTab *table)
+void gen_asm(Vector *prog, SymTab *table)
 {
     RISCV *_asm = make_riscv();
     asm_init(_asm);
-    asm_eval(root, table, NULL, _asm);
+    for(int i =0; i< prog->length; i++){
+        asm_eval((AstNode*)vector_get(prog, i), table, NULL, _asm);
+    }
     asm_free(_asm);
 }
