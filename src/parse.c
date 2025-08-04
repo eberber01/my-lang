@@ -263,15 +263,17 @@ void parse_enum(TokenStream *stream, SymTab *table)
     expect(stream, TOK_SEMICOLON);
 }
 
-AstNode *parse_comp_stmt(TokenStream *stream, SymTab *table){
+AstNode *parse_comp_stmt(TokenStream *stream, SymTab *table)
+{
 
     Token *current;
-    AstNode* stmt;
+    AstNode *stmt;
     Vector *body = vector_new();
 
     expect(stream, TOK_LBRACE);
-    while ((current = current_token(stream)) && current_token(stream)->type != TOK_RBRACE){
-        stmt = parse_statement(stream,table);
+    while ((current = current_token(stream)) && current_token(stream)->type != TOK_RBRACE)
+    {
+        stmt = parse_statement(stream, table);
         vector_push(body, stmt);
     }
     expect(stream, TOK_RBRACE);
@@ -303,7 +305,7 @@ AstNode *parse_statement(TokenStream *stream, SymTab *table)
             expect(stream, TOK_ENUM);
             parse_enum(stream, table);
         }
-        else if(current->type == TOK_LBRACE)
+        else if (current->type == TOK_LBRACE)
             return parse_comp_stmt(stream, table);
         else
         {
@@ -395,11 +397,12 @@ AstNode *parse_var_def(TokenStream *stream, SymTab *table)
     return make_ast_var_def(var_name->value, init);
 }
 
-Vector* parse_prog(TokenStream* stream, SymTab *table){
+Vector *parse_prog(TokenStream *stream, SymTab *table)
+{
     Token *curr;
-    AstNode* stmt;
-    Vector* prog = vector_new();
-    while((curr = current_token(stream)))
+    AstNode *stmt;
+    Vector *prog = vector_new();
+    while ((curr = current_token(stream)))
     {
         stmt = parse_statement(stream, table);
         vector_push(prog, stmt);

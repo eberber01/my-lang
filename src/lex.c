@@ -11,7 +11,7 @@
 // Parse each character in input and
 // return a Vector of tokens from contents
 // Uses Symbol table to get standard types
-Vector *tokenize(FILE *f, SymTab *table)
+Vector *tokenize(FILE *f)
 {
     char c;
     Vector *vector = vector_new();
@@ -109,7 +109,7 @@ Vector *tokenize(FILE *f, SymTab *table)
 
             if (is_ident_start(c))
             {
-                tokenize_ident(c, t, table, f);
+                tokenize_ident(c, t, f);
                 break;
             }
 
@@ -155,7 +155,7 @@ void tokenize_digit(char c, Token *token, FILE *f)
 }
 
 // Parse Identifier token
-void tokenize_ident(char c, Token *token, SymTab *table, FILE *f)
+void tokenize_ident(char c, Token *token, FILE *f)
 {
     String *ident = string_new();
     while (c && is_ident_char(c))
@@ -176,29 +176,17 @@ void tokenize_ident(char c, Token *token, SymTab *table, FILE *f)
     token->value = value;
     token->type = TOK_IDENT;
 
-    SymTabEntry *entry;
-    entry = symtab_get(table, value);
-
     // Handle Keywords
-    if (entry && entry->symbol == SYM_KEYWORD)
-    {
+    if (!strcmp(value, "int"))
         token->type = TOK_TYPE;
-        if (!strcmp(value, "return"))
-        {
-            token->type = TOK_RETURN;
-        }
-        if (!strcmp(value, "if"))
-        {
-            token->type = TOK_IF;
-        }
-        if (!strcmp(value, "enum"))
-        {
-            token->type = TOK_ENUM;
-        }
-        // Set value to Pre defined string
-        token->value = entry->key;
-        free(value);
-    }
+    else if (!strcmp(value, "void"))
+        token->type = TOK_TYPE;
+    else if (!strcmp(value, "return"))
+        token->type = TOK_RETURN;
+    else if (!strcmp(value, "if"))
+        token->type = TOK_IF;
+    else if (!strcmp(value, "enum"))
+        token->type = TOK_ENUM;
 }
 
 // Put back character in stream

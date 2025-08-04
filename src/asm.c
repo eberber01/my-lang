@@ -360,7 +360,7 @@ Register *eval_comp_stmt(AstNode *node, SymTab *table, StackFrame *frame, RISCV 
 
     for (int i = 0; i < comp_stmt->body->length; i++)
     {
-        AstNode* stmt = (AstNode *)vector_get(comp_stmt->body, i);
+        AstNode *stmt = (AstNode *)vector_get(comp_stmt->body, i);
         asm_eval(stmt, table, frame, _asm);
     }
     return NULL;
@@ -534,8 +534,9 @@ void gen_asm(Vector *prog, SymTab *table)
 {
     RISCV *_asm = make_riscv();
     asm_init(_asm);
-    for(int i =0; i< prog->length; i++){
-        asm_eval((AstNode*)vector_get(prog, i), table, NULL, _asm);
+    for (int i = 0; i < prog->length; i++)
+    {
+        asm_eval((AstNode *)vector_get(prog, i), table, NULL, _asm);
     }
     asm_free(_asm);
 }
