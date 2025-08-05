@@ -8,18 +8,43 @@
 #include "symtab.h"
 #include "util.h"
 
+
+
+char *read_file(char *filename, size_t *length) {
+    FILE *f = fopen(filename, "rb");
+    if (!f) return NULL;
+
+    fseek(f, 0, SEEK_END);
+    long size = ftell(f);
+    rewind(f);
+
+    char *buffer = malloc(size + 1); // +1 for null-terminator
+    fread(buffer, 1, size, f);
+    buffer[size] = '\0';
+    fclose(f);
+
+    if (length) *length = size;
+    return buffer;
+}
+
+
 // Parse each character in input and
 // return a Vector of tokens from contents
 // Uses Symbol table to get standard types
-Vector *tokenize(FILE *f)
+Vector *tokenize(char* input, size_t length)
 {
     char c;
     Vector *vector = vector_new();
 
+    Lexer* lexer = (Lexer*)my_malloc(sizeof(Lexer));
+    lexer->curr = 0;
+    lexer->input = input;
+    lexer->length = length;
+
     int pos = 1;
     int line = 1;
     char peek;
-    while ((c = next(f)))
+    while ((c = next(lexer)))
     {
         Token *t = my_malloc(sizeof(Token));
         switch (c)
@@ -38,19 +63,17 @@ Vector *tokenize(FILE *f)
             break;
         case '/':
             // Handle Comments
-            if ((peek = next(f)) == '/')
+            if ((peek = next(lexer)) == '/')
             {
-                while (peek && peek != '\n')
-                {
-                    peek = next(f);
-                }
+                while ((peek = next(lexer)) && peek != '\n');
+                
                 c = peek;
                 line += 1;
                 pos = 1;
             }
             else
             {
-                back(f);
+                back(lexer);
                 t->type = TOK_DIV;
                 t->value = "/";
             }
@@ -76,15 +99,14 @@ Vector *tokenize(FILE *f)
             t->value = "}";
             break;
         case '=':
-            char peek;
-            if ((peek = next(f)) == '=')
+            if ((peek = next(lexer)) == '=')
             {
                 t->type = TOK_EQUAL;
                 t->value = "==";
             }
             else
             {
-                back(f);
+                back(lexer);
                 t->type = TOK_ASSIGN;
                 t->value = "=";
             }
@@ -103,13 +125,13 @@ Vector *tokenize(FILE *f)
 
             if (isdigit(c))
             {
-                tokenize_digit(c, t, f);
+                tokenize_digit(c, t, lexer);
                 break;
             }
 
             if (is_ident_start(c))
             {
-                tokenize_ident(c, t, f);
+                tokenize_ident(c, t, lexer);
                 break;
             }
 
@@ -133,7 +155,7 @@ Vector *tokenize(FILE *f)
 }
 
 // Parse digit token
-void tokenize_digit(char c, Token *token, FILE *f)
+void tokenize_digit(char c, Token *token, Lexer *lexer)
 {
     int size = 1;
     int digit = 0;
@@ -142,32 +164,32 @@ void tokenize_digit(char c, Token *token, FILE *f)
     {
         digit *= multiplier;
         digit += c - '0';
-        c = next(f);
+        c = next(lexer);
         size += 1;
     }
     // Put back last char if end of stream
     if (c != '\0')
     {
-        back(f);
+        back(lexer);
     }
     token->value = int_to_str(digit, size);
     token->type = TOK_NUM;
 }
 
 // Parse Identifier token
-void tokenize_ident(char c, Token *token, FILE *f)
+void tokenize_ident(char c, Token *token, Lexer *lexer)
 {
     String *ident = string_new();
     while (c && is_ident_char(c))
     {
         string_append(ident, c);
-        c = next(f);
+        c = next(lexer);
     }
 
     // Put back last char if end of stream
     if (c != '\0')
     {
-        back(f);
+        back(lexer);
     }
 
     char *value = as_str(ident);
@@ -190,21 +212,18 @@ void tokenize_ident(char c, Token *token, FILE *f)
 }
 
 // Put back character in stream
-void back(FILE *f)
+void back(Lexer *lexer)
 {
-    fseek(f, -sizeof(char), SEEK_CUR);
+    lexer->curr--;
 }
 
 // Get next character in stream
-char next(FILE *f)
+char next(Lexer *lexer)
 {
-    char c;
-    int n = fread(&c, sizeof(char), 1, f);
-    if (n < 1)
-    {
+    if(lexer->curr >= lexer->length){
         return '\0';
     }
-    return c;
+    return lexer->input[lexer->curr++];
 }
 
 Token *make_token(int type, char *value, int pos, int line)

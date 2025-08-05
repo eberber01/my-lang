@@ -49,6 +49,7 @@ add_executable(
   ../src/test/vector.cpp
   ../src/test/string.cpp
   ../src/test/parse.cpp
+  ../src/test/lex.cpp
 )
 
 target_link_libraries(

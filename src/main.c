@@ -18,18 +18,12 @@ int main(int argc, char **argv)
     }
     char *file_name = argv[1];
     printf("%s\n", file_name);
-
-    FILE *f = fopen(file_name, "r");
-    if (f == NULL)
-    {
-        printf("Failed to open file.");
-        return 1;
-    }
-
+    size_t input_length = 0; 
+    char* input = read_file(file_name, &input_length);
     SymTab *table = symtab_new();
     symtab_init(table);
 
-    Vector *tokens = tokenize(f);
+    Vector *tokens = tokenize(input, input_length);
 
     for (int i = 0; i < tokens->length; i++)
     {
@@ -40,7 +34,6 @@ int main(int argc, char **argv)
 
     gen_asm(prog, table);
 
-    fclose(f);
     // Bruh what is this
     //  for(int i =0; i < tokens->length; i++){
     //    Token* token = (Token*)vector_get(tokens, i);
