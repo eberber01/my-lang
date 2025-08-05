@@ -7,6 +7,13 @@
 #include "symtab.h"
 #include "util.h"
 
+typedef struct Lexer{
+    char* input;
+    int curr;
+    size_t length;
+} Lexer;
+
+
 typedef enum TokenType
 {
     TOK_IDENT,
@@ -45,17 +52,19 @@ Token *make_token(int type, char *value, int pos, int line);
 
 int is_operator(char c);
 
-char next(FILE *f);
+char next(Lexer *Lexer);
 
-void tokenize_digit(char c, Token *token, FILE *f);
+void tokenize_digit(char c, Token *token, Lexer *lexer);
 
 int is_ident_start(char c);
 
 int is_ident_char(char c);
 
-void tokenize_ident(char c, Token *token, FILE *f);
+void tokenize_ident(char c, Token *token,Lexer *lexer);
 
-Vector *tokenize(FILE *f);
+char* read_file(char* file_name, size_t *length);
 
-void back(FILE *);
+Vector *tokenize(char* input, size_t input_length);
+
+void back(Lexer *lexer);
 #endif
