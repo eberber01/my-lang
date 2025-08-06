@@ -7,41 +7,46 @@ extern "C"
 #include "../util.h"
 }
 
-#define PUSH(v, type, value) vector_push(v, make_token(type, value, 0, 0))
-
-TEST(Lex, Basic)
+struct LexCase
 {
-    char* input = "void main(){ int x = 10; x = hello; }";
+    const char *input;
+    std::vector<std::pair<int, const char *>> expected;
+};
 
-    Vector* v = vector_new();
-    PUSH(v, TOK_TYPE, "void");
-    PUSH(v, TOK_IDENT, "main");
-    PUSH(v, TOK_LPAREN, "(");
-    PUSH(v, TOK_RPAREN, ")");
-    PUSH(v, TOK_LBRACE, "{");
-    PUSH(v, TOK_TYPE, "int");
-    PUSH(v, TOK_IDENT, "x");
-    PUSH(v, TOK_ASSIGN, "=");
-    PUSH(v, TOK_NUM, "10");
-    PUSH(v, TOK_SEMICOLON, ";");
-    PUSH(v, TOK_IDENT, "x");
-    PUSH(v, TOK_ASSIGN, "=");
-    PUSH(v, TOK_IDENT, "hello");
-    PUSH(v, TOK_SEMICOLON, ";");
-    PUSH(v, TOK_RBRACE, "}");
+class LexParamTest : public ::testing::TestWithParam<LexCase>
+{
+};
 
-    Vector* tokens = tokenize(input, strlen(input));
-    EXPECT_EQ(tokens->length, v->length);
-
-    Token* tok;
-    Token* exp;
-    for(int i =0; i< tokens->length; i++)
+TEST_P(LexParamTest, MatchesExpectedTokens)
+{
+    auto [in, expected] = GetParam();
+    Vector *tokens = tokenize(in, strlen(in));
+    ASSERT_EQ(tokens->length, expected.size());
+    for (size_t i = 0; i < expected.size(); ++i)
     {
-        tok = (Token*)vector_get(tokens, i);
-        exp = (Token*)vector_get(v, i);
-
-        EXPECT_EQ(tok->type, exp->type);
-        EXPECT_STREQ(tok->value, exp->value);
+        Token *t = (Token *)vector_get(tokens, i);
+        EXPECT_EQ(t->type, expected[i].first);
+        EXPECT_STREQ(t->value, expected[i].second);
+        free(t);
     }
-
+    free(tokens);
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    LexerTests, LexParamTest,
+    ::testing::Values(LexCase{"void main(){ int x=10; }",
+                              {{TOK_TYPE, "void"},
+                               {TOK_IDENT, "main"},
+                               {TOK_LPAREN, "("},
+                               {TOK_RPAREN, ")"},
+                               {TOK_LBRACE, "{"},
+                               {TOK_TYPE, "int"},
+                               {TOK_IDENT, "x"},
+                               {TOK_ASSIGN, "="},
+                               {TOK_NUM, "10"},
+                               {TOK_SEMICOLON, ";"},
+                               {TOK_RBRACE, "}"}}}
+
+                      ,
+                      LexCase{"//comment\nx=1;",
+                              {{TOK_IDENT, "x"}, {TOK_ASSIGN, "="}, {TOK_NUM, "1"}, {TOK_SEMICOLON, ";"}}}));

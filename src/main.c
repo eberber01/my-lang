@@ -18,8 +18,8 @@ int main(int argc, char **argv)
     }
     char *file_name = argv[1];
     printf("%s\n", file_name);
-    size_t input_length = 0; 
-    char* input = read_file(file_name, &input_length);
+    size_t input_length = 0;
+    char *input = read_file(file_name, &input_length);
     SymTab *table = symtab_new();
     symtab_init(table);
 
@@ -34,15 +34,20 @@ int main(int argc, char **argv)
 
     gen_asm(prog, table);
 
-    // Bruh what is this
-    //  for(int i =0; i < tokens->length; i++){
-    //    Token* token = (Token*)vector_get(tokens, i);
-    //    if( token->type == TOK_NUM  || token->type == TOK_IDENT ){
-    //      free(token->value);
-    //    }
-    //  }
+    for (int i = 0; i < tokens->length; i++)
+    {
+        Token *token = (Token *)vector_get(tokens, i);
+        if (token->type == TOK_NUM || token->type == TOK_IDENT)
+        {
+            free(token->value);
+        }
+        free(token);
+    }
+    free(tokens);
+
     // vector_free(tokens);
-    // ast_free(tree);
+    // for(int i = 0; i < prog->length; i++)
+    // ast_free((AstNode*)vector_get(prog, i));
     // symtab_free(table);
     return 0;
 }
