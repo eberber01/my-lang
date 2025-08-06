@@ -97,14 +97,11 @@ AstNode *make_ast_if(AstNode *expr, AstNode *body)
     return make_ast_node(AST_IF, if_stmt);
 }
 
-void _ast_free(AstNode *node)
-{
-}
-
 // void ast_free(AstNode* node){
 //     if(node == NULL){
-//         return  ;
+//         return;
 //     }
+
 //     if(node->body){
 //         for(int i=0 ; i < node->body->length ; i++){
 //             ast_free(vector_get(node->body,  i));

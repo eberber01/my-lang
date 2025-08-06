@@ -8,11 +8,11 @@
 #include "symtab.h"
 #include "util.h"
 
-
-
-char *read_file(char *filename, size_t *length) {
+char *read_file(char *filename, size_t *length)
+{
     FILE *f = fopen(filename, "rb");
-    if (!f) return NULL;
+    if (!f)
+        return NULL;
 
     fseek(f, 0, SEEK_END);
     long size = ftell(f);
@@ -23,20 +23,20 @@ char *read_file(char *filename, size_t *length) {
     buffer[size] = '\0';
     fclose(f);
 
-    if (length) *length = size;
+    if (length)
+        *length = size;
     return buffer;
 }
-
 
 // Parse each character in input and
 // return a Vector of tokens from contents
 // Uses Symbol table to get standard types
-Vector *tokenize(char* input, size_t length)
+Vector *tokenize(const char *input, size_t length)
 {
     char c;
     Vector *vector = vector_new();
 
-    Lexer* lexer = (Lexer*)my_malloc(sizeof(Lexer));
+    Lexer *lexer = (Lexer *)my_malloc(sizeof(Lexer));
     lexer->curr = 0;
     lexer->input = input;
     lexer->length = length;
@@ -65,8 +65,9 @@ Vector *tokenize(char* input, size_t length)
             // Handle Comments
             if ((peek = next(lexer)) == '/')
             {
-                while ((peek = next(lexer)) && peek != '\n');
-                
+                while ((peek = next(lexer)) && peek != '\n')
+                    ;
+
                 c = peek;
                 line += 1;
                 pos = 1;
@@ -220,7 +221,8 @@ void back(Lexer *lexer)
 // Get next character in stream
 char next(Lexer *lexer)
 {
-    if(lexer->curr >= lexer->length){
+    if (lexer->curr >= lexer->length)
+    {
         return '\0';
     }
     return lexer->input[lexer->curr++];
