@@ -69,14 +69,21 @@ typedef struct SymTab
 } SymTab;
 
 SymTabEntry *make_symtab_entry(char *key, TypeSpecifier type, SymbolType symbol);
+
 TableNode *make_node(TableNode *next, SymTabEntry *data);
-static uint64_t hash(const char *key);
+
 SymTabEntry *find(TableNode *node, char *key);
+
 void insert(TableNode **node, SymTabEntry *entry);
+
 void symtab_add(SymTab *table, SymTabEntry *entry);
+
 SymTabEntry *symtab_get(SymTab *table, char *key);
-SymTab *symtab_new();
+
+SymTab *symtab_new(void);
+
 void symtab_free(SymTab *table);
+
 void symtab_init(SymTab *table);
 
 #endif

@@ -1,4 +1,3 @@
-
 #ifndef UTIL_H
 #define UTIL_H
 #include <ctype.h>
@@ -32,21 +31,31 @@ typedef struct String
 } String;
 
 char *int_to_str(int num, int size);
-Vector *vector_new();
+
+Vector *vector_new(void);
+
 void vector_free(Vector *);
+
 void vector_push(Vector *vector, void *ptr);
 
 void string_free(String *string);
-String *string_new();
+
+String *string_new(void);
+
 void string_append(String *string, char c);
+
 char *as_str(String *string);
 
 void *vector_get(Vector *vector, size_t index);
 
 void *my_malloc(size_t bytes);
+
 void *my_realloc(void *ptr, size_t bytes);
 
 String *string(char *str);
+
 String *string_clone(String *string);
+
 bool string_eq(String *string, char *cmp);
+
 #endif

@@ -1,8 +1,8 @@
 #ifndef ASM_H
 #define ASM_H
+
 #include <stdbool.h>
 #include <stdio.h>
-
 #include "ast.h"
 #include "symtab.h"
 #include "util.h"
@@ -39,9 +39,13 @@ typedef struct RISCV
 Register *alloc_register(RISCV *_asm);
 
 void free_register(Register *reg);
+
 Register *reg_add(Register *reg1, Register *reg2, RISCV *_asm);
+
 Register *reg_sub(Register *reg1, Register *reg2, RISCV *_asm);
+
 Register *reg_mult(Register *, Register *reg2, RISCV *_asm);
+
 Register *reg_div(Register *, Register *reg2, RISCV *_asm);
 
 Register *load_register(Register *reg, int value, RISCV *_asm);
@@ -49,5 +53,7 @@ Register *load_register(Register *reg, int value, RISCV *_asm);
 Register *asm_eval(AstNode *node, SymTab *table, StackFrame *frame, RISCV *riscv);
 
 void gen_asm(Vector *prog, SymTab *table);
+
+RISCV *make_riscv(void);
 
 #endif
