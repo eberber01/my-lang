@@ -82,19 +82,31 @@ typedef struct AstIf
 } AstIf;
 
 void visit(AstNode *node);
+
 void ast_free(AstNode *root);
+
 int ast_eval(AstNode *node);
+
 struct AstNode *make_ast_node(AstNodeType type, void *inner);
 
 AstNode *make_ast_comp_stmt(Vector *body);
+
 AstNode *make_int_const(int value);
+
 AstNode *make_ast_bin_exp(char *value, AstNode *left, AstNode *right);
+
 AstNode *make_ast_func_def(char *value, AstNode *body, Vector *params);
+
 AstNode *make_ast_ident(char *value);
+
 AstNode *make_ast_ret(AstNode *expr);
+
 AstNode *make_ast_func_call(char *value, Vector *args);
+
 AstNode *make_ast_var_def(char *value, AstNode *expr);
+
 AstNode *make_ast_bool_expr(char *value, AstNode *left, AstNode *right);
+
 AstNode *make_ast_if(AstNode *expr, AstNode *body);
 
 #endif

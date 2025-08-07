@@ -99,7 +99,7 @@ AstNode *parse_term(TokenStream *stream, SymTab *table)
     return left;
 }
 
-int is_func_call_start(TokenStream *stream, SymTab *table)
+int is_func_call_start(TokenStream *stream)
 {
     Token *func_name = current_token(stream);
     Token *lparen = peek(stream, 1);
@@ -114,7 +114,7 @@ AstNode *parse_func_call(TokenStream *stream, SymTab *table)
 
     if (entry == NULL)
     {
-        fprintf(stderr, "Undefined function '%s' at line: %d\n", name->value, name->line);
+        fprintf(stderr, "Undefined function '%s' at line: %d\n", name_str, name->line);
         exit(1);
     }
 
@@ -163,7 +163,7 @@ AstNode *parse_factor(TokenStream *stream, SymTab *table)
     else if (current->type == TOK_IDENT)
     {
         char *value = as_str(current->value);
-        if (is_func_call_start(stream, table))
+        if (is_func_call_start(stream))
         {
             return parse_func_call(stream, table);
         }
@@ -238,12 +238,10 @@ void parse_enum(TokenStream *stream, SymTab *table)
 {
     Token *curr;
     Token *enum_ident;
-    Token *enum_name;
-    Token *peek_tok;
     SymTabEntry *entry;
     int enum_count = 0;
 
-    enum_name = expect(stream, TOK_IDENT);
+    expect(stream, TOK_IDENT);
     expect(stream, TOK_LBRACE);
 
     while ((curr = current_token(stream)) && curr->type != TOK_RBRACE)
@@ -318,6 +316,7 @@ AstNode *parse_statement(TokenStream *stream, SymTab *table)
             return expr;
         }
     }
+    return NULL;
 }
 
 Vector *parse_func_params(TokenStream *stream, SymTab *table)
@@ -332,7 +331,7 @@ Vector *parse_func_params(TokenStream *stream, SymTab *table)
         char *ts_str = as_str(param_type->value);
         TypeSpecifier param_ts = symtab_get(table, ts_str)->type;
         symtab_add(table, make_symtab_entry(as_str(param_name->value), param_ts, SYM_VARIABLE));
-        vector_push(params, ts_str);
+        vector_push(params, as_str(param_name->value));
 
         if (current_token(stream)->type == TOK_RPAREN)
         {

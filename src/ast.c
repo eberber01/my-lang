@@ -5,11 +5,6 @@
 
 #include "util.h"
 
-void print_ast_node(AstNode *node)
-{
-    // printf("<AST NODE TYPE=%d VALUE=%s >\n", node->type, node->value);
-}
-
 AstNode *make_ast_node(AstNodeType type, void *inner)
 {
     AstNode *node = (AstNode *)my_malloc(sizeof(AstNode));
@@ -99,71 +94,83 @@ AstNode *make_ast_if(AstNode *expr, AstNode *body)
 
 void ast_free(AstNode *node)
 {
+    AstCompStmt *comp_stmt;
+    AstIf *if_stmt;
+    AstVarDef *var_def;
+    AstBinExp *bin_exp;
+    AstIntConst *int_const;
+    AstFuncDef *func_def;
+    AstBoolExpr *bool_expr;
+    AstIdent *ident;
+    AstFuncCall *func_call;
+    AstRet *ret;
+
     if (node == NULL)
         return;
     switch (node->type)
     {
     case AST_COMP_STMT:
-        AstCompStmt *comp_stmt = (AstCompStmt *)node->as;
-        for (int i = 0; i < comp_stmt->body->length; i++)
+        comp_stmt = (AstCompStmt *)node->as;
+        for (size_t i = 0; i < comp_stmt->body->length; i++)
             ast_free(vector_get(comp_stmt->body, i));
 
         vector_free(comp_stmt->body);
         free(comp_stmt);
         break;
     case AST_IF:
-        AstIf *if_stmt = (AstIf *)node->as;
+        if_stmt = (AstIf *)node->as;
         ast_free(if_stmt->body);
         ast_free(if_stmt->expr);
         free(if_stmt);
         break;
     case AST_VAR_DEF:
-        AstVarDef *var_def = (AstVarDef *)node->as;
+        var_def = (AstVarDef *)node->as;
         ast_free(var_def->expr);
         free(var_def->value);
         free(var_def);
         break;
     case AST_BIN_EXP:
-        AstBinExp *bin_exp = (AstBinExp *)node->as;
+        bin_exp = (AstBinExp *)node->as;
         ast_free(bin_exp->left);
         ast_free(bin_exp->right);
         free(bin_exp->value);
         free(bin_exp);
         break;
     case AST_INT_CONST:
-        AstIntConst *int_const = (AstIntConst *)node->as;
+        int_const = (AstIntConst *)node->as;
         free(int_const);
         break;
     case AST_FUNC_DEF:
-        AstFuncDef *func_def = (AstFuncDef *)node->as;
-        for (int i = 0; i < func_def->params->length; i++)
+        func_def = (AstFuncDef *)node->as;
+        for (size_t i = 0; i < func_def->params->length; i++)
             free(vector_get(func_def->params, i));
         vector_free(func_def->params);
         ast_free(func_def->body);
+        free(func_def->value);
         free(func_def);
         break;
     case AST_BOOL_EXPR:
-        AstBoolExpr *bool_expr = (AstBoolExpr *)node->as;
+        bool_expr = (AstBoolExpr *)node->as;
         ast_free(bool_expr->left);
         ast_free(bool_expr->right);
         free(bool_expr->value);
         free(bool_expr);
         break;
     case AST_IDENT:
-        AstIdent *ident = (AstIdent *)node->as;
+        ident = (AstIdent *)node->as;
         free(ident->value);
         free(ident);
         break;
     case AST_FUNC_CALL:
-        AstFuncCall *func_call = (AstFuncCall *)node->as;
+        func_call = (AstFuncCall *)node->as;
         free(func_call->value);
-        for (int i = 0; i < func_call->args->length; i++)
+        for (size_t i = 0; i < func_call->args->length; i++)
             ast_free((AstNode *)vector_get(func_call->args, i));
         vector_free(func_call->args);
         free(func_call);
         break;
     case AST_RET:
-        AstRet *ret = (AstRet *)node->as;
+        ret = (AstRet *)node->as;
         ast_free(ret->expr);
         free(ret);
         break;
@@ -173,4 +180,4 @@ void ast_free(AstNode *node)
     }
 
     free(node);
-}
+}    

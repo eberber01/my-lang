@@ -105,7 +105,7 @@ SymTabEntry *symtab_get(SymTab *table, char *key)
     return find(*node, key);
 }
 
-SymTab *symtab_new()
+SymTab *symtab_new(void)
 {
     SymTab *table = my_malloc(sizeof(SymTab));
     TableNode **map = calloc(sizeof(TableNode *), TABLE_SIZE);
@@ -118,7 +118,7 @@ SymTab *symtab_new()
 
 void symtab_free(SymTab *table)
 {
-    for (int i = 0; i < table->size; i++)
+    for (size_t i = 0; i < table->size; i++)
     {
         TableNode *tmp;
         TableNode *curr = table->map[i];

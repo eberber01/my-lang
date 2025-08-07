@@ -258,7 +258,7 @@ int is_ident_start(char c)
 void free_tokens(Vector *tokens)
 {
     Token *token;
-    for (int i = 0; i < tokens->length; i++)
+    for (size_t i = 0; i < tokens->length; i++)
     {
         token = (Token *)vector_get(tokens, i);
         string_free(token->value);

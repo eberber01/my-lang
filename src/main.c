@@ -18,7 +18,7 @@ void my_lang(char *file_name)
 
     Vector *tokens = tokenize(input, input_length);
 
-    for (int i = 0; i < tokens->length; i++)
+    for (size_t i = 0; i < tokens->length; i++)
         print_token((Token *)vector_get(tokens, i));
 
     Vector *prog = parse(tokens, table);
@@ -27,7 +27,7 @@ void my_lang(char *file_name)
 
     gen_asm(prog, table);
 
-    for (int i = 0; i < prog->length; i++)
+    for (size_t i = 0; i < prog->length; i++)
         ast_free((AstNode *)vector_get(prog, i));
 
     symtab_free(table);

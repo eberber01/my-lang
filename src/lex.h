@@ -9,9 +9,9 @@
 
 typedef struct Lexer
 {
-    char *input;
+    const char *input;
     int curr;
-    size_t length;
+    int length;
 } Lexer;
 
 typedef enum TokenType
@@ -67,5 +67,7 @@ char *read_file(char *file_name, size_t *length);
 Vector *tokenize(const char *input, size_t input_length);
 
 void back(Lexer *lexer);
+
 void free_tokens(Vector *tokens);
+
 #endif
