@@ -4,12 +4,9 @@
 typedef enum AstNodeType
 {
     AST_INT_CONST,
-    AST_IDENTIFIER,
     AST_BIN_EXP,
     AST_FUNC_DEF,
-    AST_FUNC_DEC,
     AST_VAR_DEF,
-    AST_VAR_DEC,
     AST_IDENT,
     AST_COMP_STMT,
     AST_FUNC_CALL,

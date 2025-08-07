@@ -117,12 +117,10 @@ void *vector_get(Vector *vector, size_t index)
     return vector->array[index];
 }
 
+// Caller must free entries in vector
+// before calling this function
 void vector_free(Vector *vector)
 {
-    for (int i = 0; i < vector->length; i++)
-    {
-        free(vector->array[i]);
-    }
     free(vector->array);
     free(vector);
 }
@@ -144,6 +142,44 @@ String *string_new()
     string->vector = vector;
 
     return string;
+}
+
+String *string(char *str)
+{
+    String *s = string_new();
+    int i = 0;
+    while (str[i] != '\0')
+    {
+        string_append(s, str[i]);
+        i++;
+    }
+    return s;
+}
+
+String *string_clone(String *string)
+{
+    String *s = string_new();
+    char *c;
+    for (int i = 0; i < string->length; i++)
+    {
+        c = (char *)vector_get(string->vector, i);
+        string_append(s, *c);
+    }
+    return s;
+}
+
+bool string_eq(String *string, char *cmp)
+{
+    if (string->length != strlen(cmp))
+        return false;
+    char *c;
+    for (int i = 0; i < string->length; i++)
+    {
+        c = (char *)vector_get(string->vector, i);
+        if (*c != cmp[i])
+            return false;
+    }
+    return true;
 }
 
 void string_append(String *string, char c)

@@ -6,32 +6,33 @@ extern "C"
 #include "../parse.h"
 #include "../symtab.h"
 #include "../util.h"
+#include <stdio.h>
 }
 
 TEST(Parse, Variable)
 {
-    Vector *v;
-    TokenStream *s;
+    Vector *tokens;
+    TokenStream *stream;
     SymTab *table;
     AstNode *var;
 
-    v = vector_new();
+    tokens = vector_new();
     table = symtab_new();
     symtab_init(table);
 
-    vector_push(v, make_token(TOK_TYPE, (char *)"int", 0, 0));
-    vector_push(v, make_token(TOK_IDENT, (char *)"var", 0, 0));
-    vector_push(v, make_token(TOK_ASSIGN, (char *)"=", 0, 0));
-    vector_push(v, make_token(TOK_NUM, (char *)"10", 0, 0));
+    vector_push(tokens, make_token(TOK_TYPE, string("int"), 0, 0));
+    vector_push(tokens, make_token(TOK_IDENT, string("var"), 0, 0));
+    vector_push(tokens, make_token(TOK_ASSIGN, string("="), 0, 0));
+    vector_push(tokens, make_token(TOK_NUM, string("10"), 0, 0));
 
-    s = make_token_stream(v);
+    stream = make_token_stream(tokens);
 
-    var = parse_var_def(s, table);
+    var = parse_var_def(stream, table);
 
     EXPECT_EQ(AST_VAR_DEF, var->type);
 
     symtab_free(table);
-    vector_free(v);
-    free(s);
-    // ast_free(var);
+    free_tokens(tokens);
+    free(stream);
+    ast_free(var);
 }

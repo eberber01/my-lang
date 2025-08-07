@@ -25,9 +25,12 @@ TEST_P(LexParamTest, MatchesExpectedTokens)
     for (size_t i = 0; i < expected.size(); ++i)
     {
         Token *t = (Token *)vector_get(tokens, i);
+        char *str = as_str(t->value);
         EXPECT_EQ(t->type, expected[i].first);
-        EXPECT_STREQ(t->value, expected[i].second);
+        EXPECT_STREQ(str, expected[i].second);
+        string_free(t->value);
         free(t);
+        free(str);
     }
     free(tokens);
 }

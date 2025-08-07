@@ -127,21 +127,8 @@ void symtab_free(SymTab *table)
         {
             SymbolType sym = curr->data->symbol;
 
-            if (sym == SYM_FUNCTION)
-            {
-                // Vector* params = curr->data->params;
-                // Free params vector
-                // free(params->array);
-                // free(params);
-
-                // Free Stack Frame
-                // StackFrame* frame = curr->data->frame;
-                // Free varaiables manually
-                // free(frame->variables->array);
-                // free(frame->variables);
-
-                // free(curr->data->frame);
-            }
+            if (sym != SYM_KEYWORD)
+                free(curr->data->key);
 
             // Free  Symbol entry
             free(curr->data);
