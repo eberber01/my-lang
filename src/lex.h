@@ -41,14 +41,14 @@ typedef enum TokenType
 typedef struct Token
 {
     TokenType type;
-    char *value;
+    String *value;
     int pos;
     int line;
 } Token;
 
 void print_token(Token *t);
 
-Token *make_token(int type, char *value, int pos, int line);
+Token *make_token(int type, String *value, int pos, int line);
 
 int is_operator(char c);
 
@@ -67,4 +67,5 @@ char *read_file(char *file_name, size_t *length);
 Vector *tokenize(const char *input, size_t input_length);
 
 void back(Lexer *lexer);
+void free_tokens(Vector *tokens);
 #endif

@@ -30,7 +30,6 @@ char *read_file(char *filename, size_t *length)
 
 // Parse each character in input and
 // return a Vector of tokens from contents
-// Uses Symbol table to get standard types
 Vector *tokenize(const char *input, size_t length)
 {
     char c;
@@ -51,15 +50,15 @@ Vector *tokenize(const char *input, size_t length)
         {
         case '+':
             t->type = TOK_ADD;
-            t->value = "+";
+            t->value = string("+");
             break;
         case '-':
             t->type = TOK_SUB;
-            t->value = "-";
+            t->value = string("-");
             break;
         case '*':
             t->type = TOK_MULT;
-            t->value = "*";
+            t->value = string("*");
             break;
         case '/':
             // Handle Comments
@@ -76,45 +75,45 @@ Vector *tokenize(const char *input, size_t length)
             {
                 back(lexer);
                 t->type = TOK_DIV;
-                t->value = "/";
+                t->value = string("/");
             }
             break;
         case ';':
             t->type = TOK_SEMICOLON;
-            t->value = ";";
+            t->value = string(";");
             break;
         case '(':
             t->type = TOK_LPAREN;
-            t->value = "(";
+            t->value = string("(");
             break;
         case ')':
             t->type = TOK_RPAREN;
-            t->value = ")";
+            t->value = string(")");
             break;
         case '{':
             t->type = TOK_LBRACE;
-            t->value = "{";
+            t->value = string("{");
             break;
         case '}':
             t->type = TOK_RBRACE;
-            t->value = "}";
+            t->value = string("}");
             break;
         case '=':
             if ((peek = next(lexer)) == '=')
             {
                 t->type = TOK_EQUAL;
-                t->value = "==";
+                t->value = string("==");
             }
             else
             {
                 back(lexer);
                 t->type = TOK_ASSIGN;
-                t->value = "=";
+                t->value = string("=");
             }
             break;
         case ',':
             t->type = TOK_COMMA;
-            t->value = ",";
+            t->value = string(",");
             break;
         case ' ':
             break;
@@ -173,8 +172,10 @@ void tokenize_digit(char c, Token *token, Lexer *lexer)
     {
         back(lexer);
     }
-    token->value = int_to_str(digit, size);
+    char *value = int_to_str(digit, size);
+    token->value = string(value);
     token->type = TOK_NUM;
+    free(value);
 }
 
 // Parse Identifier token
@@ -193,22 +194,19 @@ void tokenize_ident(char c, Token *token, Lexer *lexer)
         back(lexer);
     }
 
-    char *value = as_str(ident);
-    string_free(ident);
-
-    token->value = value;
+    token->value = ident;
     token->type = TOK_IDENT;
 
     // Handle Keywords
-    if (!strcmp(value, "int"))
+    if (string_eq(ident, "int"))
         token->type = TOK_TYPE;
-    else if (!strcmp(value, "void"))
+    else if (string_eq(ident, "void"))
         token->type = TOK_TYPE;
-    else if (!strcmp(value, "return"))
+    else if (string_eq(ident, "return"))
         token->type = TOK_RETURN;
-    else if (!strcmp(value, "if"))
+    else if (string_eq(ident, "if"))
         token->type = TOK_IF;
-    else if (!strcmp(value, "enum"))
+    else if (string_eq(ident, "enum"))
         token->type = TOK_ENUM;
 }
 
@@ -228,7 +226,7 @@ char next(Lexer *lexer)
     return lexer->input[lexer->curr++];
 }
 
-Token *make_token(int type, char *value, int pos, int line)
+Token *make_token(int type, String *value, int pos, int line)
 {
     Token *t;
     t = my_malloc(sizeof(Token));
@@ -242,7 +240,9 @@ Token *make_token(int type, char *value, int pos, int line)
 
 void print_token(Token *t)
 {
-    printf("<TOKEN TYPE=%d VALUE=%s POS=%d LINE=%d>\n", t->type, t->value, t->pos, t->line);
+    char *str = as_str(t->value);
+    printf("<TOKEN TYPE=%d VALUE=%s POS=%d LINE=%d>\n", t->type, str, t->pos, t->line);
+    free(str);
 }
 
 int is_ident_char(char c)
@@ -253,4 +253,16 @@ int is_ident_char(char c)
 int is_ident_start(char c)
 {
     return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_';
+}
+
+void free_tokens(Vector *tokens)
+{
+    Token *token;
+    for (int i = 0; i < tokens->length; i++)
+    {
+        token = (Token *)vector_get(tokens, i);
+        string_free(token->value);
+        free(token);
+    }
+    vector_free(tokens);
 }

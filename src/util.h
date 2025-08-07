@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 #define VECTOR_INIT_SIZE 10
@@ -45,4 +46,7 @@ void *vector_get(Vector *vector, size_t index);
 void *my_malloc(size_t bytes);
 void *my_realloc(void *ptr, size_t bytes);
 
+String *string(char *str);
+String *string_clone(String *string);
+bool string_eq(String *string, char *cmp);
 #endif

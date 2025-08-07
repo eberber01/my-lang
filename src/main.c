@@ -9,15 +9,8 @@
 #include "symtab.h"
 #include "util.h"
 
-int main(int argc, char **argv)
+void my_lang(char *file_name)
 {
-    if (argc < 2)
-    {
-        printf("Please provide an input file.");
-        return 0;
-    }
-    char *file_name = argv[1];
-    printf("%s\n", file_name);
     size_t input_length = 0;
     char *input = read_file(file_name, &input_length);
     SymTab *table = symtab_new();
@@ -26,28 +19,28 @@ int main(int argc, char **argv)
     Vector *tokens = tokenize(input, input_length);
 
     for (int i = 0; i < tokens->length; i++)
-    {
         print_token((Token *)vector_get(tokens, i));
-    }
 
     Vector *prog = parse(tokens, table);
 
+    free_tokens(tokens);
+
     gen_asm(prog, table);
 
-    for (int i = 0; i < tokens->length; i++)
-    {
-        Token *token = (Token *)vector_get(tokens, i);
-        if (token->type == TOK_NUM || token->type == TOK_IDENT)
-        {
-            free(token->value);
-        }
-        free(token);
-    }
-    free(tokens);
+    for (int i = 0; i < prog->length; i++)
+        ast_free((AstNode *)vector_get(prog, i));
 
-    // vector_free(tokens);
-    // for(int i = 0; i < prog->length; i++)
-    // ast_free((AstNode*)vector_get(prog, i));
-    // symtab_free(table);
+    symtab_free(table);
+}
+
+int main(int argc, char **argv)
+{
+    if (argc < 2)
+    {
+        printf("Please provide an input file.");
+        return 0;
+    }
+    my_lang(argv[1]);
+
     return 0;
 }
