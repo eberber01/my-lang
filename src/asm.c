@@ -403,6 +403,7 @@ Register *eval_func_def(AstNode *node, SymTab *table, RISCV *_asm)
     {
         return_from_jump(_asm);
     }
+    free(f);
 
     return NULL;
 }
@@ -522,8 +523,15 @@ void asm_init(RISCV *riscv)
 void asm_free(RISCV *riscv)
 {
     fclose(riscv->out);
+    for(int i=0; i < 7; i++)
+        free(vector_get(riscv->temp, i));
+    for(int i=0; i < 8; i++)
+        free(vector_get(riscv->arg, i));
+    for(int i=0; i < 12; i++)
+        free(vector_get(riscv->save, i));
     vector_free(riscv->arg);
     vector_free(riscv->temp);
+    vector_free(riscv->save);
     free(riscv->sp);
     free(riscv->ret);
     free(riscv);

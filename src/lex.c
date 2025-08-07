@@ -151,6 +151,7 @@ Vector *tokenize(const char *input, size_t length)
             free(t);
         }
     }
+    free(lexer);
     return vector;
 }
 

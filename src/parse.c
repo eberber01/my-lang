@@ -164,7 +164,8 @@ AstNode *parse_factor(TokenStream *stream, SymTab *table)
     {
         char *value = as_str(current->value);
         if (is_func_call_start(stream))
-        {
+        {   
+            free(value);
             return parse_func_call(stream, table);
         }
 
@@ -333,6 +334,7 @@ Vector *parse_func_params(TokenStream *stream, SymTab *table)
         symtab_add(table, make_symtab_entry(as_str(param_name->value), param_ts, SYM_VARIABLE));
         vector_push(params, as_str(param_name->value));
 
+        free(ts_str);
         if (current_token(stream)->type == TOK_RPAREN)
         {
             break;
@@ -399,7 +401,7 @@ AstNode *parse_var_def(TokenStream *stream, SymTab *table)
     // Successfull parse add to table
     SymTabEntry *entry = make_symtab_entry(as_str(var_name->value), symtab_get(table, type_str)->type, SYM_VARIABLE);
     symtab_add(table, entry);
-
+    free(type_str);
     return make_ast_var_def(var_str, init);
 }
 

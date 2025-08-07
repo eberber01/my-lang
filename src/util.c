@@ -127,6 +127,8 @@ void vector_free(Vector *vector)
 
 void string_free(String *string)
 {
+    for(size_t i=0; i < string->length; i++)
+        free(vector_get(string->vector, i));
     vector_free(string->vector);
     free(string);
 }

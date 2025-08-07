@@ -29,7 +29,7 @@ void my_lang(char *file_name)
 
     for (size_t i = 0; i < prog->length; i++)
         ast_free((AstNode *)vector_get(prog, i));
-
+    vector_free(prog);
     symtab_free(table);
 }
 
