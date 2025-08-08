@@ -391,7 +391,7 @@ Register *eval_func_def(AstNode *node, SymTab *table, RISCV *_asm)
     }
     for (size_t i = 0; i < func_def->params->length; i++)
     {  
-        SymTabEntry *param = symtab_get(table, (char*)vector_get(func_def->params, i));
+        SymTabEntry *param = symtab_get(table, ((Param*)vector_get(func_def->params, i))->value);
         param->is_arg_loaded = true;
         param->arg_reg = i;
     }

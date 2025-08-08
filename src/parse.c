@@ -110,22 +110,12 @@ AstNode *parse_func_call(TokenStream *stream, SymTab *table)
 {
     Token *name = expect(stream, TOK_IDENT);
     char *name_str = as_str(name->value);
-    SymTabEntry *entry = symtab_get(table, name_str);
-
-    if (entry == NULL)
-    {
-        fprintf(stderr, "Undefined function '%s' at line: %d\n", name_str, name->line);
-        exit(1);
-    }
-
     expect(stream, TOK_LPAREN);
 
     Vector *args = vector_new();
-    Vector *params = entry->params;
     while (current_token(stream)->type != TOK_RPAREN)
     {
 
-        // TODO Double check arg types
         AstNode *expr = parse_expression(stream, table);
 
         vector_push(args, expr);
@@ -137,14 +127,8 @@ AstNode *parse_func_call(TokenStream *stream, SymTab *table)
 
         expect(stream, TOK_COMMA);
     }
-
-    if (params->length != args->length)
-    {
-        fprintf(stderr, "Mismatching args for function '%s' at line: %d\n", name_str, name->line);
-        exit(1);
-    }
-
     expect(stream, TOK_RPAREN);
+
     return make_ast_func_call(name_str, args);
 }
 
@@ -167,12 +151,6 @@ AstNode *parse_factor(TokenStream *stream, SymTab *table)
         {   
             free(value);
             return parse_func_call(stream, table);
-        }
-
-        if (symtab_get(table, value) == NULL)
-        {
-            perror("Cannot used undefined variable");
-            exit(1);
         }
         next_token(stream);
         return make_ast_ident(value);
@@ -320,7 +298,7 @@ AstNode *parse_statement(TokenStream *stream, SymTab *table)
     return NULL;
 }
 
-Vector *parse_func_params(TokenStream *stream, SymTab *table)
+Vector *parse_func_params(TokenStream *stream)
 {
     Vector *params = vector_new();
     Token *current;
@@ -330,11 +308,12 @@ Vector *parse_func_params(TokenStream *stream, SymTab *table)
         Token *param_name = expect(stream, TOK_IDENT);
 
         char *ts_str = as_str(param_type->value);
-        TypeSpecifier param_ts = symtab_get(table, ts_str)->type;
-        symtab_add(table, make_symtab_entry(as_str(param_name->value), param_ts, SYM_VARIABLE));
-        vector_push(params, as_str(param_name->value));
 
-        free(ts_str);
+        Param *param = (Param*)my_malloc(sizeof(param));
+        param->type = ts_str;
+        param->value = as_str(param_name->value);
+        vector_push(params, param);
+
         if (current_token(stream)->type == TOK_RPAREN)
         {
             break;
@@ -351,29 +330,17 @@ AstNode *parse_func_def(TokenStream *stream, SymTab *table)
     Token *func_name = expect(stream, TOK_IDENT);
 
     char *func_str = as_str(func_name->value);
-    // Check if symbol exists in table
-    if (symtab_get(table, func_str))
-    {
-        fprintf(stderr, "Redefinition of function '%s' at line: %d\n", func_str, func_name->line);
-        exit(1);
-    }
 
     // Parse function args
     expect(stream, TOK_LPAREN);
-    Vector *params = parse_func_params(stream, table);
+    Vector *params = parse_func_params(stream);
     expect(stream, TOK_RPAREN);
 
     char *ts_name = as_str(func_type->value);
-    // Insert params into symbol table
-    TypeSpecifier ret_type = symtab_get(table, ts_name)->type;
-    free(ts_name);
-    SymTabEntry *entry = make_symtab_entry(as_str(func_name->value), ret_type, SYM_FUNCTION);
-    entry->params = params;
-    symtab_add(table, entry);
 
     // Parse function body
     AstNode *body = parse_comp_stmt(stream, table);
-    return make_ast_func_def(func_str, body, params);
+    return make_ast_func_def(func_str, ts_name,  body, params);
 }
 
 AstNode *parse_var_def(TokenStream *stream, SymTab *table)
@@ -382,12 +349,6 @@ AstNode *parse_var_def(TokenStream *stream, SymTab *table)
     Token *var_name = expect(stream, TOK_IDENT);
     char *var_str = as_str(var_name->value);
     char *type_str = as_str(var_type->value);
-    // Check if symbol exists in table
-    if (symtab_get(table, var_str))
-    {
-        perror("Redefinition of variable.");
-        exit(1);
-    }
 
     // Parse init expression
     AstNode *init = NULL;
@@ -398,11 +359,7 @@ AstNode *parse_var_def(TokenStream *stream, SymTab *table)
     }
     expect(stream, TOK_SEMICOLON);
 
-    // Successfull parse add to table
-    SymTabEntry *entry = make_symtab_entry(as_str(var_name->value), symtab_get(table, type_str)->type, SYM_VARIABLE);
-    symtab_add(table, entry);
-    free(type_str);
-    return make_ast_var_def(var_str, init);
+    return make_ast_var_def(var_str, type_str, init);
 }
 
 Vector *parse_prog(TokenStream *stream, SymTab *table)

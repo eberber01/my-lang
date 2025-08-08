@@ -48,6 +48,13 @@ str2int_errno str2int(int *out, char *s, int base)
     return STR2INT_SUCCESS;
 }
 
+char *str_clone(char* s)
+{
+    char* str = (char*)my_malloc(strlen(s) + 1);
+    strcpy(str, s);
+    return str;
+}
+
 void *my_malloc(size_t bytes)
 {
     void *ptr = malloc(bytes);

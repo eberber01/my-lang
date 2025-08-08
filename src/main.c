@@ -8,6 +8,7 @@
 #include "parse.h"
 #include "symtab.h"
 #include "util.h"
+#include "sema.h"
 
 void my_lang(char *file_name)
 {
@@ -24,7 +25,7 @@ void my_lang(char *file_name)
     Vector *prog = parse(tokens, table);
 
     free_tokens(tokens);
-
+    sema_check(prog, table);
     gen_asm(prog, table);
 
     for (size_t i = 0; i < prog->length; i++)

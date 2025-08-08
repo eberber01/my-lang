@@ -19,6 +19,8 @@ add_executable(my-lang
     ../src/parse.h
     ../src/symtab.c
     ../src/symtab.h
+    ../src/sema.c
+    ../src/sema.h
     ../src/util.c
     ../src/util.h
 )

@@ -1,6 +1,8 @@
 #ifndef AST_H
 #define AST_H
 #include "util.h"
+
+
 typedef enum AstNodeType
 {
     AST_INT_CONST,
@@ -14,6 +16,11 @@ typedef enum AstNodeType
     AST_IF,
     AST_BOOL_EXPR
 } AstNodeType;
+
+typedef struct Param{
+    char* value;
+    char* type;
+} Param;
 
 typedef struct AstNode
 {
@@ -42,6 +49,7 @@ typedef struct AstBinExp
 typedef struct AstFuncDef
 {
     char *value;
+    char *type;
     AstNode *body;
     Vector *params;
 } AstFuncDef;
@@ -65,6 +73,7 @@ typedef struct AstFuncCall
 typedef struct AstVarDef
 {
     char *value;
+    char *type;
     AstNode *expr;
 } AstVarDef;
 
@@ -95,7 +104,7 @@ AstNode *make_int_const(int value);
 
 AstNode *make_ast_bin_exp(char *value, AstNode *left, AstNode *right);
 
-AstNode *make_ast_func_def(char *value, AstNode *body, Vector *params);
+AstNode *make_ast_func_def(char *value, char* type, AstNode *body, Vector *params);
 
 AstNode *make_ast_ident(char *value);
 
@@ -103,7 +112,7 @@ AstNode *make_ast_ret(AstNode *expr);
 
 AstNode *make_ast_func_call(char *value, Vector *args);
 
-AstNode *make_ast_var_def(char *value, AstNode *expr);
+AstNode *make_ast_var_def(char *value, char* type, AstNode *expr);
 
 AstNode *make_ast_bool_expr(char *value, AstNode *left, AstNode *right);
 
