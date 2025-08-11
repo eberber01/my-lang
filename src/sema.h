@@ -8,9 +8,10 @@ typedef struct Scope Scope;
 struct Scope {
     Scope* parent;
     SymTab* table;
+    int id;
 };
 
-void sym_check(AstNode* node, SymTab *table);
+void sym_check(AstNode* node, StackFrame *frame, Scope *scope);
 
 void sema_check(Vector *prog, SymTab *table);
 

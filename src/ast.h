@@ -1,6 +1,7 @@
 #ifndef AST_H
 #define AST_H
 #include "util.h"
+#include "symtab.h"
 
 
 typedef enum AstNodeType
@@ -20,6 +21,7 @@ typedef enum AstNodeType
 typedef struct Param{
     char* value;
     char* type;
+    SymTabEntry *symbol;
 } Param;
 
 typedef struct AstNode
@@ -52,16 +54,20 @@ typedef struct AstFuncDef
     char *type;
     AstNode *body;
     Vector *params;
+    SymTabEntry *symbol;
 } AstFuncDef;
 
 typedef struct AstIdent
 {
     char *value;
+
+    SymTabEntry *symbol;
 } AstIdent;
 
 typedef struct AstRet
 {
     AstNode *expr;
+    char* func;
 } AstRet;
 
 typedef struct AstFuncCall
@@ -75,6 +81,7 @@ typedef struct AstVarDef
     char *value;
     char *type;
     AstNode *expr;
+    SymTabEntry *symbol;
 } AstVarDef;
 
 typedef struct AstBoolExpr

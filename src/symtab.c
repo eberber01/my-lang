@@ -21,6 +21,7 @@ SymTabEntry *make_symtab_entry(char *key, TypeSpecifier type, SymbolType symbol)
     entry->type = type;
     entry->symbol = symbol;
     entry->is_arg_loaded = false;
+    entry->scope_id = -1;
     return entry;
 }
 
@@ -114,6 +115,34 @@ SymTab *symtab_new(void)
     table->size = TABLE_SIZE;
 
     return table;
+}
+
+
+SymTab* symtab_clone(SymTab *table)
+{
+    SymTab* clone = symtab_new();
+    SymTabEntry* entry;
+    SymTabEntry* clone_entry;
+    for (size_t i = 0; i < table->size; i++)
+    {
+        TableNode *curr = table->map[i];
+
+        while (curr)
+        {
+            clone_entry = curr->data; 
+            entry = make_symtab_entry(clone_entry->key, clone_entry->type, clone_entry->symbol);
+
+            entry->params = clone_entry->params;
+            entry->offset = clone_entry->offset;
+            entry->const_value = clone_entry->const_value;
+            entry->scope_id = clone_entry->scope_id;
+
+            symtab_add(clone, entry);    
+
+            curr = curr->next;
+        }
+    }
+    return clone;
 }
 
 void symtab_free(SymTab *table)

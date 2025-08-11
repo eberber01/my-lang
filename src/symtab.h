@@ -15,7 +15,7 @@ typedef struct StackFrame
     size_t size;
     // Name of function
     char *func;
-} StackFrame;
+}  StackFrame;
 
 typedef enum SymbolType
 {
@@ -54,6 +54,10 @@ typedef struct SymTabEntry
 
     // Value for enum
     int const_value;
+
+    int scope_id;
+
+    StackFrame *frame;
 } SymTabEntry;
 
 typedef struct TableNode
@@ -85,5 +89,7 @@ SymTab *symtab_new(void);
 void symtab_free(SymTab *table);
 
 void symtab_init(SymTab *table);
+
+SymTab* symtab_clone(SymTab *table);
 
 #endif

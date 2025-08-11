@@ -26,12 +26,12 @@ void my_lang(char *file_name)
 
     free_tokens(tokens);
     sema_check(prog, table);
-    gen_asm(prog, table);
+    gen_asm(prog);
 
     for (size_t i = 0; i < prog->length; i++)
         ast_free((AstNode *)vector_get(prog, i));
     vector_free(prog);
-    symtab_free(table);
+    //symtab_free(table);
 }
 
 int main(int argc, char **argv)

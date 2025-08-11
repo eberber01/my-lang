@@ -8,7 +8,6 @@
 #include "util.h"
 
 #define REGISTER_SIZE 4
-#define INT_SIZE 4
 
 typedef struct Register
 {
@@ -50,9 +49,9 @@ Register *reg_div(Register *, Register *reg2, RISCV *_asm);
 
 Register *load_register(Register *reg, int value, RISCV *_asm);
 
-Register *asm_eval(AstNode *node, SymTab *table, StackFrame *frame, RISCV *riscv);
+Register *asm_eval(AstNode *node, RISCV *riscv);
 
-void gen_asm(Vector *prog, SymTab *table);
+void gen_asm(Vector *prog);
 
 RISCV *make_riscv(void);
 

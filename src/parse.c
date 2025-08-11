@@ -309,7 +309,7 @@ Vector *parse_func_params(TokenStream *stream)
 
         char *ts_str = as_str(param_type->value);
 
-        Param *param = (Param*)my_malloc(sizeof(param));
+        Param *param = (Param*)my_malloc(sizeof(Param));
         param->type = ts_str;
         param->value = as_str(param_name->value);
         vector_push(params, param);
