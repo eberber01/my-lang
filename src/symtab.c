@@ -117,26 +117,16 @@ SymTab *symtab_new(void)
     return table;
 }
 
-
+//Creates a new shallow clone of table
 SymTab* symtab_clone(SymTab *table)
 {
     SymTab* clone = symtab_new();
-    //SymTabEntry* entry;
-    //SymTabEntry* clone_entry;
     for (size_t i = 0; i < table->size; i++)
     {
         TableNode *curr = table->map[i];
 
         while (curr)
         {
-            //clone_entry = curr->data; 
-            // entry = make_symtab_entry(clone_entry->key, clone_entry->type, clone_entry->symbol);
-
-            // entry->params = clone_entry->params;
-            // entry->offset = clone_entry->offset;
-            // entry->const_value = clone_entry->const_value;
-            // entry->scope_id = clone_entry->scope_id;
-
             symtab_add(clone, curr->data);    
 
             curr = curr->next;
