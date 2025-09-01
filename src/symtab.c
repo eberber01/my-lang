@@ -109,7 +109,7 @@ SymTabEntry *symtab_get(SymTab *table, char *key)
 SymTab *symtab_new(void)
 {
     SymTab *table = my_malloc(sizeof(SymTab));
-    TableNode **map = calloc(sizeof(TableNode *), TABLE_SIZE);
+    TableNode **map = calloc(TABLE_SIZE,sizeof(TableNode *));
 
     table->map = map;
     table->size = TABLE_SIZE;
@@ -121,23 +121,23 @@ SymTab *symtab_new(void)
 SymTab* symtab_clone(SymTab *table)
 {
     SymTab* clone = symtab_new();
-    SymTabEntry* entry;
-    SymTabEntry* clone_entry;
+    //SymTabEntry* entry;
+    //SymTabEntry* clone_entry;
     for (size_t i = 0; i < table->size; i++)
     {
         TableNode *curr = table->map[i];
 
         while (curr)
         {
-            clone_entry = curr->data; 
-            entry = make_symtab_entry(clone_entry->key, clone_entry->type, clone_entry->symbol);
+            //clone_entry = curr->data; 
+            // entry = make_symtab_entry(clone_entry->key, clone_entry->type, clone_entry->symbol);
 
-            entry->params = clone_entry->params;
-            entry->offset = clone_entry->offset;
-            entry->const_value = clone_entry->const_value;
-            entry->scope_id = clone_entry->scope_id;
+            // entry->params = clone_entry->params;
+            // entry->offset = clone_entry->offset;
+            // entry->const_value = clone_entry->const_value;
+            // entry->scope_id = clone_entry->scope_id;
 
-            symtab_add(clone, entry);    
+            symtab_add(clone, curr->data);    
 
             curr = curr->next;
         }

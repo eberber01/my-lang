@@ -1,6 +1,7 @@
 #ifndef SEMA_H
 #define SEMA_H
 
+#include "ast.h"
 #include "symtab.h"
 
 typedef struct Scope Scope;

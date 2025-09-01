@@ -2,6 +2,7 @@
 #include "ast.h"
 #include "symtab.h"
 #include "util.h"
+#include <stdio.h>
 #include "sema.h"
 
 #define INT_SIZE 4
@@ -38,9 +39,9 @@ Scope* enter_scope(Scope *parent){
 }
 
 Scope* exit_scope(Scope *scope){
-    Scope *tmp =scope;
+    Scope *parent = scope->parent;
     free(scope);
-    return tmp->parent;
+    return parent;
 }
 
 
@@ -56,7 +57,7 @@ SymTabEntry *scope_lookup(Scope *scope, char *key){
     Scope *curr;
     SymTabEntry *entry;
     curr = scope;
-    while(curr)
+    while(curr != NULL)
     {
         entry = symtab_get(curr->table, key);
         if(entry) 
@@ -103,7 +104,6 @@ void sym_check(AstNode* node, StackFrame *frame, Scope *scope){
         break;
     case AST_VAR_DEF:
         var_def = (AstVarDef *)node->as;
-
         // Check if symbol exists in scope
         if (in_scope(scope, var_def->value))
         {
@@ -129,7 +129,6 @@ void sym_check(AstNode* node, StackFrame *frame, Scope *scope){
         break;
     case AST_FUNC_DEF:
         func_def = (AstFuncDef *)node->as;
-
         // Check if symbol exists in table
         if (in_scope(scope, func_def->value))
         {
@@ -215,6 +214,7 @@ void sema_check(Vector *prog, SymTab *table){
     AstNode* node;
     Scope* global = (Scope*)my_malloc(sizeof(Scope));
     global->table =table;
+    global->parent = NULL;
     global->id = 0;
     for(size_t i=0; i < prog->length; i++)
     {
