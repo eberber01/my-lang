@@ -115,11 +115,12 @@ Vector *tokenize(const char *input, size_t length)
             t->type = TOK_COMMA;
             t->value = string(",");
             break;
-        case ' ':
-            break;
         case '\n':
             line += 1;
             pos = 1;
+            break;
+        case '\t':
+        case ' ':
             break;
         default:
 
@@ -134,14 +135,14 @@ Vector *tokenize(const char *input, size_t length)
                 tokenize_ident(c, t, lexer);
                 break;
             }
-
+            printf("%d\n", c);
             perror("Unexpected char.");
             exit(1);
         }
         t->pos = pos;
         t->line = line;
         pos += 1;
-        if (c != ' ' && c != '\n')
+        if (c != ' ' && c != '\n' && c != '\t')
         {
             vector_push(vector, (void *)t);
         }
