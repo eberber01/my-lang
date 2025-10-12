@@ -1,7 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
 #include "asm.h"
 #include "ast.h"
 #include "lex.h"
@@ -9,6 +6,8 @@
 #include "symtab.h"
 #include "util.h"
 #include "sema.h"
+
+//#define DEBUG
 
 void my_lang(char *file_name)
 {
@@ -19,8 +18,10 @@ void my_lang(char *file_name)
 
     Vector *tokens = tokenize(input, input_length);
 
-    for (size_t i = 0; i < tokens->length; i++)
+    #ifdef DEBUG
+     for (size_t i = 0; i < tokens->length; i++)
         print_token((Token *)vector_get(tokens, i));
+    #endif
 
     Vector *prog = parse(tokens, table);
 
