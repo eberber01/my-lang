@@ -1,8 +1,7 @@
 #ifndef AST_H
 #define AST_H
-#include "util.h"
 #include "symtab.h"
-
+#include "util.h"
 
 typedef enum AstNodeType
 {
@@ -18,9 +17,10 @@ typedef enum AstNodeType
     AST_BOOL_EXPR
 } AstNodeType;
 
-typedef struct Param{
-    char* value;
-    char* type;
+typedef struct Param
+{
+    char *value;
+    char *type;
     SymTabEntry *symbol;
 } Param;
 
@@ -67,7 +67,7 @@ typedef struct AstIdent
 typedef struct AstRet
 {
     AstNode *expr;
-    char* func;
+    char *func;
 } AstRet;
 
 typedef struct AstFuncCall
@@ -111,7 +111,7 @@ AstNode *make_int_const(int value);
 
 AstNode *make_ast_bin_exp(char *value, AstNode *left, AstNode *right);
 
-AstNode *make_ast_func_def(char *value, char* type, AstNode *body, Vector *params);
+AstNode *make_ast_func_def(char *value, char *type, AstNode *body, Vector *params);
 
 AstNode *make_ast_ident(char *value);
 
@@ -119,7 +119,7 @@ AstNode *make_ast_ret(AstNode *expr);
 
 AstNode *make_ast_func_call(char *value, Vector *args);
 
-AstNode *make_ast_var_def(char *value, char* type, AstNode *expr);
+AstNode *make_ast_var_def(char *value, char *type, AstNode *expr);
 
 AstNode *make_ast_bool_expr(char *value, AstNode *left, AstNode *right);
 

@@ -1,11 +1,11 @@
 #ifndef ASM_H
 #define ASM_H
 
-#include <stdbool.h>
-#include <stdio.h>
 #include "ast.h"
 #include "symtab.h"
 #include "util.h"
+#include <stdbool.h>
+#include <stdio.h>
 
 #define REGISTER_SIZE 4
 

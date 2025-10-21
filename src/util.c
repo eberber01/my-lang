@@ -48,9 +48,9 @@ str2int_errno str2int(int *out, char *s, int base)
     return STR2INT_SUCCESS;
 }
 
-char *str_clone(char* s)
+char *str_clone(char *s)
 {
-    char* str = (char*)my_malloc(strlen(s) + 1);
+    char *str = (char *)my_malloc(strlen(s) + 1);
     strcpy(str, s);
     return str;
 }
@@ -134,7 +134,7 @@ void vector_free(Vector *vector)
 
 void string_free(String *string)
 {
-    for(size_t i=0; i < string->length; i++)
+    for (size_t i = 0; i < string->length; i++)
         free(vector_get(string->vector, i));
     vector_free(string->vector);
     free(string);

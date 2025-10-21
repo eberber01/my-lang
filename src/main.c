@@ -1,13 +1,13 @@
-#include <stdio.h>
 #include "asm.h"
 #include "ast.h"
 #include "lex.h"
 #include "parse.h"
+#include "sema.h"
 #include "symtab.h"
 #include "util.h"
-#include "sema.h"
+#include <stdio.h>
 
-//#define DEBUG
+// #define DEBUG
 
 void my_lang(char *file_name)
 {
@@ -18,10 +18,10 @@ void my_lang(char *file_name)
 
     Vector *tokens = tokenize(input, input_length);
 
-    #ifdef DEBUG
-     for (size_t i = 0; i < tokens->length; i++)
+#ifdef DEBUG
+    for (size_t i = 0; i < tokens->length; i++)
         print_token((Token *)vector_get(tokens, i));
-    #endif
+#endif
 
     Vector *prog = parse(tokens, table);
 
@@ -32,7 +32,7 @@ void my_lang(char *file_name)
     for (size_t i = 0; i < prog->length; i++)
         ast_free((AstNode *)vector_get(prog, i));
     vector_free(prog);
-    //symtab_free(table);
+    // symtab_free(table);
 }
 
 int main(int argc, char **argv)

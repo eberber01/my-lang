@@ -58,6 +58,6 @@ String *string_clone(String *string);
 
 bool string_eq(String *string, char *cmp);
 
-char *str_clone(char* s);
+char *str_clone(char *s);
 
 #endif

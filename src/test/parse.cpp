@@ -6,7 +6,6 @@ extern "C"
 #include "../parse.h"
 #include "../symtab.h"
 #include "../util.h"
-#include <stdio.h>
 }
 
 TEST(Parse, Variable)
@@ -20,10 +19,10 @@ TEST(Parse, Variable)
     table = symtab_new();
     symtab_init(table);
 
-    vector_push(tokens, make_token(TOK_TYPE, string((char*)"int"), 0, 0));
-    vector_push(tokens, make_token(TOK_IDENT, string((char*)"var"), 0, 0));
-    vector_push(tokens, make_token(TOK_ASSIGN, string((char*)"="), 0, 0));
-    vector_push(tokens, make_token(TOK_NUM, string((char*)"10"), 0, 0));
+    vector_push(tokens, make_token(TOK_TYPE, string((char *)"int"), 0, 0));
+    vector_push(tokens, make_token(TOK_IDENT, string((char *)"var"), 0, 0));
+    vector_push(tokens, make_token(TOK_ASSIGN, string((char *)"="), 0, 0));
+    vector_push(tokens, make_token(TOK_NUM, string((char *)"10"), 0, 0));
 
     stream = make_token_stream(tokens);
 

@@ -15,7 +15,7 @@ typedef struct StackFrame
     size_t size;
     // Name of function
     char *func;
-}  StackFrame;
+} StackFrame;
 
 typedef enum SymbolType
 {
@@ -90,6 +90,6 @@ void symtab_free(SymTab *table);
 
 void symtab_init(SymTab *table);
 
-SymTab* symtab_clone(SymTab *table);
+SymTab *symtab_clone(SymTab *table);
 
 #endif

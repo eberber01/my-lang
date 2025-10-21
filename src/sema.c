@@ -1,14 +1,12 @@
-#include "symtab.h"
+#include "sema.h"
 #include "ast.h"
 #include "symtab.h"
 #include "util.h"
 #include <stdio.h>
-#include "sema.h"
 
 #define INT_SIZE 4
 
 int scope_id = 0;
-
 
 StackFrame *make_stack_frame(char *func)
 {
@@ -19,7 +17,6 @@ StackFrame *make_stack_frame(char *func)
     return frame;
 }
 
-
 // Returns variable offset from current stack pointer
 int stackframe_add(StackFrame *frame)
 {
@@ -29,21 +26,21 @@ int stackframe_add(StackFrame *frame)
     return tmp;
 }
 
-
-Scope* enter_scope(Scope *parent){
-    Scope *child = (Scope*)my_malloc(sizeof(Scope));
+Scope *enter_scope(Scope *parent)
+{
+    Scope *child = (Scope *)my_malloc(sizeof(Scope));
     child->table = symtab_clone(parent->table);
     child->parent = parent;
     child->id = ++scope_id;
     return child;
 }
 
-Scope* exit_scope(Scope *scope){
+Scope *exit_scope(Scope *scope)
+{
     Scope *parent = scope->parent;
     free(scope);
     return parent;
 }
-
 
 void scope_add(Scope *scope, SymTabEntry *entry)
 {
@@ -51,16 +48,16 @@ void scope_add(Scope *scope, SymTabEntry *entry)
     symtab_add(scope->table, entry);
 }
 
-
-SymTabEntry *scope_lookup(Scope *scope, char *key){
+SymTabEntry *scope_lookup(Scope *scope, char *key)
+{
 
     Scope *curr;
     SymTabEntry *entry;
     curr = scope;
-    while(curr != NULL)
+    while (curr != NULL)
     {
         entry = symtab_get(curr->table, key);
-        if(entry) 
+        if (entry)
             return entry;
 
         curr = curr->parent;
@@ -74,7 +71,8 @@ bool in_scope(Scope *scope, char *key)
     return entry && entry->scope_id == scope->id;
 }
 
-void sym_check(AstNode* node, StackFrame *frame, Scope *scope){
+void sym_check(AstNode *node, StackFrame *frame, Scope *scope)
+{
 
     AstCompStmt *comp_stmt;
     AstIf *if_stmt;
@@ -92,9 +90,9 @@ void sym_check(AstNode* node, StackFrame *frame, Scope *scope){
     {
     case AST_COMP_STMT:
         comp_stmt = (AstCompStmt *)node->as;
-        Scope *child = enter_scope(scope); 
-        for(size_t i=0; i< comp_stmt->body->length; i++)
-            sym_check((AstNode*)vector_get(comp_stmt->body, i), frame, child);
+        Scope *child = enter_scope(scope);
+        for (size_t i = 0; i < comp_stmt->body->length; i++)
+            sym_check((AstNode *)vector_get(comp_stmt->body, i), frame, child);
         exit_scope(child);
         break;
     case AST_IF:
@@ -139,8 +137,9 @@ void sym_check(AstNode* node, StackFrame *frame, Scope *scope){
         frame = make_stack_frame(func_def->value);
 
         // Check params
-        for(size_t i = 0; i < func_def->params->length; i++){
-            Param * param = (Param*)vector_get(func_def->params, i);
+        for (size_t i = 0; i < func_def->params->length; i++)
+        {
+            Param *param = (Param *)vector_get(func_def->params, i);
             entry_type = scope_lookup(scope, param->type);
             entry = make_symtab_entry(str_clone(param->value), entry_type->type, SYM_VARIABLE);
             param->symbol = entry;
@@ -177,10 +176,10 @@ void sym_check(AstNode* node, StackFrame *frame, Scope *scope){
         ident->symbol = entry;
         break;
     case AST_FUNC_CALL:
-        func_call = (AstFuncCall*)node->as;
+        func_call = (AstFuncCall *)node->as;
         entry = scope_lookup(scope, func_call->value);
 
-        Vector* args = func_call->args;
+        Vector *args = func_call->args;
         Vector *params = entry->params;
         if (entry == NULL)
         {
@@ -194,13 +193,12 @@ void sym_check(AstNode* node, StackFrame *frame, Scope *scope){
             exit(1);
         }
 
-        for(size_t i=0; i < func_call->args->length; i++)
-            sym_check((AstNode*)vector_get(func_call->args, i), frame, scope);
-
+        for (size_t i = 0; i < func_call->args->length; i++)
+            sym_check((AstNode *)vector_get(func_call->args, i), frame, scope);
 
         break;
     case AST_RET:
-        ret = (AstRet*)node->as;
+        ret = (AstRet *)node->as;
         ret->func = frame->func;
         sym_check(ret->expr, frame, scope);
         break;
@@ -210,16 +208,16 @@ void sym_check(AstNode* node, StackFrame *frame, Scope *scope){
     }
 }
 
-void sema_check(Vector *prog, SymTab *table){
-    AstNode* node;
-    Scope* global = (Scope*)my_malloc(sizeof(Scope));
-    global->table =table;
+void sema_check(Vector *prog, SymTab *table)
+{
+    AstNode *node;
+    Scope *global = (Scope *)my_malloc(sizeof(Scope));
+    global->table = table;
     global->parent = NULL;
     global->id = 0;
-    for(size_t i=0; i < prog->length; i++)
+    for (size_t i = 0; i < prog->length; i++)
     {
-        node = (AstNode*)vector_get(prog, i);
+        node = (AstNode *)vector_get(prog, i);
         sym_check(node, NULL, global);
     }
-
 }

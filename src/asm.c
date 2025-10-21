@@ -48,7 +48,6 @@ RISCV *make_riscv(void)
     return riscv;
 }
 
-
 void sp_increase(size_t bytes, RISCV *_asm)
 {
     fprintf(_asm->out, "\taddi sp, sp, -%zu\n", bytes);
@@ -364,15 +363,14 @@ Register *eval_func_def(AstNode *node, RISCV *_asm)
     AstFuncDef *func_def;
     func_def = (AstFuncDef *)node->as;
     label_add(func_def->value, _asm);
-  
 
     if (func_def->params->length > 8)
     {
         perror("Max params reached");
     }
     for (size_t i = 0; i < func_def->params->length; i++)
-    {  
-        Param *param = (Param*)vector_get(func_def->params, i);
+    {
+        Param *param = (Param *)vector_get(func_def->params, i);
         param->symbol->is_arg_loaded = true;
         param->symbol->arg_reg = i;
     }
@@ -469,7 +467,7 @@ Register *asm_eval(AstNode *node, RISCV *_asm)
     case AST_RET:
         return eval_ret(node, _asm);
     case AST_COMP_STMT:
-        return eval_comp_stmt(node,  _asm);
+        return eval_comp_stmt(node, _asm);
     case AST_INT_CONST:
         return eval_int_const(node, _asm);
     case AST_FUNC_DEF:
@@ -500,11 +498,11 @@ void asm_init(RISCV *riscv)
 void asm_free(RISCV *riscv)
 {
     fclose(riscv->out);
-    for(int i=0; i < 7; i++)
+    for (int i = 0; i < 7; i++)
         free(vector_get(riscv->temp, i));
-    for(int i=0; i < 8; i++)
+    for (int i = 0; i < 8; i++)
         free(vector_get(riscv->arg, i));
-    for(int i=0; i < 12; i++)
+    for (int i = 0; i < 12; i++)
         free(vector_get(riscv->save, i));
     vector_free(riscv->arg);
     vector_free(riscv->temp);

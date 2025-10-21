@@ -148,7 +148,7 @@ AstNode *parse_factor(TokenStream *stream, SymTab *table)
     {
         char *value = as_str(current->value);
         if (is_func_call_start(stream))
-        {   
+        {
             free(value);
             return parse_func_call(stream, table);
         }
@@ -309,7 +309,7 @@ Vector *parse_func_params(TokenStream *stream)
 
         char *ts_str = as_str(param_type->value);
 
-        Param *param = (Param*)my_malloc(sizeof(Param));
+        Param *param = (Param *)my_malloc(sizeof(Param));
         param->type = ts_str;
         param->value = as_str(param_name->value);
         vector_push(params, param);
@@ -340,7 +340,7 @@ AstNode *parse_func_def(TokenStream *stream, SymTab *table)
 
     // Parse function body
     AstNode *body = parse_comp_stmt(stream, table);
-    return make_ast_func_def(func_str, ts_name,  body, params);
+    return make_ast_func_def(func_str, ts_name, body, params);
 }
 
 AstNode *parse_var_def(TokenStream *stream, SymTab *table)

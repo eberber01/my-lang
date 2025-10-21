@@ -36,7 +36,7 @@ AstNode *make_ast_bin_exp(char *value, AstNode *left, AstNode *right)
     return make_ast_node(AST_BIN_EXP, bin_exp);
 }
 
-AstNode *make_ast_func_def(char *value,char* type, AstNode *body, Vector *params)
+AstNode *make_ast_func_def(char *value, char *type, AstNode *body, Vector *params)
 {
     AstFuncDef *func_def = (AstFuncDef *)my_malloc(sizeof(AstFuncDef));
     func_def->body = body;
@@ -144,7 +144,8 @@ void ast_free(AstNode *node)
         break;
     case AST_FUNC_DEF:
         func_def = (AstFuncDef *)node->as;
-        for (size_t i = 0; i < func_def->params->length; i++){
+        for (size_t i = 0; i < func_def->params->length; i++)
+        {
             Param *param = vector_get(func_def->params, i);
             free(param->type);
             free(param->value);
@@ -187,4 +188,4 @@ void ast_free(AstNode *node)
     }
 
     free(node);
-}    
+}

@@ -109,7 +109,7 @@ SymTabEntry *symtab_get(SymTab *table, char *key)
 SymTab *symtab_new(void)
 {
     SymTab *table = my_malloc(sizeof(SymTab));
-    TableNode **map = calloc(TABLE_SIZE,sizeof(TableNode *));
+    TableNode **map = calloc(TABLE_SIZE, sizeof(TableNode *));
 
     table->map = map;
     table->size = TABLE_SIZE;
@@ -117,17 +117,17 @@ SymTab *symtab_new(void)
     return table;
 }
 
-//Creates a new shallow clone of table
-SymTab* symtab_clone(SymTab *table)
+// Creates a new shallow clone of table
+SymTab *symtab_clone(SymTab *table)
 {
-    SymTab* clone = symtab_new();
+    SymTab *clone = symtab_new();
     for (size_t i = 0; i < table->size; i++)
     {
         TableNode *curr = table->map[i];
 
         while (curr)
         {
-            symtab_add(clone, curr->data);    
+            symtab_add(clone, curr->data);
 
             curr = curr->next;
         }
