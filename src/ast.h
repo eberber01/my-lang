@@ -97,6 +97,7 @@ typedef struct AstIf
     AstNode *body;
 } AstIf;
 
+void print_ast(Vector *tree);
 void visit(AstNode *node);
 
 void ast_free(AstNode *root);

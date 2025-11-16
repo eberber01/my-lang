@@ -1,9 +1,121 @@
 #include "ast.h"
 
+#include "util.h"
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "util.h"
+void printlvl(char *str, int level, ...)
+{
+    va_list args;
+    va_start(args, level);
+    for (int i = 0; i < level; i++)
+        printf("\t");
+    vprintf(str, args);
+    printf("\n");
+}
+
+void _print_ast(AstNode *node, int level)
+{
+
+    AstCompStmt *comp_stmt;
+    AstVarDef *var_def;
+    AstBinExp *bin_exp;
+    AstFuncDef *func_def;
+    AstIdent *ident;
+    AstFuncCall *func_call;
+    AstRet *ret;
+    AstIntConst *cons;
+
+    switch (node->type)
+    {
+    case AST_FUNC_DEF:
+        func_def = (AstFuncDef *)node->as;
+        printlvl("FuncDef(", level);
+
+        printlvl("\tname='%s'", level, func_def->value);
+        printlvl("\tparams=[", level, func_def->params);
+        for (size_t i = 0; i < func_def->params->length; i++)
+        {
+            printlvl("\t\t'%s'", level, (char *)vector_get(func_def->params, i));
+        }
+        printlvl("\t\t]", level);
+
+        printlvl("\tbody=[", level);
+        _print_ast(func_def->body, level + 1);
+
+        printlvl("\t\t]", level);
+        printlvl(")", level);
+        break;
+    case AST_VAR_DEF:
+        var_def = (AstVarDef *)node->as;
+        printlvl("VarDef(", level);
+
+        printlvl("\tname='%s'", level, var_def->value);
+
+        printlvl("\tvalue=(", level);
+        _print_ast(var_def->expr, level + 1);
+        printlvl(")", level);
+        break;
+    case AST_BIN_EXP:
+        bin_exp = (AstBinExp *)node->as;
+        printlvl("BinExp(", level);
+        printlvl("\top=%c", level, *(bin_exp->value));
+
+        printlvl("\tleft=(", level);
+        _print_ast(bin_exp->left, level + 1);
+        printlvl("\t)", level);
+
+        printlvl("\tright=(", level);
+        _print_ast(bin_exp->right, level + 1);
+        printlvl("\t)", level);
+
+        printlvl(")", level);
+        break;
+
+    case AST_INT_CONST:
+        cons = (AstIntConst *)node->as;
+        printlvl("IntConst(%d)", level, cons->value);
+        break;
+    case AST_COMP_STMT:
+        comp_stmt = (AstCompStmt *)node->as;
+        for (size_t i = 0; i < comp_stmt->body->length; i++)
+            _print_ast((AstNode *)vector_get(comp_stmt->body, i), level);
+        break;
+    case AST_IDENT:
+        ident = (AstIdent *)node->as;
+        printlvl("Ident(%s)", level, ident->value);
+        break;
+
+    case AST_RET:
+        ret = (AstRet *)node->as;
+        printlvl("Return(", level);
+        _print_ast(ret->expr, level + 1);
+        printlvl(")", level);
+        break;
+    case AST_FUNC_CALL:
+        func_call = (AstFuncCall *)node->as;
+        printlvl("Func Call(", level);
+        printlvl("\tname=%s", level, func_call->value);
+        printlvl("\targs=(", level);
+        for (size_t i = 0; i < func_call->args->length; i++)
+            _print_ast(vector_get(func_call->args, i), level + 1);
+        printlvl("\t)", level);
+        break;
+    default:
+        printf("type%d", node->type);
+        perror("not impl");
+    }
+}
+
+void print_ast(Vector *prog)
+{
+    for (size_t i = 0; i < prog->length; i++)
+    {
+
+        _print_ast((AstNode *)vector_get(prog, i), 0);
+    }
+}
 
 AstNode *make_ast_node(AstNodeType type, void *inner)
 {

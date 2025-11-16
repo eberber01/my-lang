@@ -26,8 +26,10 @@ void my_lang(char *file_name)
     Vector *prog = parse(tokens, table);
 
     free_tokens(tokens);
-    sema_check(prog, table);
-    gen_asm(prog);
+    print_ast(prog);
+    exit(0);
+    // sema_check(prog, table);
+    // gen_asm(prog);
 
     for (size_t i = 0; i < prog->length; i++)
         ast_free((AstNode *)vector_get(prog, i));
