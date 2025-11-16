@@ -10,6 +10,7 @@
 
 char *read_file(char *filename, size_t *length)
 {
+    size_t n;
     FILE *f = fopen(filename, "rb");
     if (!f)
         return NULL;
@@ -19,7 +20,11 @@ char *read_file(char *filename, size_t *length)
     rewind(f);
 
     char *buffer = malloc(size + 1); // +1 for null-terminator
-    fread(buffer, 1, size, f);
+    n = fread(buffer, 1, size, f);
+    
+    if(n < (size_t)size)
+        perror("Failed to read file");
+
     buffer[size] = '\0';
     fclose(f);
 
