@@ -1,144 +1,99 @@
-# my-lang
+# Self-Hosting C Compiler for RISC-V
 
-This is my attempt at creating a C compiler. The motivation for this is to learn about low level program creation and execution. I plan to apply this knowledge in the future by writing code that is effcient at the assembly level.
+A self-hosting C compiler targeting the **RISC-V instruction set architecture**. The compiler starts with a subset of C and gradually adds features, culminating in the ability to compile itself. 
 
+## Features
 
-## Progress
+* [x] Integer arithmetic, variables, functions, return statements
+* [ ] Control flow (`if`, `else`, `while`, `for`)
+* [ ] Logical and relational operators (`==`, `<`, `>`, `&&`, `||`, `!`)
+* [ ] Function calling conventions (RISC-V ABI, multiple parameters, recursion)
+* [ ] Expanded type system (`char`, `void`, pointers syntax)
+* [ ] Pointer arithmetic (`&`, `*`)
+* [ ] Arrays and string literals
+* [ ] Global variables (initialized/uninitialized, cross-function access)
+* [ ] Minimal preprocessor (`#define`, `#include`)
+* [ ] Self-hosting compiler (compile compiler with itself)
+* [ ] Optional optimizations (constant folding, dead code elimination, register allocation)
 
-The project is still in very early stages. The current version of this compiler only supports the int type with basic arthimetic expressions. Function definitions with parameters are able 
-to be parsed but assembly generation only supports function calls with zero parameters.
+## Project Timeline
 
-I am still new to C development so I have been researching different tools. I am trying out CMake/Gtest for building and testing. 
+### Validation & Variables
 
-There is no strict roadmap, I just work on new features when I feel like it. However, I plan to only support int types until conditionals, loops, argument passing, are fully implemented. 
+* [ ] Verify correctness of current implementation (expressions, variables, scope, functions, int, return)
+* [ ] Establish regression test suite
+* [ ] Fix parsing/codegen bugs
+* [ ] Implement variable assignment
 
-In the future, I am planning to add support for key C features as well as additional CPU targets. Looking ahead, I also plan to write an assembler and linker.
+### Control Flow
 
-## Todo
+* [ ] Implement `if`, `else`, `while`, `for`
+* [ ] Add logical and relational operators
 
- - [ ] Structs
- - [ ] Pointers
- - [ ] typedef
- - [ ] union
- - [ ] Function args
- - [x] Function call
- - [x] Function definition
- - [ ] if-else
- - [ ] while
- - [ ] for
- - [ ] Symbol Table
- - [x] Variable definition
- - [x] int
- - [ ] float
- - [ ] string literal
- - [ ] char
- - [ ] Logical operations
+### Function Calling Conventions
 
-## Build
+* [ ] Implement RISC-V calling convention (registers/stack)
+* [ ] Support multiple parameters
+* [ ] Handle simple recursion
 
-### Requirements
-- cmake
+### Type System Expansion
+
+* [ ] Add `char` and `void`
+* [ ] Allow implicit conversions (`int` ↔ `char`)
+* [ ] Parse pointer types
+
+### Pointers & Memory
+
+* [ ] Implement `&` (address-of) and `*` (dereference)
+* [ ] Pointer arithmetic
+
+### Arrays & Strings
+
+* [ ] Implement arrays with indexing
+* [ ] Support string literals (`char[]`)
+
+### Global Variables
+
+* [ ] Add support for global variables
+* [ ] Handle initialized/uninitialized globals
+* [ ] Enable cross-function access
+
+###  Minimal Preprocessor
+
+* [ ] Implement `#define` macros
+* [ ] Support `#include`
+
+### Self-Hosting & Bootstrapping
+
+* [ ] Compile the compiler with itself
+* [ ] Patch missing features (`switch`, bitwise ops)
+* [ ] Add simple optimizations
+
+### (Optional Enhancements)
+
+* [ ] TBD
+
+## Build Instructions
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/my-lang.git
+cd my-lang
+
+# Build using CMake
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build .
+
+# Run tests
+ctest
 ```
-    git clone https://github.com/eberber01/my-lang.git
 
-    cd ./my-lang
-    mkdir build
+## References & Inspiration
 
-    cd build
-    cmake .. & make
+* [8cc](https://github.com/rui314/8cc)
+* [chibicc](https://github.com/rui314/chibicc)
+* [TinyCC](https://bellard.org/tcc/)
 
-    ../my-lang path-to-file
-```
-
-Assembly file will be created at the root of the git directory. 
-
-### Tests
-```
-    cd ./my-lang/build 
-    ./my-lang-tests
-```
-
-## Example
-### Test File
-```
-int one(){
-    return 1;
-}
-
-int two(int o){
-    return one() + one();
-}
-
-int main(){
-    int num1 = 10;
-    return two(1) + two(1) * 2;
-}
-
-```
-### RISCV Assembly
-```
-.globl main
-
-	j main
-one:
-	addi t0, zero, 1
-	add a0, t0, zero
-	jalr ra
-two:
-	addi sp, sp, -8
-	sw ra, 8(sp)
-	jal one
-	addi sp, sp, 8
-	lw ra, 0(sp)
-	add t0, zero, a0
-	addi sp, sp, -8
-	sw ra, 8(sp)
-	addi sp, sp, -8
-	sw t0, 8(sp)
-	jal one
-	addi sp, sp, 8
-	lw t0, 0(sp)
-	addi sp, sp, 8
-	lw ra, 0(sp)
-	add t1, zero, a0
-	add t0, t0, t1
-	add a0, t0, zero
-	jalr ra
-main:
-	addi t0, zero, 10
-	sw t0, 0(sp)
-	addi t0, zero, 1
-	addi t1, zero, 1
-	add t0, t0, t1
-	addi t1, zero, 10
-	sub t0, t0, t1
-	addi sp, sp, -8
-	sw ra, 8(sp)
-	addi sp, sp, -8
-	sw t0, 8(sp)
-	jal two
-	addi sp, sp, 8
-	lw t0, 0(sp)
-	addi sp, sp, 8
-	lw ra, 0(sp)
-	add t1, zero, a0
-	addi sp, sp, -8
-	sw ra, 8(sp)
-	addi sp, sp, -8
-	sw t0, 8(sp)
-	addi sp, sp, -8
-	sw t1, 16(sp)
-	jal two
-	addi sp, sp, 8
-	lw t0, 8(sp)
-	addi sp, sp, 8
-	lw t1, 0(sp)
-	addi sp, sp, 8
-	lw ra, 0(sp)
-	add t2, zero, a0
-	addi t3, zero, 2
-	mul t2, t2, t3
-	add t1, t1, t2
-	li  a7, 10
-	ecall 
-```
+These compilers demonstrate minimal, self-hosting C compilers and were inspirations for this project.
