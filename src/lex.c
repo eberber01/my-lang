@@ -21,8 +21,8 @@ char *read_file(char *filename, size_t *length)
 
     char *buffer = malloc(size + 1); // +1 for null-terminator
     n = fread(buffer, 1, size, f);
-    
-    if(n < (size_t)size)
+
+    if (n < (size_t)size)
         perror("Failed to read file");
 
     buffer[size] = '\0';
