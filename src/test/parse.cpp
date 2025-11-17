@@ -16,8 +16,6 @@ TEST(Parse, Variable)
     AstNode *var;
 
     tokens = vector_new();
-    symtab = hashmap_new();
-    symtab_init(symtab);
 
     vector_push(tokens, make_token(TOK_TYPE, string((char *)"int"), 0, 0));
     vector_push(tokens, make_token(TOK_IDENT, string((char *)"var"), 0, 0));
@@ -26,11 +24,10 @@ TEST(Parse, Variable)
 
     stream = make_token_stream(tokens);
 
-    var = parse_var_def(stream, symtab);
+    var = parse_var_def(stream);
 
     EXPECT_EQ(AST_VAR_DEF, var->type);
 
-    symtab_free(symtab);
     free_tokens(tokens);
     free(stream);
     ast_free(var);

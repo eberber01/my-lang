@@ -489,6 +489,8 @@ Register *asm_eval(AstNode *node, RISCV *_asm)
         return eval_bool_expr(node, _asm);
     case AST_BIN_EXP:
         return eval_bin_exp(node, _asm);
+    case AST_ENUM:
+        return NULL;
     default:
         perror("unkown ast type");
         exit(1);

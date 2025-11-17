@@ -3,6 +3,7 @@
 #include "hashmap.h"
 #include "util.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 #define INT_SIZE 4
 
@@ -83,6 +84,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope)
     AstIdent *ident;
     AstFuncCall *func_call;
     AstRet *ret;
+    AstEnum *enm;
     SymTabEntry *entry;
     SymTabEntry *entry_type;
 
@@ -203,7 +205,16 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope)
         ret->func = frame->func;
         sym_check(ret->expr, frame, scope);
         break;
+    case AST_ENUM:
+        enm = (AstEnum *)node->as;
+        for (size_t i = 0; i < enm->enums->length; i++)
+        {
+            entry = make_symtab_entry(vector_get(enm->enums, i), TS_INT, SYM_CONST);
+            entry->const_value = i;
+        }
+        break;
     default:
+        printf("type%d", node->type);
         perror("unkown ast type");
         break;
     }

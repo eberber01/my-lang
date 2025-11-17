@@ -11,19 +11,19 @@ typedef struct TokenStream
     size_t current;
 } TokenStream;
 
-AstNode *parse_expression(TokenStream *stream, HashMap *map);
+AstNode *parse_expression(TokenStream *stream);
 
-AstNode *parse_statement(TokenStream *stream, HashMap *map);
+AstNode *parse_statement(TokenStream *stream);
 
-AstNode *parse_factor(TokenStream *stream, HashMap *map);
+AstNode *parse_factor(TokenStream *stream);
 
-AstNode *parse_term(TokenStream *stream, HashMap *map);
+AstNode *parse_term(TokenStream *stream);
 
-Vector *parse(Vector *tokens, HashMap *map);
+Vector *parse(Vector *tokens);
 
-AstNode *parse_var_def(TokenStream *stream, HashMap *map);
+AstNode *parse_var_def(TokenStream *stream);
 
-AstNode *parse_func_def(TokenStream *stream, HashMap *map);
+AstNode *parse_func_def(TokenStream *stream);
 
 Token *current_token(TokenStream *stream);
 

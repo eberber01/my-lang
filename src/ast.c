@@ -26,6 +26,7 @@ void _print_ast(AstNode *node, int level)
     AstFuncCall *func_call;
     AstRet *ret;
     AstIntConst *cons;
+    AstEnum *enm;
 
     switch (node->type)
     {
@@ -107,6 +108,16 @@ void _print_ast(AstNode *node, int level)
             _print_ast(vector_get(func_call->args, i), level + 1);
         printlvl("\t)", level);
         break;
+    case AST_ENUM:
+        enm = (AstEnum *)node->as;
+        printlvl("Enum(", level);
+        printlvl("\tname=%s", level, enm->value);
+        printlvl("\tenums=[", level);
+        for (size_t i = 0; i < enm->enums->length; i++)
+            printlvl("\t\t%s(%d),", level, ((char *)vector_get(enm->enums, i)), i);
+        printlvl("\t]", level);
+        printlvl(")", level);
+        break;
     default:
         printf("type%d", node->type);
         perror("not impl");
@@ -128,6 +139,14 @@ AstNode *make_ast_node(AstNodeType type, void *inner)
     node->type = type;
     node->as = inner;
     return node;
+}
+
+AstNode *make_ast_enum(char *value, Vector *enums)
+{
+    AstEnum *enm = (AstEnum *)my_malloc(sizeof(AstEnum));
+    enm->enums = enums;
+    enm->value = value;
+    return make_ast_node(AST_ENUM, enm);
 }
 
 AstNode *make_ast_comp_stmt(Vector *body)
@@ -223,6 +242,7 @@ void ast_free(AstNode *node)
     AstIdent *ident;
     AstFuncCall *func_call;
     AstRet *ret;
+    AstEnum *enm;
 
     if (node == NULL)
         return;
@@ -298,6 +318,15 @@ void ast_free(AstNode *node)
         ret = (AstRet *)node->as;
         ast_free(ret->expr);
         free(ret);
+        break;
+    case AST_ENUM:
+        enm = (AstEnum *)node->as;
+        for (size_t i = 0; i < enm->enums->length; i++)
+        {
+            free(vector_get(enm->enums, i));
+        }
+        vector_free(enm->enums);
+        free(enm);
         break;
     default:
         perror("unkown ast type");

@@ -14,7 +14,8 @@ typedef enum AstNodeType
     AST_FUNC_CALL,
     AST_RET,
     AST_IF,
-    AST_BOOL_EXPR
+    AST_BOOL_EXPR,
+    AST_ENUM
 } AstNodeType;
 
 typedef struct Param
@@ -98,6 +99,12 @@ typedef struct AstIf
     AstNode *body;
 } AstIf;
 
+typedef struct AstEnum
+{
+    char *value;
+    Vector *enums;
+} AstEnum;
+
 void print_ast(Vector *tree);
 void visit(AstNode *node);
 
@@ -126,5 +133,7 @@ AstNode *make_ast_var_def(char *value, char *type, AstNode *expr);
 AstNode *make_ast_bool_expr(char *value, AstNode *left, AstNode *right);
 
 AstNode *make_ast_if(AstNode *expr, AstNode *body);
+
+AstNode *make_ast_enum(char *value, Vector *enums);
 
 #endif

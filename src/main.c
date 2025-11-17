@@ -16,7 +16,7 @@ void my_lang(char *file_name)
 
     Vector *tokens = tokenize(input, input_length);
 
-    Vector *prog = parse(tokens, table);
+    Vector *prog = parse(tokens);
 
     sema_check(prog, table);
 
