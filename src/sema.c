@@ -7,8 +7,6 @@
 
 #define INT_SIZE 4
 
-int scope_id = 0;
-
 StackFrame *make_stack_frame(char *func)
 {
     StackFrame *frame = my_malloc(sizeof(StackFrame));
@@ -32,7 +30,6 @@ Scope *enter_scope(Scope *parent)
     Scope *child = (Scope *)my_malloc(sizeof(Scope));
     child->symtab = symtab_clone(parent->symtab);
     child->parent = parent;
-    child->id = ++scope_id;
     return child;
 }
 
@@ -69,7 +66,7 @@ SymTabEntry *scope_lookup(Scope *scope, char *key)
 bool in_scope(Scope *scope, char *key)
 {
     SymTabEntry *entry = scope_lookup(scope, key);
-    return entry && entry->scope_id == scope->id;
+    return entry;
 }
 
 void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env)
@@ -87,6 +84,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
     AstEnum *enm;
     AstVarDec *dec;
     AstVarAsgn *asgn;
+    AstWhile *w_stmt;
     SymTabEntry *entry;
     TypeEnvEntry *entry_type;
 
@@ -244,6 +242,13 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
 
         sym_check(asgn->expr, frame, scope, type_env);
         asgn->symbol = scope_lookup(scope, asgn->value);
+
+        break;
+    case AST_WHILE:
+        w_stmt = (AstWhile *)node->as;
+
+        sym_check(w_stmt->expr, frame, scope, type_env);
+        sym_check(w_stmt->body, frame, scope, type_env);
 
         break;
     default:

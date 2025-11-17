@@ -273,6 +273,23 @@ AstNode *parse_comp_stmt(TokenStream *stream)
     return make_ast_comp_stmt(body);
 }
 
+AstNode *parse_while(TokenStream *stream)
+{
+    AstNode *expr;
+    AstNode *body;
+
+    expect(stream, TOK_WHILE);
+    expect(stream, TOK_LPAREN);
+
+    expr = parse_boolean_expression(stream);
+
+    expect(stream, TOK_RPAREN);
+
+    body = parse_statement(stream);
+
+    return make_ast_while(expr, body);
+}
+
 AstNode *parse_statement(TokenStream *stream)
 {
     Token *current;
@@ -286,6 +303,8 @@ AstNode *parse_statement(TokenStream *stream)
             return parse_var_dec(stream);
         else if (is_var_asgn(stream))
             return parse_var_asgn(stream);
+        else if (current->type == TOK_WHILE)
+            return parse_while(stream);
         else if (current->type == TOK_RETURN)
         {
             expect(stream, TOK_RETURN);

@@ -31,6 +31,7 @@ void _print_ast(AstNode *node, int level)
     AstBoolExpr *bool_expr;
     AstVarDec *dec;
     AstVarAsgn *asgn;
+    AstWhile *w_stmt;
 
     switch (node->type)
     {
@@ -87,8 +88,11 @@ void _print_ast(AstNode *node, int level)
         break;
     case AST_COMP_STMT:
         comp_stmt = (AstCompStmt *)node->as;
+
+        printlvl("Comp Stmt(", level);
         for (size_t i = 0; i < comp_stmt->body->length; i++)
-            _print_ast((AstNode *)vector_get(comp_stmt->body, i), level);
+            _print_ast((AstNode *)vector_get(comp_stmt->body, i), level + 1);
+        printlvl(")", level);
         break;
     case AST_IDENT:
         ident = (AstIdent *)node->as;
@@ -164,9 +168,23 @@ void _print_ast(AstNode *node, int level)
         printlvl("\tvalue='%s'", level, asgn->value);
         printlvl("\tstack_offset='%d'", level, asgn->symbol->offset);
 
-        printlvl("\texpr=[", level, asgn->value);
+        printlvl("\texpr=[", level);
         _print_ast(asgn->expr, level + 1);
-        printlvl("\t]", level, asgn->value);
+        printlvl("\t]", level);
+
+        printlvl(")", level);
+        break;
+    case AST_WHILE:
+        w_stmt = (AstWhile *)node->as;
+        printlvl("While(", level);
+
+        printlvl("\texpr=[", level);
+        _print_ast(w_stmt->expr, level + 1);
+        printlvl("\t]", level);
+
+        printlvl("\tbody=[", level);
+        _print_ast(w_stmt->body, level + 1);
+        printlvl("\t]", level);
 
         printlvl(")", level);
         break;
@@ -298,6 +316,14 @@ AstNode *make_ast_if(AstNode *expr, AstNode *body)
     return make_ast_node(AST_IF, if_stmt);
 }
 
+AstNode *make_ast_while(AstNode *expr, AstNode *body)
+{
+    AstWhile *w_stmt = (AstWhile *)my_malloc(sizeof(AstWhile));
+    w_stmt->body = body;
+    w_stmt->expr = expr;
+    return make_ast_node(AST_WHILE, w_stmt);
+}
+
 void ast_free(AstNode *node)
 {
     AstCompStmt *comp_stmt;
@@ -313,6 +339,7 @@ void ast_free(AstNode *node)
     AstEnum *enm;
     AstVarDec *dec;
     AstVarAsgn *asgn;
+    AstWhile *w_stmt;
 
     if (node == NULL)
         return;
@@ -409,6 +436,12 @@ void ast_free(AstNode *node)
         ast_free(asgn->expr);
         free(asgn->value);
         free(asgn);
+        break;
+    case AST_WHILE:
+        w_stmt = (AstWhile *)node->as;
+        ast_free(w_stmt->body);
+        ast_free(w_stmt->expr);
+        free(w_stmt);
         break;
     default:
         perror("unkown ast type");

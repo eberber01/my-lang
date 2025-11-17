@@ -298,22 +298,23 @@ Register *eval_if(AstNode *node, RISCV *_asm)
 {
     AstIf *if_stmt;
     Register *reg;
+    int id = cond_count;
 
     if_stmt = (AstIf *)node->as;
     // Add label
-    fprintf(_asm->out, "if_start%d:\n", cond_count);
+    fprintf(_asm->out, "if_start%d:\n", id);
 
     // eval bool expression, reg = 0 for false and reg = 1 for true
     reg = asm_eval(if_stmt->expr, _asm);
 
     // cmp and branch to end label
-    fprintf(_asm->out, "\tbeq %s, zero, if_end%d\n", reg->label, cond_count);
-    fprintf(_asm->out, "if_body%d:\n", cond_count);
+    fprintf(_asm->out, "\tbeq %s, zero, if_end%d\n", reg->label, id);
+
     // eval body
     asm_eval(if_stmt->body, _asm);
 
     // add other label
-    fprintf(_asm->out, "if_end%d:\n", cond_count);
+    fprintf(_asm->out, "if_end%d:\n", id);
     free_register(reg);
     cond_count++;
     return NULL;
@@ -464,14 +465,11 @@ Register *eval_bool_expr(AstNode *node, RISCV *_asm)
     right = asm_eval(bool_expr->right, _asm);
 
     reg = alloc_register(_asm);
-    load_register(reg, 0, _asm);
+
     // == Check if equal
-    fprintf(_asm->out, "\tbne %s, %s, bool_end%d\n", left->label, right->label, cond_count);
+    fprintf(_asm->out, "\tsub %s, %s, %s \n", reg->label, right->label, left->label);
 
-    // load register with One if true
-    load_register(reg, 1, _asm);
-
-    fprintf(_asm->out, "bool_end%d:\n", cond_count);
+    fprintf(_asm->out, "\tseqz %s, %s \n", reg->label, reg->label);
 
     return reg;
 }
@@ -491,6 +489,32 @@ Register *eval_var_asgn(AstNode *node, RISCV *_asm)
     sp_store(offset, reg, _asm);
     free_register(reg);
 
+    return NULL;
+}
+
+Register *eval_while(AstNode *node, RISCV *_asm)
+{
+    AstWhile *w_stmt = (AstWhile *)node->as;
+    Register *reg;
+    int id = cond_count;
+    // Add label
+    fprintf(_asm->out, "while_start%d:\n", id);
+
+    reg = asm_eval(w_stmt->expr, _asm);
+    // cmp and branch to end label
+    fprintf(_asm->out, "\tbeq %s, zero, while_end%d\n", reg->label, id);
+
+    free_register(reg);
+
+    asm_eval(w_stmt->body, _asm);
+
+    // Jump back to start
+    fprintf(_asm->out, "\tj while_start%d\n", id);
+
+    // add other label
+    fprintf(_asm->out, "while_end%d:\n", id);
+
+    cond_count++;
     return NULL;
 }
 
@@ -521,6 +545,8 @@ Register *asm_eval(AstNode *node, RISCV *_asm)
         return eval_bin_exp(node, _asm);
     case AST_VAR_ASGN:
         return eval_var_asgn(node, _asm);
+    case AST_WHILE:
+        return eval_while(node, _asm);
     case AST_ENUM:
     case AST_VAR_DEC:
         return NULL;

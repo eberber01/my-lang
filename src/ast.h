@@ -17,7 +17,8 @@ typedef enum AstNodeType
     AST_BOOL_EXPR,
     AST_ENUM,
     AST_VAR_DEC,
-    AST_VAR_ASGN
+    AST_VAR_ASGN,
+    AST_WHILE
 } AstNodeType;
 
 typedef struct Param
@@ -121,6 +122,12 @@ typedef struct AstEnum
     Vector *enums;
 } AstEnum;
 
+typedef struct AstWhile
+{
+    AstNode *expr;
+    AstNode *body;
+} AstWhile;
+
 void print_ast(Vector *tree);
 void visit(AstNode *node);
 
@@ -155,5 +162,9 @@ AstNode *make_ast_enum(char *value, Vector *enums);
 AstNode *make_ast_var_dec(char *value, char *type);
 
 AstNode *make_ast_var_asgn(char *value, AstNode *expr);
+
+AstNode *make_ast_while(AstNode *expr, AstNode *body);
+
+void _print_ast(AstNode *, int);
 
 #endif
