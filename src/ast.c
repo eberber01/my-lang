@@ -35,6 +35,7 @@ void _print_ast(AstNode *node, int level)
 
         printlvl("\tname='%s'", level, func_def->value);
         printlvl("\tscope_id='%d'", level, func_def->symbol->scope_id);
+        printlvl("\tframe_size='%d'", level, func_def->symbol->frame->size);
         printlvl("\tparams=[", level, func_def->params);
         for (size_t i = 0; i < func_def->params->length; i++)
         {
