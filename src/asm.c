@@ -375,7 +375,13 @@ Register *eval_func_def(AstNode *node, RISCV *_asm)
         param->symbol->arg_reg = i;
     }
 
+    // Create stack space for frame
+    sp_increase(func_def->symbol->frame->size, _asm);
+
     asm_eval(func_def->body, _asm);
+
+    // Restore stack
+    sp_decrease(func_def->symbol->frame->size, _asm);
 
     // Not main function, return
     if (strcmp(func_def->value, "main"))
