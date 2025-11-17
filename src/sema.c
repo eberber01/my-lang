@@ -181,6 +181,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope)
 
         Vector *args = func_call->args;
         Vector *params = entry->params;
+        func_call->symbol = entry;
         if (entry == NULL)
         {
             fprintf(stderr, "Undefined function '%s'\n", func_call->value);

@@ -18,6 +18,8 @@ void my_lang(char *file_name)
 
     Vector *prog = parse(tokens, table);
 
+    sema_check(prog, table);
+
 #ifdef DEBUG
     for (size_t i = 0; i < tokens->length; i++)
         print_token((Token *)vector_get(tokens, i));
@@ -25,10 +27,9 @@ void my_lang(char *file_name)
     print_ast(prog);
 #endif
 
-    free_tokens(tokens);
-
-    sema_check(prog, table);
     gen_asm(prog);
+
+    free_tokens(tokens);
 
     for (size_t i = 0; i < prog->length; i++)
         ast_free((AstNode *)vector_get(prog, i));

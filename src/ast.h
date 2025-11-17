@@ -74,6 +74,7 @@ typedef struct AstFuncCall
 {
     char *value;
     Vector *args;
+    SymTabEntry *symbol;
 } AstFuncCall;
 
 typedef struct AstVarDef

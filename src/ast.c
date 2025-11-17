@@ -34,6 +34,7 @@ void _print_ast(AstNode *node, int level)
         printlvl("FuncDef(", level);
 
         printlvl("\tname='%s'", level, func_def->value);
+        printlvl("\tscope_id='%d'", level, func_def->symbol->scope_id);
         printlvl("\tparams=[", level, func_def->params);
         for (size_t i = 0; i < func_def->params->length; i++)
         {
@@ -52,7 +53,7 @@ void _print_ast(AstNode *node, int level)
         printlvl("VarDef(", level);
 
         printlvl("\tname='%s'", level, var_def->value);
-
+        printlvl("\tscope_id='%d'", level, var_def->symbol->scope_id);
         printlvl("\tvalue=(", level);
         _print_ast(var_def->expr, level + 1);
         printlvl(")", level);
@@ -84,9 +85,11 @@ void _print_ast(AstNode *node, int level)
         break;
     case AST_IDENT:
         ident = (AstIdent *)node->as;
-        printlvl("Ident(%s)", level, ident->value);
+        printlvl("Ident(", level);
+        printlvl("\tname='%s'", level, ident->value);
+        printlvl("\tscope_id='%d'", level, ident->symbol->scope_id);
+        printlvl(")", level);
         break;
-
     case AST_RET:
         ret = (AstRet *)node->as;
         printlvl("Return(", level);
@@ -97,6 +100,7 @@ void _print_ast(AstNode *node, int level)
         func_call = (AstFuncCall *)node->as;
         printlvl("Func Call(", level);
         printlvl("\tname=%s", level, func_call->value);
+        printlvl("\tscope_id='%d'", level, func_call->symbol->scope_id);
         printlvl("\targs=(", level);
         for (size_t i = 0; i < func_call->args->length; i++)
             _print_ast(vector_get(func_call->args, i), level + 1);
