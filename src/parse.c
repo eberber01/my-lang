@@ -6,7 +6,6 @@
 #include <time.h>
 
 #include "ast.h"
-#include "hashmap.h"
 #include "lex.h"
 #include "util.h"
 

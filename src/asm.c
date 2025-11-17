@@ -187,16 +187,23 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
 
     func_call = (AstFuncCall *)node->as;
 
+    // Allocate enough space for ra + temp and arg registers
+    size_t stack_space = REGISTER_SIZE * (_asm->temp->length + _asm->arg->length + 1);
+    printf("stack space: %zu\n", stack_space);
+
+    size_t offset = 0;
+
     // Allocate space for return address
-    sp_increase(REGISTER_SIZE, _asm);
-    sp_store(0, _asm->ret, _asm);
+    sp_increase(stack_space, _asm);
+    sp_store(offset, _asm->ret, _asm);
+    offset += REGISTER_SIZE;
 
     // Save arg registers
     for (size_t i = 0; i < _asm->arg->length; i++)
     {
         reg = vector_get(_asm->arg, i);
-        sp_increase(REGISTER_SIZE, _asm);
-        sp_store(0, reg, _asm);
+        sp_store(offset, reg, _asm);
+        offset += REGISTER_SIZE;
     }
 
     // Save temp registers
@@ -207,8 +214,8 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
         if (!reg->free)
         {
 
-            sp_increase(REGISTER_SIZE, _asm);
-            sp_store(0, reg, _asm);
+            sp_store(offset, reg, _asm);
+            offset += REGISTER_SIZE;
             freed[i] = 1;
             free_register(reg);
         }
@@ -234,8 +241,8 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
         if (freed[i])
         {
             reg = vector_get(_asm->temp, i);
-            sp_load(reg, 0, _asm);
-            sp_decrease(REGISTER_SIZE, _asm);
+            offset -= REGISTER_SIZE;
+            sp_load(reg, offset, _asm);
             reg->free = false;
         }
     }
@@ -248,13 +255,14 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
     for (int i = _asm->arg->length - 1; i >= 0; i--)
     {
 
-        sp_load(vector_get(_asm->arg, i), 0, _asm);
-        sp_decrease(REGISTER_SIZE, _asm);
+        offset -= REGISTER_SIZE;
+        sp_load(vector_get(_asm->arg, i), offset, _asm);
     }
 
+    offset -= REGISTER_SIZE;
     // restore return address
-    sp_load(_asm->ret, 0, _asm);
-    sp_decrease(REGISTER_SIZE, _asm);
+    sp_load(_asm->ret, offset, _asm);
+    sp_decrease(stack_space, _asm);
 
     // Return register with return value
     return reg;
