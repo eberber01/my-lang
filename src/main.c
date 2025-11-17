@@ -7,7 +7,6 @@
 #include "util.h"
 #include <stdio.h>
 
-// #define DEBUG
 
 void my_lang(char *file_name)
 {
@@ -18,18 +17,20 @@ void my_lang(char *file_name)
 
     Vector *tokens = tokenize(input, input_length);
 
-#ifdef DEBUG
-    for (size_t i = 0; i < tokens->length; i++)
-        print_token((Token *)vector_get(tokens, i));
-#endif
-
     Vector *prog = parse(tokens, table);
 
-    free_tokens(tokens);
+    #ifdef DEBUG
+    for (size_t i = 0; i < tokens->length; i++)
+        print_token((Token *)vector_get(tokens, i));
+
+
     print_ast(prog);
-    exit(0);
-    // sema_check(prog, table);
-    // gen_asm(prog);
+    #endif
+
+    free_tokens(tokens);
+
+    sema_check(prog, table);
+    gen_asm(prog);
 
     for (size_t i = 0; i < prog->length; i++)
         ast_free((AstNode *)vector_get(prog, i));

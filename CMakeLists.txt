@@ -60,6 +60,10 @@ target_link_libraries(
     GTest::gtest_main
 )
 
+target_compile_definitions(my-lang PRIVATE
+    $<$<CONFIG:Debug>:DEBUG>
+)
+
 add_test(NAME my-lang-tests COMMAND my-lang-tests)
 
 find_program(CLANG_FORMAT_BIN clang-format)
