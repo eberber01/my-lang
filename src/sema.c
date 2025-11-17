@@ -211,6 +211,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope)
         {
             entry = make_symtab_entry(vector_get(enm->enums, i), TS_INT, SYM_CONST);
             entry->const_value = i;
+            scope_add(scope, entry);
         }
         break;
     default:
