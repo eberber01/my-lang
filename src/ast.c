@@ -27,6 +27,8 @@ void _print_ast(AstNode *node, int level)
     AstRet *ret;
     AstIntConst *cons;
     AstEnum *enm;
+    AstIf *if_stmt;
+    AstBoolExpr *bool_expr;
 
     switch (node->type)
     {
@@ -117,6 +119,30 @@ void _print_ast(AstNode *node, int level)
             printlvl("\t\t%s(%d),", level, ((char *)vector_get(enm->enums, i)), i);
         printlvl("\t]", level);
         printlvl(")", level);
+        break;
+    case AST_IF:
+        if_stmt = (AstIf *)node->as;
+        printlvl("If(", level);
+        printlvl("\texpr=[", level);
+        _print_ast(if_stmt->expr, level);
+        printlvl("\t]", level);
+        printlvl("\tbody=[", level);
+        _print_ast(if_stmt->body, level);
+        printlvl("\t]", level);
+        break;
+    case AST_BOOL_EXPR:
+        bool_expr = (AstBoolExpr *)node->as;
+        printlvl("BoolExpr(", level);
+        printlvl("\toperator='%s'", level, bool_expr->value);
+
+        printlvl("\tleft=(", level);
+        _print_ast(bool_expr->left, level + 1);
+        printlvl("\t)", level);
+
+        printlvl("\tright=(", level);
+        _print_ast(bool_expr->right, level + 1);
+        printlvl("\t)", level);
+
         break;
     default:
         printf("type%d", node->type);

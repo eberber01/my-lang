@@ -8,6 +8,8 @@
 #include "hashmap.h"
 #include "util.h"
 
+int cond_count = 0;
+
 Register *make_register(char *label)
 {
     Register *reg = my_malloc(sizeof(Register));
@@ -189,7 +191,6 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
 
     // Allocate enough space for ra + temp and arg registers
     size_t stack_space = REGISTER_SIZE * (_asm->temp->length + _asm->arg->length + 1);
-    printf("stack space: %zu\n", stack_space);
 
     size_t offset = 0;
 
@@ -300,20 +301,21 @@ Register *eval_if(AstNode *node, RISCV *_asm)
 
     if_stmt = (AstIf *)node->as;
     // Add label
-    label_add("if_start", _asm);
+    fprintf(_asm->out, "if_start%d:\n", cond_count);
 
     // eval bool expression, reg = 0 for false and reg = 1 for true
     reg = asm_eval(if_stmt->expr, _asm);
 
     // cmp and branch to end label
-    fprintf(_asm->out, "\tbeq %s, zero, if_end\n", reg->label);
-    label_add("if_body", _asm);
+    fprintf(_asm->out, "\tbeq %s, zero, if_end%d\n", reg->label, cond_count);
+    fprintf(_asm->out, "if_body%d:\n", cond_count);
     // eval body
     asm_eval(if_stmt->body, _asm);
 
     // add other label
-    label_add("if_end", _asm);
+    fprintf(_asm->out, "if_end%d:\n", cond_count);
     free_register(reg);
+    cond_count++;
     return NULL;
 }
 
@@ -330,8 +332,9 @@ Register *eval_ret(AstNode *node, RISCV *_asm)
     if (!strcmp(ret->func, "main"))
     {
         // Syscall Exit 10
-        fprintf(_asm->out, "\tli  a7, 10\n");
-        fprintf(_asm->out, "\tecall\n");
+        fprintf(_asm->out, "\tli  a7, 93\n");
+        move_register(reg, vector_get(_asm->arg, 0), _asm);
+        ecall(_asm);
     }
     else
     {
@@ -463,12 +466,12 @@ Register *eval_bool_expr(AstNode *node, RISCV *_asm)
     reg = alloc_register(_asm);
     load_register(reg, 0, _asm);
     // == Check if equal
-    fprintf(_asm->out, "\tbne %s, %s, bool_end\n", left->label, right->label);
+    fprintf(_asm->out, "\tbne %s, %s, bool_end%d\n", left->label, right->label, cond_count);
 
     // load register with One if true
     load_register(reg, 1, _asm);
 
-    label_add("bool_end", _asm);
+    fprintf(_asm->out, "bool_end%d:\n", cond_count);
 
     return reg;
 }
@@ -533,7 +536,7 @@ void asm_free(RISCV *riscv)
 
 void ecall(RISCV *_asm)
 {
-    fprintf(_asm->out, "\tecall");
+    fprintf(_asm->out, "\tecall\n");
 }
 
 // Generate Assembly file from AST

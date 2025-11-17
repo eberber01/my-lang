@@ -55,4 +55,6 @@ void gen_asm(Vector *prog);
 
 RISCV *make_riscv(void);
 
+void ecall(RISCV *_asm);
+
 #endif
