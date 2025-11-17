@@ -36,6 +36,7 @@ typedef enum TokenType
     TOK_IF,
     TOK_EQUAL,
     TOK_ENUM,
+    TOK_WHILE
 } TokenType;
 
 typedef struct Token

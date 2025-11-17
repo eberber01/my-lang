@@ -214,6 +214,8 @@ void tokenize_ident(char c, Token *token, Lexer *lexer)
         token->type = TOK_IF;
     else if (string_eq(ident, "enum"))
         token->type = TOK_ENUM;
+    else if (string_eq(ident, "while"))
+        token->type = TOK_WHILE;
 }
 
 // Put back character in stream
