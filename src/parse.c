@@ -6,8 +6,8 @@
 #include <time.h>
 
 #include "ast.h"
-#include "lex.h"
 #include "hashmap.h"
+#include "lex.h"
 #include "util.h"
 
 // Get current token in stream

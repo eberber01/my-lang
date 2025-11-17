@@ -24,7 +24,7 @@ SymTabEntry *make_symtab_entry(char *key, TypeSpecifier type, SymbolType symbol)
     return entry;
 }
 
-TableNode *make_table_node(TableNode *next, void* data, char* key)
+TableNode *make_table_node(TableNode *next, void *data, char *key)
 {
     TableNode *node = my_malloc(sizeof(TableNode));
     node->data = data;
@@ -64,7 +64,7 @@ void *find(TableNode *node, char *key)
 }
 
 // Insert node at end of list
-void insert(TableNode **index_node, void *data, char* key)
+void insert(TableNode **index_node, void *data, char *key)
 {
 
     TableNode *n = make_table_node(NULL, data, key);
@@ -77,12 +77,13 @@ void insert(TableNode **index_node, void *data, char* key)
     }
 
     // Overwrite data if duplicate key exists
-    // Otherwise add new node to end of list 
+    // Otherwise add new node to end of list
     TableNode *curr = *index_node;
     TableNode *prev;
     while (curr != NULL)
     {
-        if(!strcmp(key,   curr->key)){
+        if (!strcmp(key, curr->key))
+        {
             curr->data = data;
             free(n);
             return;
@@ -97,7 +98,7 @@ void insert(TableNode **index_node, void *data, char* key)
 }
 
 // Add symbol to table, overwrites matching key values
-void hashmap_add(HashMap *map, void *data, char* key)
+void hashmap_add(HashMap *map, void *data, char *key)
 {
     int h = hash(key);
     size_t index = (size_t)(h & (uint64_t)(map->size - 1));
@@ -106,7 +107,7 @@ void hashmap_add(HashMap *map, void *data, char* key)
 }
 
 // Return entry if it exists else null
-void *hashmap_get( HashMap*map, char *key)
+void *hashmap_get(HashMap *map, char *key)
 {
     int h = hash(key);
     size_t index = (size_t)(h & (uint64_t)(map->size - 1));
@@ -153,7 +154,7 @@ void symtab_free(HashMap *symtab)
         while (curr)
         {
 
-            SymTabEntry* entry = (SymTabEntry*)curr->data;
+            SymTabEntry *entry = (SymTabEntry *)curr->data;
             SymbolType sym = entry->symbol;
 
             if (sym != SYM_KEYWORD)
@@ -176,13 +177,13 @@ void symtab_free(HashMap *symtab)
 
 void symtab_init(HashMap *symtab)
 {
-    hashmap_add( symtab, make_symtab_entry("int", TS_INT, SYM_KEYWORD), "int");
-    hashmap_add( symtab, make_symtab_entry("void", TS_VOID, SYM_KEYWORD), "void");
-    hashmap_add( symtab, make_symtab_entry("char", TS_CHAR, SYM_KEYWORD), "char");
-    hashmap_add( symtab, make_symtab_entry("float", TS_FLOAT, SYM_KEYWORD), "float");
-    hashmap_add( symtab, make_symtab_entry("double", TS_DOUBLE, SYM_KEYWORD), "double");
-    hashmap_add( symtab, make_symtab_entry("long", TS_LONG, SYM_KEYWORD), "long");
-    hashmap_add( symtab, make_symtab_entry("return", TS_VOID, SYM_KEYWORD), "return");
-    hashmap_add( symtab, make_symtab_entry("if", TS_VOID, SYM_KEYWORD), "if");
-    hashmap_add( symtab, make_symtab_entry("enum", TS_VOID, SYM_KEYWORD), "enum");
+    hashmap_add(symtab, make_symtab_entry("int", TS_INT, SYM_KEYWORD), "int");
+    hashmap_add(symtab, make_symtab_entry("void", TS_VOID, SYM_KEYWORD), "void");
+    hashmap_add(symtab, make_symtab_entry("char", TS_CHAR, SYM_KEYWORD), "char");
+    hashmap_add(symtab, make_symtab_entry("float", TS_FLOAT, SYM_KEYWORD), "float");
+    hashmap_add(symtab, make_symtab_entry("double", TS_DOUBLE, SYM_KEYWORD), "double");
+    hashmap_add(symtab, make_symtab_entry("long", TS_LONG, SYM_KEYWORD), "long");
+    hashmap_add(symtab, make_symtab_entry("return", TS_VOID, SYM_KEYWORD), "return");
+    hashmap_add(symtab, make_symtab_entry("if", TS_VOID, SYM_KEYWORD), "if");
+    hashmap_add(symtab, make_symtab_entry("enum", TS_VOID, SYM_KEYWORD), "enum");
 }

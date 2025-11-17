@@ -65,7 +65,7 @@ typedef struct TableNode
     void *data;
     char *key;
     struct TableNode *next;
-    
+
 } TableNode;
 
 typedef struct HashMap
@@ -76,13 +76,13 @@ typedef struct HashMap
 
 SymTabEntry *make_symtab_entry(char *key, TypeSpecifier type, SymbolType symbol);
 
-TableNode *make_table_node(TableNode *next, void *data, char* key);
+TableNode *make_table_node(TableNode *next, void *data, char *key);
 
 void *find(TableNode *node, char *key);
 
-void insert(TableNode **node, void* entry, char* key);
+void insert(TableNode **node, void *entry, char *key);
 
-void hashmap_add(HashMap *map,  void* entry, char* key);
+void hashmap_add(HashMap *map, void *entry, char *key);
 
 void *hashmap_get(HashMap *map, char *key);
 

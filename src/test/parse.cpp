@@ -2,9 +2,9 @@
 extern "C"
 {
 #include "../ast.h"
+#include "../hashmap.h"
 #include "../lex.h"
 #include "../parse.h"
-#include "../hashmap.h"
 #include "../util.h"
 }
 

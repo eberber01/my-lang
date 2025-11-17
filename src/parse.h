@@ -1,8 +1,8 @@
 #ifndef PARSE_H
 #define PARSE_H
 #include "ast.h"
-#include "lex.h"
 #include "hashmap.h"
+#include "lex.h"
 #include "util.h"
 
 typedef struct TokenStream
