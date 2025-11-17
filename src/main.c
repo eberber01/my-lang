@@ -7,7 +7,6 @@
 #include "util.h"
 #include <stdio.h>
 
-
 void my_lang(char *file_name)
 {
     size_t input_length = 0;
@@ -19,13 +18,12 @@ void my_lang(char *file_name)
 
     Vector *prog = parse(tokens, table);
 
-    #ifdef DEBUG
+#ifdef DEBUG
     for (size_t i = 0; i < tokens->length; i++)
         print_token((Token *)vector_get(tokens, i));
 
-
     print_ast(prog);
-    #endif
+#endif
 
     free_tokens(tokens);
 
