@@ -85,6 +85,8 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
     AstFuncCall *func_call;
     AstRet *ret;
     AstEnum *enm;
+    AstVarDec *dec;
+    AstVarAsgn *asgn;
     SymTabEntry *entry;
     TypeEnvEntry *entry_type;
 
@@ -213,6 +215,36 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
             entry->const_value = i;
             scope_add(scope, entry);
         }
+        break;
+    case AST_VAR_DEC:
+        dec = (AstVarDec *)node->as;
+        // Check if symbol exists in scope
+        if (in_scope(scope, dec->value))
+        {
+            perror("Redeclaration of variable.");
+            exit(1);
+        }
+
+        entry_type = hashmap_get(type_env, dec->type);
+        entry = make_symtab_entry(str_clone(dec->value), entry_type->ts, SYM_VARIABLE);
+        entry->offset = stackframe_add(frame);
+        dec->symbol = entry;
+        scope_add(scope, entry);
+        break;
+
+    case AST_VAR_ASGN:
+        asgn = (AstVarAsgn *)node->as;
+
+        // Check if symbol exists in scope
+        if (!in_scope(scope, asgn->value))
+        {
+            perror("Undefined variable.");
+            exit(1);
+        }
+
+        sym_check(asgn->expr, frame, scope, type_env);
+        asgn->symbol = scope_lookup(scope, asgn->value);
+
         break;
     default:
         printf("type%d", node->type);

@@ -177,12 +177,27 @@ int is_func_def_start(TokenStream *stream)
     return func_type->type == TOK_TYPE && func_name->type == TOK_IDENT && paren->type == TOK_LPAREN;
 }
 
-int is_var_dec_start(TokenStream *stream)
+bool is_var_def_start(TokenStream *stream)
 {
     Token *var_type = current_token(stream);
     Token *var_name = peek(stream, 1);
     Token *assign = peek(stream, 2);
     return var_type->type == TOK_TYPE && var_name->type == TOK_IDENT && assign->type == TOK_ASSIGN;
+}
+
+bool is_var_dec(TokenStream *stream)
+{
+    Token *var_type = current_token(stream);
+    Token *var_name = peek(stream, 1);
+    Token *semi = peek(stream, 2);
+    return var_type->type == TOK_TYPE && var_name->type == TOK_IDENT && semi->type == TOK_SEMICOLON;
+}
+
+bool is_var_asgn(TokenStream *stream)
+{
+    Token *var_name = current_token(stream);
+    Token *asgn = peek(stream, 1);
+    return var_name->type == TOK_IDENT && asgn->type == TOK_ASSIGN;
 }
 
 AstNode *parse_boolean_expression(TokenStream *stream)
@@ -265,8 +280,12 @@ AstNode *parse_statement(TokenStream *stream)
     {
         if (is_func_def_start(stream))
             return parse_func_def(stream);
-        else if (is_var_dec_start(stream))
+        else if (is_var_def_start(stream))
             return parse_var_def(stream);
+        else if (is_var_dec(stream))
+            return parse_var_dec(stream);
+        else if (is_var_asgn(stream))
+            return parse_var_asgn(stream);
         else if (current->type == TOK_RETURN)
         {
             expect(stream, TOK_RETURN);
@@ -338,6 +357,30 @@ AstNode *parse_func_def(TokenStream *stream)
     // Parse function body
     AstNode *body = parse_comp_stmt(stream);
     return make_ast_func_def(func_str, ts_name, body, params);
+}
+
+AstNode *parse_var_dec(TokenStream *stream)
+{
+    Token *dec_type = expect(stream, TOK_TYPE);
+    Token *dec_value = expect(stream, TOK_IDENT);
+
+    char *value = as_str(dec_value->value);
+    char *type = as_str(dec_type->value);
+
+    expect(stream, TOK_SEMICOLON);
+    return make_ast_var_dec(value, type);
+}
+
+AstNode *parse_var_asgn(TokenStream *stream)
+{
+    Token *asgn_ident = expect(stream, TOK_IDENT);
+    char *value = as_str(asgn_ident->value);
+    expect(stream, TOK_ASSIGN);
+
+    AstNode *expr = parse_expression(stream);
+
+    expect(stream, TOK_SEMICOLON);
+    return make_ast_var_asgn(value, expr);
 }
 
 AstNode *parse_var_def(TokenStream *stream)

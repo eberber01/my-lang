@@ -15,7 +15,9 @@ typedef enum AstNodeType
     AST_RET,
     AST_IF,
     AST_BOOL_EXPR,
-    AST_ENUM
+    AST_ENUM,
+    AST_VAR_DEC,
+    AST_VAR_ASGN
 } AstNodeType;
 
 typedef struct Param
@@ -86,6 +88,20 @@ typedef struct AstVarDef
     SymTabEntry *symbol;
 } AstVarDef;
 
+typedef struct AstVarDec
+{
+    char *value;
+    char *type;
+    SymTabEntry *symbol;
+} AstVarDec;
+
+typedef struct AstVarAsgn
+{
+    char *value;
+    AstNode *expr;
+    SymTabEntry *symbol;
+} AstVarAsgn;
+
 typedef struct AstBoolExpr
 {
     char *value;
@@ -135,5 +151,9 @@ AstNode *make_ast_bool_expr(char *value, AstNode *left, AstNode *right);
 AstNode *make_ast_if(AstNode *expr, AstNode *body);
 
 AstNode *make_ast_enum(char *value, Vector *enums);
+
+AstNode *make_ast_var_dec(char *value, char *type);
+
+AstNode *make_ast_var_asgn(char *value, AstNode *expr);
 
 #endif

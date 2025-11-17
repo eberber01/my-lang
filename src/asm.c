@@ -475,6 +475,25 @@ Register *eval_bool_expr(AstNode *node, RISCV *_asm)
 
     return reg;
 }
+
+Register *eval_var_asgn(AstNode *node, RISCV *_asm)
+{
+    int offset;
+    AstVarAsgn *asgn;
+    Register *reg;
+
+    asgn = (AstVarAsgn *)node->as;
+
+    offset = asgn->symbol->offset;
+
+    reg = asm_eval(asgn->expr, _asm);
+
+    sp_store(offset, reg, _asm);
+    free_register(reg);
+
+    return NULL;
+}
+
 // Recursively write AST representation to Assembly file
 Register *asm_eval(AstNode *node, RISCV *_asm)
 {
@@ -500,7 +519,10 @@ Register *asm_eval(AstNode *node, RISCV *_asm)
         return eval_bool_expr(node, _asm);
     case AST_BIN_EXP:
         return eval_bin_exp(node, _asm);
+    case AST_VAR_ASGN:
+        return eval_var_asgn(node, _asm);
     case AST_ENUM:
+    case AST_VAR_DEC:
         return NULL;
     default:
         perror("unkown ast type");

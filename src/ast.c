@@ -29,6 +29,8 @@ void _print_ast(AstNode *node, int level)
     AstEnum *enm;
     AstIf *if_stmt;
     AstBoolExpr *bool_expr;
+    AstVarDec *dec;
+    AstVarAsgn *asgn;
 
     switch (node->type)
     {
@@ -42,7 +44,7 @@ void _print_ast(AstNode *node, int level)
         printlvl("\tparams=[", level, func_def->params);
         for (size_t i = 0; i < func_def->params->length; i++)
         {
-            printlvl("\t\t'%s'", level, (char *)vector_get(func_def->params, i));
+            printlvl("\t\t'%s'", level, ((Param *)vector_get(func_def->params, i))->value);
         }
         printlvl("\t\t]", level);
 
@@ -58,6 +60,7 @@ void _print_ast(AstNode *node, int level)
 
         printlvl("\tname='%s'", level, var_def->value);
         printlvl("\tscope_id='%d'", level, var_def->symbol->scope_id);
+        printlvl("\tstack_offset='%d'", level, var_def->symbol->offset);
         printlvl("\tvalue=(", level);
         _print_ast(var_def->expr, level + 1);
         printlvl(")", level);
@@ -143,6 +146,29 @@ void _print_ast(AstNode *node, int level)
         _print_ast(bool_expr->right, level + 1);
         printlvl("\t)", level);
 
+        break;
+    case AST_VAR_DEC:
+        dec = (AstVarDec *)node->as;
+
+        printlvl("VarDec(", level);
+        printlvl("\tvalue='%s'", level, dec->value);
+        printlvl("\tstack_offset='%d'", level, dec->symbol->offset);
+        printlvl("\ttype='%s'", level, dec->type);
+        printlvl(")", level);
+        break;
+
+    case AST_VAR_ASGN:
+        asgn = (AstVarAsgn *)node->as;
+
+        printlvl("VarAsgn(", level);
+        printlvl("\tvalue='%s'", level, asgn->value);
+        printlvl("\tstack_offset='%d'", level, asgn->symbol->offset);
+
+        printlvl("\texpr=[", level, asgn->value);
+        _print_ast(asgn->expr, level + 1);
+        printlvl("\t]", level, asgn->value);
+
+        printlvl(")", level);
         break;
     default:
         printf("type%d", node->type);
@@ -230,6 +256,22 @@ AstNode *make_ast_func_call(char *value, Vector *args)
     return make_ast_node(AST_FUNC_CALL, func_call);
 }
 
+AstNode *make_ast_var_dec(char *value, char *type)
+{
+    AstVarDec *dec = (AstVarDec *)my_malloc(sizeof(AstVarDec));
+    dec->value = value;
+    dec->type = type;
+    return make_ast_node(AST_VAR_DEC, dec);
+}
+
+AstNode *make_ast_var_asgn(char *value, AstNode *expr)
+{
+    AstVarAsgn *asgn = (AstVarAsgn *)my_malloc(sizeof(AstVarAsgn));
+    asgn->value = value;
+    asgn->expr = expr;
+    return make_ast_node(AST_VAR_ASGN, asgn);
+}
+
 AstNode *make_ast_var_def(char *value, char *type, AstNode *expr)
 {
     AstVarDef *var_def = (AstVarDef *)my_malloc(sizeof(AstVarDef));
@@ -269,6 +311,8 @@ void ast_free(AstNode *node)
     AstFuncCall *func_call;
     AstRet *ret;
     AstEnum *enm;
+    AstVarDec *dec;
+    AstVarAsgn *asgn;
 
     if (node == NULL)
         return;
@@ -353,6 +397,18 @@ void ast_free(AstNode *node)
         }
         vector_free(enm->enums);
         free(enm);
+        break;
+    case AST_VAR_DEC:
+        dec = (AstVarDec *)node->as;
+        free(dec->value);
+        free(dec->type);
+        free(dec);
+        break;
+    case AST_VAR_ASGN:
+        asgn = (AstVarAsgn *)node->as;
+        ast_free(asgn->expr);
+        free(asgn->value);
+        free(asgn);
         break;
     default:
         perror("unkown ast type");
