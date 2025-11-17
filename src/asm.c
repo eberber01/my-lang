@@ -495,7 +495,7 @@ Register *asm_eval(AstNode *node, RISCV *_asm)
 void asm_init(RISCV *riscv)
 {
     // Create and set up out file
-    FILE *out = fopen("./asm", "w");
+    FILE *out = fopen("./asm.s", "w");
     fprintf(out, ".globl main\n\n");
     fprintf(out, "\tj main\n");
     riscv->out = out;
