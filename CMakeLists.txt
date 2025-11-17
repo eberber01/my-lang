@@ -68,6 +68,13 @@ add_test(NAME my-lang-tests COMMAND my-lang-tests)
 
 find_program(CLANG_FORMAT_BIN clang-format)
 
+add_custom_target(run
+    COMMAND riscv64-elf-as -o ${CMAKE_BINARY_DIR}/prog.o ${CMAKE_SOURCE_DIR}/asm.s
+    COMMAND riscv64-elf-ld -Ttext=0x10000 -o ${CMAKE_BINARY_DIR}/prog ${CMAKE_BINARY_DIR}/prog.o
+    COMMAND qemu-riscv64 ${CMAKE_BINARY_DIR}/prog
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)
+
 if(CLANG_FORMAT_BIN)
     file(GLOB_RECURSE ALL_SOURCE_FILES
         "${CMAKE_SOURCE_DIR}/src/*.c"
