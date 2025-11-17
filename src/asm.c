@@ -375,13 +375,16 @@ Register *eval_func_def(AstNode *node, RISCV *_asm)
         param->symbol->arg_reg = i;
     }
 
+    size_t frame_size = func_def->symbol->frame->size;
     // Create stack space for frame
-    sp_increase(func_def->symbol->frame->size, _asm);
+
+    if (frame_size > 0)
+        sp_increase(frame_size, _asm);
 
     asm_eval(func_def->body, _asm);
 
-    // Restore stack
-    sp_decrease(func_def->symbol->frame->size, _asm);
+    if (frame_size > 0)
+        sp_increase(frame_size, _asm);
 
     // Not main function, return
     if (strcmp(func_def->value, "main"))
@@ -518,14 +521,32 @@ void asm_free(RISCV *riscv)
     free(riscv);
 }
 
+void ecall(RISCV *_asm)
+{
+    fprintf(_asm->out, "\tecall");
+}
+
 // Generate Assembly file from AST
 void gen_asm(Vector *prog)
 {
+    int linux_exit_syscall = 93;
+    int exit_code = 0;
+
     RISCV *_asm = make_riscv();
     asm_init(_asm);
     for (size_t i = 0; i < prog->length; i++)
     {
         asm_eval((AstNode *)vector_get(prog, i), _asm);
     }
+
+    // Linux prologue
+
+    // a7
+    load_register(vector_get(_asm->arg, 7), linux_exit_syscall, _asm);
+
+    // a0
+    load_register(vector_get(_asm->arg, 0), exit_code, _asm);
+    ecall(_asm);
+
     asm_free(_asm);
 }
