@@ -13,8 +13,8 @@ struct Scope
     int id;
 };
 
-void sym_check(AstNode *node, StackFrame *frame, Scope *scope);
+void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env);
 
-void sema_check(Vector *prog, HashMap *symtab);
+void sema_check(Vector *prog, HashMap *type_env);
 
 #endif

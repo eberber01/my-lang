@@ -35,6 +35,12 @@ typedef enum TypeSpecifier
     TS_FLOAT
 } TypeSpecifier;
 
+typedef struct TypeEnvEntry
+{
+    char *value;
+    TypeSpecifier ts;
+} TypeEnvEntry;
+
 typedef struct SymTabEntry
 {
     char *key;
@@ -90,7 +96,7 @@ HashMap *hashmap_new(void);
 
 void symtab_free(HashMap *table);
 
-void symtab_init(HashMap *table);
+void type_env_init(HashMap *table);
 
 HashMap *symtab_clone(HashMap *table);
 

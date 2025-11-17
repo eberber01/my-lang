@@ -13,6 +13,14 @@
 
 #define TABLE_SIZE 100
 
+TypeEnvEntry *make_type_env_entry(char *value, TypeSpecifier ts)
+{
+    TypeEnvEntry *entry = my_malloc(sizeof(TypeEnvEntry));
+    entry->value = value;
+    entry->ts = ts;
+    return entry;
+}
+
 SymTabEntry *make_symtab_entry(char *key, TypeSpecifier type, SymbolType symbol)
 {
     SymTabEntry *entry = my_malloc(sizeof(SymTabEntry));
@@ -175,15 +183,12 @@ void symtab_free(HashMap *symtab)
     free(symtab);
 }
 
-void symtab_init(HashMap *symtab)
+void type_env_init(HashMap *type_env)
 {
-    hashmap_add(symtab, make_symtab_entry("int", TS_INT, SYM_KEYWORD), "int");
-    hashmap_add(symtab, make_symtab_entry("void", TS_VOID, SYM_KEYWORD), "void");
-    hashmap_add(symtab, make_symtab_entry("char", TS_CHAR, SYM_KEYWORD), "char");
-    hashmap_add(symtab, make_symtab_entry("float", TS_FLOAT, SYM_KEYWORD), "float");
-    hashmap_add(symtab, make_symtab_entry("double", TS_DOUBLE, SYM_KEYWORD), "double");
-    hashmap_add(symtab, make_symtab_entry("long", TS_LONG, SYM_KEYWORD), "long");
-    hashmap_add(symtab, make_symtab_entry("return", TS_VOID, SYM_KEYWORD), "return");
-    hashmap_add(symtab, make_symtab_entry("if", TS_VOID, SYM_KEYWORD), "if");
-    hashmap_add(symtab, make_symtab_entry("enum", TS_VOID, SYM_KEYWORD), "enum");
+    hashmap_add(type_env, make_type_env_entry("int", TS_INT), "int");
+    hashmap_add(type_env, make_type_env_entry("void", TS_VOID), "void");
+    hashmap_add(type_env, make_type_env_entry("char", TS_CHAR), "char");
+    hashmap_add(type_env, make_type_env_entry("float", TS_FLOAT), "float");
+    hashmap_add(type_env, make_type_env_entry("double", TS_DOUBLE), "double");
+    hashmap_add(type_env, make_type_env_entry("long", TS_LONG), "long");
 }

@@ -11,14 +11,15 @@ void my_lang(char *file_name)
 {
     size_t input_length = 0;
     char *input = read_file(file_name, &input_length);
-    HashMap *table = hashmap_new();
-    symtab_init(table);
+    HashMap *type_env = hashmap_new();
+
+    type_env_init(type_env);
 
     Vector *tokens = tokenize(input, input_length);
 
     Vector *prog = parse(tokens);
 
-    sema_check(prog, table);
+    sema_check(prog, type_env);
 
 #ifdef DEBUG
     for (size_t i = 0; i < tokens->length; i++)
