@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "symtab.h"
+#include "hashmap.h"
 #include "util.h"
 
 typedef struct Lexer

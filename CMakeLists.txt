@@ -19,8 +19,8 @@ add_executable(my-lang
     ../src/main.c
     ../src/parse.c
     ../src/parse.h
-    ../src/symtab.c
-    ../src/symtab.h
+    ../src/hashmap.c
+    ../src/hashmap.h
     ../src/sema.c
     ../src/sema.h
     ../src/util.c
@@ -36,8 +36,8 @@ add_library(my-lib
     ../src/lex.h
     ../src/parse.c
     ../src/parse.h
-    ../src/symtab.c
-    ../src/symtab.h
+    ../src/hashmap.c
+    ../src/hashmap.h
     ../src/util.c
     ../src/util.h
 )
@@ -47,7 +47,7 @@ enable_testing()
 
 add_executable(
     my-lang-tests
-    ../src/test/symtab.cpp
+    ../src/test/hashmap.cpp
     ../src/test/vector.cpp
     ../src/test/string.cpp
     ../src/test/parse.cpp

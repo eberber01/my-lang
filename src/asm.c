@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "ast.h"
-#include "symtab.h"
+#include "hashmap.h"
 #include "util.h"
 
 Register *make_register(char *label)

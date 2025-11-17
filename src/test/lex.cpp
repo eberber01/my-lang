@@ -3,7 +3,6 @@
 extern "C"
 {
 #include "../lex.h"
-#include "../symtab.h"
 #include "../util.h"
 }
 

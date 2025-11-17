@@ -7,7 +7,7 @@
 
 #include "ast.h"
 #include "lex.h"
-#include "symtab.h"
+#include "hashmap.h"
 #include "util.h"
 
 // Get current token in stream
@@ -71,7 +71,7 @@ Token *expect(TokenStream *stream, TokenType expect)
     exit(1);
 }
 
-AstNode *parse_expression(TokenStream *stream, SymTab *table)
+AstNode *parse_expression(TokenStream *stream, HashMap *table)
 {
     AstNode *left = parse_term(stream, table);
     Token *current;
@@ -85,7 +85,7 @@ AstNode *parse_expression(TokenStream *stream, SymTab *table)
     return left;
 }
 
-AstNode *parse_term(TokenStream *stream, SymTab *table)
+AstNode *parse_term(TokenStream *stream, HashMap *table)
 {
     AstNode *left = parse_factor(stream, table);
     Token *current;
@@ -106,7 +106,7 @@ int is_func_call_start(TokenStream *stream)
     return func_name->type == TOK_IDENT && lparen->type == TOK_LPAREN;
 }
 
-AstNode *parse_func_call(TokenStream *stream, SymTab *table)
+AstNode *parse_func_call(TokenStream *stream, HashMap *table)
 {
     Token *name = expect(stream, TOK_IDENT);
     char *name_str = as_str(name->value);
@@ -132,7 +132,7 @@ AstNode *parse_func_call(TokenStream *stream, SymTab *table)
     return make_ast_func_call(name_str, args);
 }
 
-AstNode *parse_factor(TokenStream *stream, SymTab *table)
+AstNode *parse_factor(TokenStream *stream, HashMap *table)
 {
     Token *current = current_token(stream);
     if (current->type == TOK_NUM)
@@ -186,7 +186,7 @@ int is_var_dec_start(TokenStream *stream)
     return var_type->type == TOK_TYPE && var_name->type == TOK_IDENT && assign->type == TOK_ASSIGN;
 }
 
-AstNode *parse_boolean_expression(TokenStream *stream, SymTab *table)
+AstNode *parse_boolean_expression(TokenStream *stream, HashMap *table)
 {
     Token *current;
     AstNode *left = parse_expression(stream, table);
@@ -200,7 +200,7 @@ AstNode *parse_boolean_expression(TokenStream *stream, SymTab *table)
     return left;
 }
 
-AstNode *parse_if_statement(TokenStream *stream, SymTab *table)
+AstNode *parse_if_statement(TokenStream *stream, HashMap *table)
 {
     expect(stream, TOK_IF);
     expect(stream, TOK_LPAREN);
@@ -213,7 +213,7 @@ AstNode *parse_if_statement(TokenStream *stream, SymTab *table)
     return make_ast_if(expr, if_body);
 }
 
-void parse_enum(TokenStream *stream, SymTab *table)
+void parse_enum(TokenStream *stream, HashMap *table)
 {
     Token *curr;
     Token *enum_ident;
@@ -230,7 +230,7 @@ void parse_enum(TokenStream *stream, SymTab *table)
         entry = make_symtab_entry(as_str(enum_ident->value), TS_INT, SYM_CONST);
         entry->const_value = enum_count;
 
-        symtab_add(table, entry);
+        hashmap_add(table, entry, as_str(enum_ident->value));
 
         if ((curr = current_token(stream)) && curr->type != TOK_COMMA)
         {
@@ -244,7 +244,7 @@ void parse_enum(TokenStream *stream, SymTab *table)
     expect(stream, TOK_SEMICOLON);
 }
 
-AstNode *parse_comp_stmt(TokenStream *stream, SymTab *table)
+AstNode *parse_comp_stmt(TokenStream *stream, HashMap *table)
 {
 
     Token *current;
@@ -261,7 +261,7 @@ AstNode *parse_comp_stmt(TokenStream *stream, SymTab *table)
     return make_ast_comp_stmt(body);
 }
 
-AstNode *parse_statement(TokenStream *stream, SymTab *table)
+AstNode *parse_statement(TokenStream *stream, HashMap *table)
 {
     Token *current;
     while ((current = current_token(stream)))
@@ -324,7 +324,7 @@ Vector *parse_func_params(TokenStream *stream)
     return params;
 }
 
-AstNode *parse_func_def(TokenStream *stream, SymTab *table)
+AstNode *parse_func_def(TokenStream *stream, HashMap *table)
 {
     Token *func_type = expect(stream, TOK_TYPE);
     Token *func_name = expect(stream, TOK_IDENT);
@@ -343,7 +343,7 @@ AstNode *parse_func_def(TokenStream *stream, SymTab *table)
     return make_ast_func_def(func_str, ts_name, body, params);
 }
 
-AstNode *parse_var_def(TokenStream *stream, SymTab *table)
+AstNode *parse_var_def(TokenStream *stream, HashMap *table)
 {
     Token *var_type = expect(stream, TOK_TYPE);
     Token *var_name = expect(stream, TOK_IDENT);
@@ -362,7 +362,7 @@ AstNode *parse_var_def(TokenStream *stream, SymTab *table)
     return make_ast_var_def(var_str, type_str, init);
 }
 
-Vector *parse_prog(TokenStream *stream, SymTab *table)
+Vector *parse_prog(TokenStream *stream, HashMap *table)
 {
     Token *curr;
     AstNode *stmt;
@@ -376,7 +376,7 @@ Vector *parse_prog(TokenStream *stream, SymTab *table)
 }
 
 // Returns list of AstNode representing program
-Vector *parse(Vector *tokens, SymTab *table)
+Vector *parse(Vector *tokens, HashMap *table)
 {
     TokenStream *stream = make_token_stream(tokens);
     Vector *prog = parse_prog(stream, table);

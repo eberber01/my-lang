@@ -2,7 +2,7 @@
 #define ASM_H
 
 #include "ast.h"
-#include "symtab.h"
+#include "hashmap.h"
 #include "util.h"
 #include <stdbool.h>
 #include <stdio.h>

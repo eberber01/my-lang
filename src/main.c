@@ -1,9 +1,10 @@
 #include "asm.h"
 #include "ast.h"
+#include "hashmap.h"
 #include "lex.h"
 #include "parse.h"
 #include "sema.h"
-#include "symtab.h"
+#include "hashmap.h"
 #include "util.h"
 #include <stdio.h>
 
@@ -11,7 +12,7 @@ void my_lang(char *file_name)
 {
     size_t input_length = 0;
     char *input = read_file(file_name, &input_length);
-    SymTab *table = symtab_new();
+    HashMap *table = hashmap_new();
     symtab_init(table);
 
     Vector *tokens = tokenize(input, input_length);

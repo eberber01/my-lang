@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "symtab.h"
 #include "util.h"
 
 char *read_file(char *filename, size_t *length)

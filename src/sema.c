@@ -1,6 +1,6 @@
 #include "sema.h"
 #include "ast.h"
-#include "symtab.h"
+#include "hashmap.h"
 #include "util.h"
 #include <stdio.h>
 
@@ -29,7 +29,7 @@ int stackframe_add(StackFrame *frame)
 Scope *enter_scope(Scope *parent)
 {
     Scope *child = (Scope *)my_malloc(sizeof(Scope));
-    child->table = symtab_clone(parent->table);
+    child->symtab = symtab_clone(parent->symtab);
     child->parent = parent;
     child->id = ++scope_id;
     return child;
@@ -45,7 +45,7 @@ Scope *exit_scope(Scope *scope)
 void scope_add(Scope *scope, SymTabEntry *entry)
 {
     entry->scope_id = scope->id;
-    symtab_add(scope->table, entry);
+    hashmap_add(scope->symtab, entry, entry->key);
 }
 
 SymTabEntry *scope_lookup(Scope *scope, char *key)
@@ -56,7 +56,7 @@ SymTabEntry *scope_lookup(Scope *scope, char *key)
     curr = scope;
     while (curr != NULL)
     {
-        entry = symtab_get(curr->table, key);
+        entry = hashmap_get(curr->symtab, key);
         if (entry)
             return entry;
 
@@ -209,11 +209,11 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope)
     }
 }
 
-void sema_check(Vector *prog, SymTab *table)
+void sema_check(Vector *prog, HashMap *table)
 {
     AstNode *node;
     Scope *global = (Scope *)my_malloc(sizeof(Scope));
-    global->table = table;
+    global->symtab = table;
     global->parent = NULL;
     global->id = 0;
     for (size_t i = 0; i < prog->length; i++)

@@ -2,7 +2,7 @@
 #define PARSE_H
 #include "ast.h"
 #include "lex.h"
-#include "symtab.h"
+#include "hashmap.h"
 #include "util.h"
 
 typedef struct TokenStream
@@ -11,19 +11,19 @@ typedef struct TokenStream
     size_t current;
 } TokenStream;
 
-AstNode *parse_expression(TokenStream *stream, SymTab *table);
+AstNode *parse_expression(TokenStream *stream, HashMap *map);
 
-AstNode *parse_statement(TokenStream *stream, SymTab *table);
+AstNode *parse_statement(TokenStream *stream, HashMap *map);
 
-AstNode *parse_factor(TokenStream *stream, SymTab *table);
+AstNode *parse_factor(TokenStream *stream, HashMap *map);
 
-AstNode *parse_term(TokenStream *stream, SymTab *table);
+AstNode *parse_term(TokenStream *stream, HashMap *map);
 
-Vector *parse(Vector *tokens, SymTab *table);
+Vector *parse(Vector *tokens, HashMap *map);
 
-AstNode *parse_var_def(TokenStream *stream, SymTab *table);
+AstNode *parse_var_def(TokenStream *stream, HashMap *map);
 
-AstNode *parse_func_def(TokenStream *stream, SymTab *table);
+AstNode *parse_func_def(TokenStream *stream, HashMap *map);
 
 Token *current_token(TokenStream *stream);
 

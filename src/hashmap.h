@@ -62,34 +62,36 @@ typedef struct SymTabEntry
 
 typedef struct TableNode
 {
-    struct SymTabEntry *data;
+    void *data;
+    char *key;
     struct TableNode *next;
+    
 } TableNode;
 
-typedef struct SymTab
+typedef struct HashMap
 {
     size_t size;
-    struct TableNode **map;
-} SymTab;
+    struct TableNode **table;
+} HashMap;
 
 SymTabEntry *make_symtab_entry(char *key, TypeSpecifier type, SymbolType symbol);
 
-TableNode *make_node(TableNode *next, SymTabEntry *data);
+TableNode *make_table_node(TableNode *next, void *data, char* key);
 
-SymTabEntry *find(TableNode *node, char *key);
+void *find(TableNode *node, char *key);
 
-void insert(TableNode **node, SymTabEntry *entry);
+void insert(TableNode **node, void* entry, char* key);
 
-void symtab_add(SymTab *table, SymTabEntry *entry);
+void hashmap_add(HashMap *map,  void* entry, char* key);
 
-SymTabEntry *symtab_get(SymTab *table, char *key);
+void *hashmap_get(HashMap *map, char *key);
 
-SymTab *symtab_new(void);
+HashMap *hashmap_new(void);
 
-void symtab_free(SymTab *table);
+void symtab_free(HashMap *table);
 
-void symtab_init(SymTab *table);
+void symtab_init(HashMap *table);
 
-SymTab *symtab_clone(SymTab *table);
+HashMap *symtab_clone(HashMap *table);
 
 #endif

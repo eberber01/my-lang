@@ -1,6 +1,6 @@
 #ifndef AST_H
 #define AST_H
-#include "symtab.h"
+#include "hashmap.h"
 #include "util.h"
 
 typedef enum AstNodeType
