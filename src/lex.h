@@ -35,6 +35,8 @@ typedef enum TokenType
     TOK_RETURN,
     TOK_IF,
     TOK_EQUAL,
+    TOK_NOT_EQUAL,
+    TOK_NOT,
     TOK_ENUM,
     TOK_WHILE
 } TokenType;

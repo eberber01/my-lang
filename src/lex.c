@@ -115,6 +115,19 @@ Vector *tokenize(const char *input, size_t length)
                 t->value = string("=");
             }
             break;
+        case '!':
+            if ((peek = next(lexer)) == '=')
+            {
+                t->type = TOK_NOT_EQUAL;
+                t->value = string("!=");
+            }
+            else
+            {
+                back(lexer);
+                t->type = TOK_NOT;
+                t->value = string("!");
+            }
+            break;
         case ',':
             t->type = TOK_COMMA;
             t->value = string(",");

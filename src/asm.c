@@ -466,10 +466,17 @@ Register *eval_bool_expr(AstNode *node, RISCV *_asm)
 
     reg = alloc_register(_asm);
 
-    // == Check if equal
     fprintf(_asm->out, "\tsub %s, %s, %s \n", reg->label, right->label, left->label);
-
-    fprintf(_asm->out, "\tseqz %s, %s \n", reg->label, reg->label);
+    if (!strcmp(bool_expr->value, "=="))
+    {
+        // == Check if equal
+        fprintf(_asm->out, "\tseqz %s, %s \n", reg->label, reg->label);
+    }
+    else
+    {
+        // !=
+        fprintf(_asm->out, "\tsnez %s, %s \n", reg->label, reg->label);
+    }
 
     return reg;
 }

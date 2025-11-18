@@ -204,7 +204,7 @@ AstNode *parse_boolean_expression(TokenStream *stream)
 {
     Token *current;
     AstNode *left = parse_expression(stream);
-    while ((current = current_token(stream)) && (current->type == TOK_EQUAL))
+    while ((current = current_token(stream)) && (current->type == TOK_EQUAL || current->type == TOK_NOT_EQUAL))
     {
         char *value = as_str(current->value);
         next_token(stream);
