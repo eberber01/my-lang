@@ -32,12 +32,19 @@ jobs:
           qemu-system-misc \
           libgtest-dev
 
-    - name: Install RISC-V bare-metal toolchain
+    - name: Install RISC-V Bare-Metal Toolchain
       run: |
         sudo apt-get update
-        sudo apt-get install -y \
-        gcc-riscv64-elf \
-        binutils-riscv64-elf
+        sudo apt-get install -y software-properties-common
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        sudo apt-get update
+        sudo apt-get install -y gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
+
+    - name: Verify Toolchain
+      run: |
+        which riscv64-unknown-elf-as
+        which riscv64-unknown-elf-ld
+        which riscv64-unknown-elf-gcc
     
     - name: Build GTest
       run: |
