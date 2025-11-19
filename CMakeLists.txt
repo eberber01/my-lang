@@ -135,7 +135,7 @@ foreach(TEST_FILE ${COMPILE_TEST_SOURCES})
 endforeach()
 
 # Aggregate target
-add_custom_target(build_compile_tests ALL
+add_custom_target(build_compile_tests
     DEPENDS ${COMPILE_ELFS}
     COMMENT "Building all compile-only tests"
 )
