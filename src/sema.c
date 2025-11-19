@@ -84,6 +84,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
     AstVarDec *dec;
     AstVarAsgn *asgn;
     AstWhile *w_stmt;
+    AstFor *f_stmt;
     SymTabEntry *entry;
     TypeEnvEntry *entry_type;
 
@@ -244,6 +245,16 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         sym_check(w_stmt->expr, frame, scope, type_env);
         sym_check(w_stmt->body, frame, scope, type_env);
 
+        break;
+
+    case AST_FOR:
+        f_stmt = (AstFor *)node->as;
+        sym_check(f_stmt->init, frame, scope, type_env);
+        sym_check(f_stmt->cond, frame, scope, type_env);
+        sym_check(f_stmt->step, frame, scope, type_env);
+        sym_check(f_stmt->body, frame, scope, type_env);
+        break;
+    case AST_EMPTY_EXPR:
         break;
     default:
         printf("type%d", node->type);

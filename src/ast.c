@@ -31,6 +31,7 @@ void _print_ast(AstNode *node, int level)
     AstVarDec *dec;
     AstVarAsgn *asgn;
     AstWhile *w_stmt;
+    AstFor *f_stmt;
 
     switch (node->type)
     {
@@ -173,6 +174,29 @@ void _print_ast(AstNode *node, int level)
 
         printlvl(")", level);
         break;
+    case AST_FOR:
+        f_stmt = (AstFor *)node->as;
+        printlvl("For(", level);
+
+        printlvl("\tinit=[", level);
+        _print_ast(f_stmt->init, level + 1);
+        printlvl("\t]", level);
+
+        printlvl("\tcond=[", level);
+        _print_ast(f_stmt->cond, level + 1);
+        printlvl("\t]", level);
+
+        printlvl("\tstep=[", level);
+        _print_ast(f_stmt->step, level + 1);
+        printlvl("\t]", level);
+
+        printlvl("\tbody=[", level);
+        _print_ast(f_stmt->body, level + 1);
+        printlvl("\t]", level);
+        break;
+    case AST_EMPTY_EXPR:
+        printlvl("Empty Expr()", level);
+        break;
     default:
         printf("type%d", node->type);
         perror("not impl");
@@ -300,6 +324,16 @@ AstNode *make_ast_while(AstNode *expr, AstNode *body)
     return make_ast_node(AST_WHILE, w_stmt);
 }
 
+AstNode *make_ast_for(AstNode *init, AstNode *cond, AstNode *step, AstNode *body)
+{
+    AstFor *f_stmt = (AstFor *)my_malloc(sizeof(AstFor));
+    f_stmt->init = init;
+    f_stmt->cond = cond;
+    f_stmt->step = step;
+    f_stmt->body = body;
+    return make_ast_node(AST_FOR, f_stmt);
+}
+
 void ast_free(AstNode *node)
 {
     AstCompStmt *comp_stmt;
@@ -314,6 +348,7 @@ void ast_free(AstNode *node)
     AstEnum *enm;
     AstVarDec *dec;
     AstVarAsgn *asgn;
+    AstFor *f_stmt;
     AstWhile *w_stmt;
 
     if (node == NULL)
@@ -410,6 +445,16 @@ void ast_free(AstNode *node)
         ast_free(w_stmt->body);
         ast_free(w_stmt->expr);
         free(w_stmt);
+        break;
+    case AST_FOR:
+        f_stmt = (AstFor *)node->as;
+        ast_free(f_stmt->init);
+        ast_free(f_stmt->cond);
+        ast_free(f_stmt->step);
+        ast_free(f_stmt->body);
+        free(f_stmt);
+        break;
+    case AST_EMPTY_EXPR:
         break;
     default:
         perror("unkown ast type");

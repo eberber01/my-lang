@@ -18,7 +18,9 @@ typedef enum AstNodeType
     AST_ENUM,
     AST_VAR_DEC,
     AST_VAR_ASGN,
-    AST_WHILE
+    AST_WHILE,
+    AST_FOR,
+    AST_EMPTY_EXPR,
 } AstNodeType;
 
 typedef struct Param
@@ -121,6 +123,14 @@ typedef struct AstWhile
     AstNode *body;
 } AstWhile;
 
+typedef struct AstFor
+{
+    AstNode *init;
+    AstNode *cond;
+    AstNode *step;
+    AstNode *body;
+} AstFor;
+
 void print_ast(Vector *tree);
 void visit(AstNode *node);
 
@@ -157,6 +167,8 @@ AstNode *make_ast_var_dec(char *value, char *type);
 AstNode *make_ast_var_asgn(char *value, AstNode *expr);
 
 AstNode *make_ast_while(AstNode *expr, AstNode *body);
+
+AstNode *make_ast_for(AstNode *init, AstNode *cond, AstNode *step, AstNode *body);
 
 void _print_ast(AstNode *, int);
 

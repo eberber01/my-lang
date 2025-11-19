@@ -66,7 +66,8 @@ Token *expect(TokenStream *stream, TokenType expect)
         return current;
     }
 
-    fprintf(stderr, "Expected token of type %d at line: %d, pos: %d\n", expect, current->line, current->pos);
+    fprintf(stderr, "Expected token of type %d at line: %d, pos: %d, actual type: %d\n", expect, current->line,
+            current->pos, current->type);
     exit(1);
 }
 
@@ -105,7 +106,7 @@ AstNode *parse_primary_expression(TokenStream *stream)
     }
     else
     {
-        return NULL;
+        return make_ast_node(AST_EMPTY_EXPR, NULL);
     }
 }
 
@@ -337,6 +338,32 @@ AstNode *parse_while(TokenStream *stream)
     return make_ast_while(expr, body);
 }
 
+AstNode *parse_for(TokenStream *stream)
+{
+    AstNode *init;
+    expect(stream, TOK_FOR);
+    expect(stream, TOK_LPAREN);
+    if (is_declartion(stream))
+    {
+
+        init = parse_declartion(stream);
+    }
+    else
+    {
+        init = parse_expression(stream);
+        expect(stream, TOK_SEMICOLON);
+    }
+
+    AstNode *cond = parse_expression(stream);
+    expect(stream, TOK_SEMICOLON);
+
+    AstNode *step = parse_expression(stream);
+    expect(stream, TOK_RPAREN);
+
+    AstNode *body = parse_statement(stream);
+    return make_ast_for(init, cond, step, body);
+}
+
 AstNode *parse_expression_statement(TokenStream *stream)
 {
 
@@ -347,6 +374,10 @@ AstNode *parse_expression_statement(TokenStream *stream)
 
 AstNode *parse_iter_statement(TokenStream *stream)
 {
+    Token *current = current_token(stream);
+    if (current->type == TOK_FOR)
+        return parse_for(stream);
+
     return parse_while(stream);
 }
 
@@ -388,7 +419,7 @@ AstNode *parse_statement(TokenStream *stream)
     Token *current;
     while ((current = current_token(stream)))
     {
-        if (current->type == TOK_WHILE)
+        if (current->type == TOK_WHILE || current->type == TOK_FOR)
             return parse_iter_statement(stream);
         else if (is_declartion(stream))
             return parse_declartion(stream);
@@ -475,7 +506,6 @@ AstNode *parse_var_asgn(TokenStream *stream)
 
     AstNode *expr = parse_expression(stream);
 
-    // expect(stream, TOK_SEMICOLON);
     return make_ast_var_asgn(value, expr);
 }
 

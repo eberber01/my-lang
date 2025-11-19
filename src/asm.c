@@ -517,6 +517,42 @@ Register *eval_while(AstNode *node, RISCV *_asm)
     return NULL;
 }
 
+Register *eval_for(AstNode *node, RISCV *_asm)
+{
+    AstFor *f_stmt = (AstFor *)node->as;
+    Register *reg;
+    int id = cond_count;
+
+    // Add label
+    fprintf(_asm->out, "for_init%d:\n", id);
+
+    reg = asm_eval(f_stmt->init, _asm);
+
+    // Could be expression or declartion so we need to free register
+    if (reg != NULL)
+        free_register(reg);
+
+    fprintf(_asm->out, "for_cond%d:\n", id);
+    reg = asm_eval(f_stmt->cond, _asm);
+
+    // cmp and branch to end label
+    fprintf(_asm->out, "\tbeq %s, zero, for_end%d\n", reg->label, id);
+    free_register(reg);
+
+    fprintf(_asm->out, "for_body%d:\n", id);
+    asm_eval(f_stmt->body, _asm);
+
+    fprintf(_asm->out, "for_step%d:\n", id);
+    reg = asm_eval(f_stmt->step, _asm);
+    free_register(reg);
+
+    fprintf(_asm->out, "\tj for_cond%d\n", id);
+    fprintf(_asm->out, "for_end%d:\n", id);
+
+    cond_count++;
+    return NULL;
+}
+
 // Recursively write AST representation to Assembly file
 Register *asm_eval(AstNode *node, RISCV *_asm)
 {
@@ -544,7 +580,10 @@ Register *asm_eval(AstNode *node, RISCV *_asm)
         return eval_var_asgn(node, _asm);
     case AST_WHILE:
         return eval_while(node, _asm);
+    case AST_FOR:
+        return eval_for(node, _asm);
     case AST_ENUM:
+    case AST_EMPTY_EXPR:
     case AST_VAR_DEC:
         return NULL;
     default:
