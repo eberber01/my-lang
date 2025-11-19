@@ -342,7 +342,6 @@ AstNode *parse_declartion(TokenStream *stream)
 
 AstNode *parse_statement(TokenStream *stream)
 {
-    printf("parse_statement\n");
     Token *current;
     while ((current = current_token(stream)))
     {
@@ -396,7 +395,6 @@ Vector *parse_func_params(TokenStream *stream)
 
 AstNode *parse_func_def(TokenStream *stream)
 {
-    printf("func_def\n");
     Token *func_type = expect(stream, TOK_TYPE);
     Token *func_name = expect(stream, TOK_IDENT);
 
