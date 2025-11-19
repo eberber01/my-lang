@@ -179,7 +179,7 @@ void label_add(char *name, RISCV *_asm)
 // Move value from reg1 to reg2
 void move_register(Register *reg1, Register *reg2, RISCV *_asm)
 {
-    fprintf(_asm->out, "\tmv %s, %s\n", reg1->label, reg2->label);
+    fprintf(_asm->out, "\tmv %s, %s\n", reg2->label, reg1->label);
 }
 
 Register *eval_func_call(AstNode *node, RISCV *_asm)
@@ -228,7 +228,7 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
         AstNode *arg = (AstNode *)vector_get(func_call->args, i);
         // This is always going to be an expression
         reg = asm_eval(arg, _asm);
-        move_register(vector_get(_asm->arg, i), reg, _asm);
+        move_register(reg,vector_get(_asm->arg, i), _asm);
         free_register(reg);
     }
 
