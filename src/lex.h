@@ -34,6 +34,7 @@ typedef enum TokenType
     TOK_COMMA,
     TOK_RETURN,
     TOK_IF,
+    TOK_ELSE,
     TOK_EQUAL,
     TOK_NOT_EQUAL,
     TOK_NOT,

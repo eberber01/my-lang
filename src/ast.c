@@ -27,7 +27,7 @@ void _print_ast(AstNode *node, int level)
     AstRet *ret;
     AstIntConst *cons;
     AstEnum *enm;
-    AstIf *if_stmt;
+    AstIfElse *if_stmt;
     AstVarDec *dec;
     AstVarAsgn *asgn;
     AstWhile *w_stmt;
@@ -128,14 +128,24 @@ void _print_ast(AstNode *node, int level)
         printlvl(")", level);
         break;
     case AST_IF:
-        if_stmt = (AstIf *)node->as;
+        if_stmt = (AstIfElse *)node->as;
         printlvl("If(", level);
-        printlvl("\texpr=[", level);
-        _print_ast(if_stmt->expr, level);
+
+        printlvl("\tif_expr=[", level);
+        _print_ast(if_stmt->if_expr, level);
         printlvl("\t]", level);
-        printlvl("\tbody=[", level);
-        _print_ast(if_stmt->body, level);
+
+        printlvl("\tif_body=[", level);
+        _print_ast(if_stmt->if_body, level);
         printlvl("\t]", level);
+
+        if (if_stmt->else_body != NULL)
+        {
+            printlvl("\telse_body=[", level);
+            _print_ast(if_stmt->else_body, level);
+            printlvl("\t]", level);
+        }
+
         break;
     case AST_VAR_DEC:
         dec = (AstVarDec *)node->as;
@@ -308,11 +318,12 @@ AstNode *make_ast_var_def(char *value, char *type, AstNode *expr)
     return make_ast_node(AST_VAR_DEF, var_def);
 }
 
-AstNode *make_ast_if(AstNode *expr, AstNode *body)
+AstNode *make_ast_if_else(AstNode *if_expr, AstNode *if_body, AstNode *else_body)
 {
-    AstIf *if_stmt = (AstIf *)my_malloc(sizeof(AstIf));
-    if_stmt->body = body;
-    if_stmt->expr = expr;
+    AstIfElse *if_stmt = (AstIfElse *)my_malloc(sizeof(AstIfElse));
+    if_stmt->if_body = if_body;
+    if_stmt->if_expr = if_expr;
+    if_stmt->else_body = else_body;
     return make_ast_node(AST_IF, if_stmt);
 }
 
@@ -337,7 +348,7 @@ AstNode *make_ast_for(AstNode *init, AstNode *cond, AstNode *step, AstNode *body
 void ast_free(AstNode *node)
 {
     AstCompStmt *comp_stmt;
-    AstIf *if_stmt;
+    AstIfElse *if_stmt;
     AstVarDef *var_def;
     AstBinExp *bin_exp;
     AstIntConst *int_const;
@@ -364,9 +375,11 @@ void ast_free(AstNode *node)
         free(comp_stmt);
         break;
     case AST_IF:
-        if_stmt = (AstIf *)node->as;
-        ast_free(if_stmt->body);
-        ast_free(if_stmt->expr);
+        if_stmt = (AstIfElse *)node->as;
+        ast_free(if_stmt->if_body);
+        ast_free(if_stmt->if_expr);
+        if (if_stmt->else_body != NULL)
+            ast_free(if_stmt->else_body);
         free(if_stmt);
         break;
     case AST_VAR_DEF:

@@ -225,6 +225,8 @@ void tokenize_ident(char c, Token *token, Lexer *lexer)
         token->type = TOK_RETURN;
     else if (string_eq(ident, "if"))
         token->type = TOK_IF;
+    else if (string_eq(ident, "else"))
+        token->type = TOK_ELSE;
     else if (string_eq(ident, "enum"))
         token->type = TOK_ENUM;
     else if (string_eq(ident, "while"))

@@ -105,11 +105,12 @@ typedef struct AstVarAsgn
     SymTabEntry *symbol;
 } AstVarAsgn;
 
-typedef struct AstIf
+typedef struct AstIfElse
 {
-    AstNode *expr;
-    AstNode *body;
-} AstIf;
+    AstNode *if_expr;
+    AstNode *if_body;
+    AstNode *else_body;
+} AstIfElse;
 
 typedef struct AstEnum
 {
@@ -158,7 +159,7 @@ AstNode *make_ast_var_def(char *value, char *type, AstNode *expr);
 
 AstNode *make_ast_bool_expr(char *value, AstNode *left, AstNode *right);
 
-AstNode *make_ast_if(AstNode *expr, AstNode *body);
+AstNode *make_ast_if_else(AstNode *if_expr, AstNode *if_body, AstNode *else_body);
 
 AstNode *make_ast_enum(char *value, Vector *enums);
 

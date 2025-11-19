@@ -318,26 +318,29 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
 
 Register *eval_if(AstNode *node, RISCV *_asm)
 {
-    AstIf *if_stmt;
+    AstIfElse *if_stmt;
     Register *reg;
     int id = cond_count;
 
-    if_stmt = (AstIf *)node->as;
+    if_stmt = (AstIfElse *)node->as;
     // Add label
-    fprintf(_asm->out, "if_start%d:\n", id);
+    fprintf(_asm->out, "if%d:\n", id);
 
     // eval bool expression, reg = 0 for false and reg = 1 for true
-    reg = asm_eval(if_stmt->expr, _asm);
+    reg = asm_eval(if_stmt->if_expr, _asm);
 
     // cmp and branch to end label
-    fprintf(_asm->out, "\tbeq %s, zero, if_end%d\n", reg->label, id);
+    fprintf(_asm->out, "\tbeq %s, zero, else%d\n", reg->label, id);
+    free_register(reg);
 
     // eval body
-    asm_eval(if_stmt->body, _asm);
+    asm_eval(if_stmt->if_body, _asm);
 
     // add other label
-    fprintf(_asm->out, "if_end%d:\n", id);
-    free_register(reg);
+    fprintf(_asm->out, "else%d:\n", id);
+    if (if_stmt->else_body != NULL)
+        asm_eval(if_stmt->else_body, _asm);
+
     cond_count++;
     return NULL;
 }

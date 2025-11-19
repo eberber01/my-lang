@@ -73,7 +73,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
 {
 
     AstCompStmt *comp_stmt;
-    AstIf *if_stmt;
+    AstIfElse *if_stmt;
     AstVarDef *var_def;
     AstBinExp *bin_exp;
     AstFuncDef *func_def;
@@ -98,9 +98,12 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         exit_scope(child);
         break;
     case AST_IF:
-        if_stmt = (AstIf *)node->as;
-        sym_check(if_stmt->expr, frame, scope, type_env);
-        sym_check(if_stmt->body, frame, scope, type_env);
+        if_stmt = (AstIfElse *)node->as;
+        sym_check(if_stmt->if_body, frame, scope, type_env);
+        sym_check(if_stmt->if_expr, frame, scope, type_env);
+        if (if_stmt->else_body != NULL)
+            sym_check(if_stmt->else_body, frame, scope, type_env);
+
         break;
     case AST_VAR_DEF:
         var_def = (AstVarDef *)node->as;

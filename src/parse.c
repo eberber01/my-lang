@@ -261,8 +261,9 @@ bool is_var_asgn(TokenStream *stream)
     return var_name->type == TOK_IDENT && asgn->type == TOK_ASSIGN;
 }
 
-AstNode *parse_if_statement(TokenStream *stream)
+AstNode *parse_if_else_statement(TokenStream *stream)
 {
+    AstNode *else_body = NULL;
     expect(stream, TOK_IF);
     expect(stream, TOK_LPAREN);
     AstNode *expr = parse_conditional_expression(stream);
@@ -270,8 +271,13 @@ AstNode *parse_if_statement(TokenStream *stream)
     expect(stream, TOK_RPAREN);
 
     AstNode *if_body = parse_statement(stream);
+    if (current_token(stream)->type == TOK_ELSE)
+    {
+        expect(stream, TOK_ELSE);
+        else_body = parse_statement(stream);
+    }
 
-    return make_ast_if(expr, if_body);
+    return make_ast_if_else(expr, if_body, else_body);
 }
 
 AstNode *parse_enum(TokenStream *stream)
@@ -398,7 +404,7 @@ AstNode *parse_jump_statement(TokenStream *stream)
 
 AstNode *parse_selection_statement(TokenStream *stream)
 {
-    return parse_if_statement(stream);
+    return parse_if_else_statement(stream);
 }
 
 bool is_declartion(TokenStream *stream)
