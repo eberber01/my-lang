@@ -487,7 +487,6 @@ Register *eval_var_asgn(AstNode *node, RISCV *_asm)
     reg = asm_eval(asgn->expr, _asm);
 
     sp_store(offset, reg, _asm);
-    free_register(reg);
 
     return reg;
 }
