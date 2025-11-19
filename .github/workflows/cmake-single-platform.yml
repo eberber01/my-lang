@@ -22,11 +22,22 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Install GTest
+    - name: Install build dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libgtest-dev cmake
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          qemu-system-misc \
+          gcc-riscv64-linux-gnu \
+          binutils-riscv64-linux-gnu \
+          gcc-riscv64-unknown-elf \
+          binutils-riscv64-unknown-elf \
+          libgtest-dev
 
+    - name: Build GTest
+      run: |
         # Build GTest (Ubuntu only ships the source)
         cd /usr/src/gtest
         sudo cmake .
