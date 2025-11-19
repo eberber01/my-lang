@@ -86,37 +86,35 @@ add_custom_target(run
 )
 
 
-
-file(GLOB TEST_SOURCES tests/*.c)
-
+file(GLOB COMPILE_TEST_SOURCES tests/compile/*.c)
 set(OUT_DIR ${CMAKE_BINARY_DIR}/out)
 file(MAKE_DIRECTORY ${OUT_DIR})
 
-# Collect all build targets
-set(ALL_COMPILE_TARGETS "")
+set(COMPILE_ELFS "")
 
-foreach(TEST_FILE ${TEST_SOURCES})
+# ----------------------
+# Compile tests
+# ----------------------
+
+foreach(TEST_FILE ${COMPILE_TEST_SOURCES})
     get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
 
     set(ASM_FILE ${OUT_DIR}/${TEST_NAME}.s)
     set(OBJ_FILE ${OUT_DIR}/${TEST_NAME}.o)
     set(ELF_FILE ${OUT_DIR}/${TEST_NAME}.elf)
 
-    #
-    # 1. Compile → .s
-    #
+    # 1. Compile → asm.s
     add_custom_command(
         OUTPUT ${ASM_FILE}
-        COMMAND my-lang ${TEST_FILE}
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/asm.s ${ASM_FILE}
-        DEPENDS my-lang ${TEST_FILE}
+        COMMAND ${CMAKE_COMMAND} -E echo "Compiling ${TEST_FILE} → ${ASM_FILE}"
+        COMMAND my-lang ${TEST_FILE}  # generates asm.s
+        COMMAND ${CMAKE_COMMAND} -E copy asm.s ${ASM_FILE} # copy to OUT_DIR
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        DEPENDS my-lang ${TEST_FILE}
         COMMENT "Compiling ${TEST_FILE} → ${ASM_FILE}"
     )
 
-    #
     # 2. Assemble → .o
-    #
     add_custom_command(
         OUTPUT ${OBJ_FILE}
         COMMAND ${RISCV_AS} ${ASM_FILE} -o ${OBJ_FILE}
@@ -124,9 +122,7 @@ foreach(TEST_FILE ${TEST_SOURCES})
         COMMENT "Assembling ${OBJ_FILE}"
     )
 
-    #
     # 3. Link → .elf
-    #
     add_custom_command(
         OUTPUT ${ELF_FILE}
         COMMAND ${RISCV_LD} ${OBJ_FILE} -o ${ELF_FILE} -Ttext=0x10000
@@ -134,24 +130,77 @@ foreach(TEST_FILE ${TEST_SOURCES})
         COMMENT "Linking ${ELF_FILE}"
     )
 
-    #
-    # Build Only (no run)
-    #
-    add_custom_target(build_${TEST_NAME}
-        DEPENDS ${ELF_FILE}
-        COMMENT "Building test program ${TEST_NAME}"
-    )
-
-    # Collect for build_all_tests
-    list(APPEND ALL_COMPILE_TARGETS build_${TEST_NAME})
+    # Add to list for the aggregate target
+    list(APPEND COMPILE_ELFS ${ELF_FILE})
 endforeach()
 
-# Target: compile all test programs (no run)
-add_custom_target(build_all_tests
-    DEPENDS ${ALL_COMPILE_TARGETS}
-    COMMENT "Building ALL test programs (no QEMU run)"
+# Aggregate target
+add_custom_target(build_compile_tests ALL
+    DEPENDS ${COMPILE_ELFS}
+    COMMENT "Building all compile-only tests"
 )
 
+# ----------------------
+# Run tests
+# ----------------------
+file(GLOB RUN_TESTS tests/run/*.c)
+
+set(OUT_DIR ${CMAKE_BINARY_DIR}/out)
+file(MAKE_DIRECTORY ${OUT_DIR})
+
+set(RUN_TARGETS)
+
+foreach(TEST_FILE ${RUN_TESTS})
+    get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
+    set(ASM_FILE ${OUT_DIR}/${TEST_NAME}.s)
+    set(OBJ_FILE ${OUT_DIR}/${TEST_NAME}.o)
+    set(ELF_FILE ${OUT_DIR}/${TEST_NAME}.elf)
+    set(RUN_LOG ${OUT_DIR}/${TEST_NAME}.run.log)
+    set(EXPECTED_FILE ${TEST_FILE}.expected)
+
+    file(READ ${EXPECTED_FILE} EXPECTED)
+    string(STRIP ${EXPECTED} EXPECTED)
+
+    # 1. Compile → .s
+    add_custom_command(
+        OUTPUT ${ASM_FILE}
+        COMMAND my-lang ${TEST_FILE}
+        COMMAND ${CMAKE_COMMAND} -E copy asm.s ${ASM_FILE}
+        DEPENDS my-lang ${TEST_FILE}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Compiling ${TEST_FILE} → ${ASM_FILE}"
+    )
+
+    # 2. Assemble → .o
+    add_custom_command(
+        OUTPUT ${OBJ_FILE}
+        COMMAND ${RISCV_AS} ${ASM_FILE} -o ${OBJ_FILE}
+        DEPENDS ${ASM_FILE}
+        COMMENT "Assembling ${TEST_NAME}.o"
+    )
+
+    # 3. Link → .elf
+    add_custom_command(
+        OUTPUT ${ELF_FILE}
+        COMMAND ${RISCV_LD} ${OBJ_FILE} -o ${ELF_FILE} -Ttext=0x10000
+        DEPENDS ${OBJ_FILE}
+        COMMENT "Linking ${TEST_NAME}.elf"
+    )
+
+    add_custom_command(
+        OUTPUT ${RUN_LOG}
+        COMMAND ${CMAKE_SOURCE_DIR}/run_test.sh ${ELF_FILE} ${EXPECTED} ${RUN_LOG}
+        DEPENDS ${ELF_FILE}
+        COMMENT "Running ${TEST_NAME} → checking against ${EXPECTED}"
+    )
+
+    # Create a target to build + run this test
+    add_custom_target(run_${TEST_NAME} DEPENDS ${RUN_LOG})
+    list(APPEND RUN_TARGETS run_${TEST_NAME})
+endforeach()
+
+# Master target to run all tests
+add_custom_target(run_all_tests DEPENDS ${RUN_TARGETS})
 
 
 if(CLANG_FORMAT_BIN)

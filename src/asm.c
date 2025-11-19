@@ -228,7 +228,7 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
         AstNode *arg = (AstNode *)vector_get(func_call->args, i);
         // This is always going to be an expression
         reg = asm_eval(arg, _asm);
-        move_register(reg,vector_get(_asm->arg, i), _asm);
+        move_register(reg, vector_get(_asm->arg, i), _asm);
         free_register(reg);
     }
 
