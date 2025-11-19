@@ -489,7 +489,7 @@ Register *eval_var_asgn(AstNode *node, RISCV *_asm)
     sp_store(offset, reg, _asm);
     free_register(reg);
 
-    return NULL;
+    return reg;
 }
 
 Register *eval_while(AstNode *node, RISCV *_asm)

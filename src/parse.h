@@ -37,5 +37,7 @@ int is_func_call_start(TokenStream *stream);
 
 void next_token(TokenStream *stream);
 
+bool is_var_asgn(TokenStream *stream);
+
 TokenStream *make_token_stream(Vector *tokens);
 #endif

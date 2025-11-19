@@ -190,6 +190,9 @@ AstNode *parse_conditional_expression(TokenStream *stream)
 
 AstNode *parse_expression(TokenStream *stream)
 {
+    if (is_var_asgn(stream))
+        return parse_var_asgn(stream);
+
     return parse_conditional_expression(stream);
 }
 
@@ -325,7 +328,7 @@ AstNode *parse_while(TokenStream *stream)
     expect(stream, TOK_WHILE);
     expect(stream, TOK_LPAREN);
 
-    expr = parse_conditional_expression(stream);
+    expr = parse_expression(stream);
 
     expect(stream, TOK_RPAREN);
 
@@ -336,9 +339,6 @@ AstNode *parse_while(TokenStream *stream)
 
 AstNode *parse_expression_statement(TokenStream *stream)
 {
-
-    if (is_var_asgn(stream))
-        return parse_var_asgn(stream);
 
     AstNode *expr = parse_expression(stream);
     expect(stream, TOK_SEMICOLON);
@@ -475,7 +475,7 @@ AstNode *parse_var_asgn(TokenStream *stream)
 
     AstNode *expr = parse_expression(stream);
 
-    expect(stream, TOK_SEMICOLON);
+    // expect(stream, TOK_SEMICOLON);
     return make_ast_var_asgn(value, expr);
 }
 
