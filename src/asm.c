@@ -525,26 +525,29 @@ Register *eval_for(AstNode *node, RISCV *_asm)
 
     // Add label
     fprintf(_asm->out, "for_init%d:\n", id);
-
     reg = asm_eval(f_stmt->init, _asm);
 
     // Could be expression or declartion so we need to free register
     if (reg != NULL)
         free_register(reg);
-
+    
     fprintf(_asm->out, "for_cond%d:\n", id);
     reg = asm_eval(f_stmt->cond, _asm);
 
-    // cmp and branch to end label
-    fprintf(_asm->out, "\tbeq %s, zero, for_end%d\n", reg->label, id);
-    free_register(reg);
+    if(reg != NULL){
+        // cmp and branch to end label
+        fprintf(_asm->out, "\tbeq %s, zero, for_end%d\n", reg->label, id);
+        free_register(reg);
+    }
 
     fprintf(_asm->out, "for_body%d:\n", id);
     asm_eval(f_stmt->body, _asm);
 
     fprintf(_asm->out, "for_step%d:\n", id);
     reg = asm_eval(f_stmt->step, _asm);
-    free_register(reg);
+    if(reg != NULL){
+        free_register(reg);
+    }
 
     fprintf(_asm->out, "\tj for_cond%d\n", id);
     fprintf(_asm->out, "for_end%d:\n", id);
