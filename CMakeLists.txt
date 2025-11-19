@@ -68,12 +68,24 @@ add_test(NAME my-lang-tests COMMAND my-lang-tests)
 
 find_program(CLANG_FORMAT_BIN clang-format)
 
+find_program(RISCV_AS riscv64-elf-as)
+find_program(RISCV_LD riscv64-elf-ld)
+
+if (NOT RISCV_AS OR NOT RISCV_LD)
+    message(FATAL_ERROR "Failed to find RISC-V ELF binutils")
+endif()
+
+message(STATUS "Using RISCV AS: ${RISCV_AS}")
+message(STATUS "Using RISCV LD: ${RISCV_LD}")
+
 add_custom_target(run
-    COMMAND riscv64-elf-as -o ${CMAKE_BINARY_DIR}/prog.o ${CMAKE_SOURCE_DIR}/asm.s
-    COMMAND riscv64-elf-ld -Ttext=0x10000 -o ${CMAKE_BINARY_DIR}/prog ${CMAKE_BINARY_DIR}/prog.o
+    COMMAND ${RISCV_AS} -o ${CMAKE_BINARY_DIR}/prog.o ${CMAKE_SOURCE_DIR}/asm.s
+    COMMAND ${RISCV_LD} -Ttext=0x10000 -o ${CMAKE_BINARY_DIR}/prog ${CMAKE_BINARY_DIR}/prog.o
     COMMAND qemu-riscv64 ${CMAKE_BINARY_DIR}/prog
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
+
+
 
 file(GLOB TEST_SOURCES tests/*.c)
 
@@ -107,7 +119,7 @@ foreach(TEST_FILE ${TEST_SOURCES})
     #
     add_custom_command(
         OUTPUT ${OBJ_FILE}
-        COMMAND riscv64-elf-as ${ASM_FILE} -o ${OBJ_FILE}
+        COMMAND ${RISCV_AS} ${ASM_FILE} -o ${OBJ_FILE}
         DEPENDS ${ASM_FILE}
         COMMENT "Assembling ${OBJ_FILE}"
     )
@@ -117,7 +129,7 @@ foreach(TEST_FILE ${TEST_SOURCES})
     #
     add_custom_command(
         OUTPUT ${ELF_FILE}
-        COMMAND riscv64-elf-ld ${OBJ_FILE} -o ${ELF_FILE} -Ttext=0x10000
+        COMMAND ${RISCV_LD} ${OBJ_FILE} -o ${ELF_FILE} -Ttext=0x10000
         DEPENDS ${OBJ_FILE}
         COMMENT "Linking ${ELF_FILE}"
     )

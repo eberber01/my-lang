@@ -34,10 +34,10 @@ jobs:
 
     - name: Install RISC-V bare-metal toolchain
       run: |
-        wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-toolchain-linux-2021.12.0.tar.gz
-        tar -xzf riscv64-unknown-elf-toolchain-linux-2021.12.0.tar.gz
-        sudo mv riscv64-unknown-elf-toolchain-2021.12.0 /opt/riscv
-        echo "/opt/riscv/bin" >> $GITHUB_PATH
+        sudo apt-get update
+        sudo apt-get install -y \
+        gcc-riscv64-elf \
+        binutils-riscv64-elf
     
     - name: Build GTest
       run: |
