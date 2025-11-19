@@ -5,7 +5,7 @@ A self-hosting C compiler targeting the **RISC-V instruction set architecture**.
 ## Features
 
 * [x] Integer arithmetic, variables, functions, return statements
-* [ ] Control flow (`if`, `else`, `while`, `for`)
+* [x] Control flow (`if`, `else`, `while`, `for`)
 * [ ] Logical and relational operators (`==`, `<`, `>`, `&&`, `||`, `!`)
 * [ ] Function calling conventions (RISC-V ABI, multiple parameters, recursion)
 * [ ] Expanded type system (`char`, `void`, pointers syntax)
@@ -20,14 +20,14 @@ A self-hosting C compiler targeting the **RISC-V instruction set architecture**.
 
 ### Validation & Variables
 
-* [ ] Verify correctness of current implementation (expressions, variables, scope, functions, int, return)
-* [ ] Establish regression test suite
-* [ ] Fix parsing/codegen bugs
-* [ ] Implement variable assignment
+* [x] Verify correctness of current implementation (expressions, variables, scope, functions, int, return)
+* [x] Establish regression test suite
+* [x] Fix parsing/codegen bugs
+* [x] Implement variable assignment
 
 ### Control Flow
 
-* [ ] Implement `if`, `else`, `while`, `for`
+* [x] Implement `if`, `else`, `while`, `for`
 * [ ] Add logical and relational operators
 
 ### Function Calling Conventions
@@ -104,7 +104,7 @@ ctest
 ```
 cmake --build build --target build_compile_tests
 ```
-###  Run Qemu Tests
+###  Qemu Tests
 ```
 cmake --build build --target run_all_tests
 ```
