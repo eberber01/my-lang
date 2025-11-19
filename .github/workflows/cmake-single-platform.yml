@@ -30,7 +30,9 @@ jobs:
           cmake \
           ninja-build \
           qemu-system-misc \
-          libgtest-dev
+          libgtest-dev \
+          qemu-user \
+          qemu-user-static
 
     - name: Install RISC-V Bare-Metal Toolchain
       run: |
