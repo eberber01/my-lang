@@ -66,7 +66,7 @@ Token *expect(TokenStream *stream, TokenType expect)
         return current;
     }
 
-    fprintf(stderr, "Expected token of type %d at line: %d\n", expect, current->line);
+    fprintf(stderr, "Expected token of type %d at line: %d, pos: %d\n", expect, current->line, current->pos);
     exit(1);
 }
 
@@ -234,6 +234,7 @@ AstNode *parse_enum(TokenStream *stream)
     Token *parent_enum;
     Vector *enums = vector_new();
 
+    expect(stream, TOK_ENUM);
     parent_enum = expect(stream, TOK_IDENT);
     expect(stream, TOK_LBRACE);
 
@@ -290,44 +291,78 @@ AstNode *parse_while(TokenStream *stream)
     return make_ast_while(expr, body);
 }
 
+AstNode *parse_expression_statement(TokenStream *stream)
+{
+
+    if (is_var_asgn(stream))
+        return parse_var_asgn(stream);
+
+    AstNode *expr = parse_expression(stream);
+    expect(stream, TOK_SEMICOLON);
+    return expr;
+}
+
+AstNode *parse_iter_statement(TokenStream *stream)
+{
+    return parse_while(stream);
+}
+
+AstNode *parse_return(TokenStream *stream)
+{
+    expect(stream, TOK_RETURN);
+    AstNode *expr = parse_expression(stream);
+
+    AstNode *ret_node = make_ast_ret(expr);
+    expect(stream, TOK_SEMICOLON);
+    return ret_node;
+}
+
+AstNode *parse_jump_statement(TokenStream *stream)
+{
+    return parse_return(stream);
+}
+
+AstNode *parse_selection_statement(TokenStream *stream)
+{
+    return parse_if_statement(stream);
+}
+
+bool is_declartion(TokenStream *stream)
+{
+    return is_var_dec(stream) || is_var_def_start(stream);
+}
+
+AstNode *parse_declartion(TokenStream *stream)
+{
+    if (is_var_def_start(stream))
+        return parse_var_def(stream);
+    else
+        return parse_var_dec(stream);
+}
+
 AstNode *parse_statement(TokenStream *stream)
 {
+    printf("parse_statement\n");
     Token *current;
     while ((current = current_token(stream)))
     {
-        if (is_func_def_start(stream))
-            return parse_func_def(stream);
-        else if (is_var_def_start(stream))
-            return parse_var_def(stream);
-        else if (is_var_dec(stream))
-            return parse_var_dec(stream);
-        else if (is_var_asgn(stream))
-            return parse_var_asgn(stream);
-        else if (current->type == TOK_WHILE)
-            return parse_while(stream);
+        if (current->type == TOK_WHILE)
+            return parse_iter_statement(stream);
+        else if (is_declartion(stream))
+            return parse_declartion(stream);
         else if (current->type == TOK_RETURN)
-        {
-            expect(stream, TOK_RETURN);
-            AstNode *expr = parse_expression(stream);
-
-            AstNode *ret_node = make_ast_ret(expr);
-            expect(stream, TOK_SEMICOLON);
-            return ret_node;
-        }
+            return parse_jump_statement(stream);
         else if (current->type == TOK_IF)
-            return parse_if_statement(stream);
+            return parse_selection_statement(stream);
         else if (current->type == TOK_ENUM)
         {
-            expect(stream, TOK_ENUM);
             return parse_enum(stream);
         }
         else if (current->type == TOK_LBRACE)
             return parse_comp_stmt(stream);
         else
         {
-            AstNode *expr = parse_expression(stream);
-            expect(stream, TOK_SEMICOLON);
-            return expr;
+            return parse_expression_statement(stream);
         }
     }
     return NULL;
@@ -361,6 +396,7 @@ Vector *parse_func_params(TokenStream *stream)
 
 AstNode *parse_func_def(TokenStream *stream)
 {
+    printf("func_def\n");
     Token *func_type = expect(stream, TOK_TYPE);
     Token *func_name = expect(stream, TOK_IDENT);
 
@@ -428,7 +464,8 @@ Vector *parse_prog(TokenStream *stream)
     Vector *prog = vector_new();
     while ((curr = current_token(stream)))
     {
-        stmt = parse_statement(stream);
+
+        stmt = parse_func_def(stream);
         vector_push(prog, stmt);
     }
     return prog;

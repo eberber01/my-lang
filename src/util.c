@@ -7,8 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lex.h"
-
 /* Convert string s to int out.
  *
  * @param[out] out The converted int. Cannot be NULL.
