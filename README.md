@@ -81,12 +81,34 @@ git clone https://github.com/yourusername/my-lang.git
 cd my-lang
 
 # Build using CMake
-cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake -B build -DCMAKE_BUILD_TYPE=Release # or Debug
+
 cmake --build build
 
-# Run tests
-ctest
 ```
+### Usage
+
+```
+./build/my-lang [file.c]
+```
+
+### Run Unit Tests
+```bash
+ctest
+
+# or 
+
+./build/my-lang-tests
+```
+### Run Compile Tests
+```
+cmake --build build --target build_compile_tests
+```
+###  Run Qemu Tests
+```
+cmake --build build --target run_all_tests
+```
+
 
 ## References & Inspiration
 
