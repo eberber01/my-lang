@@ -274,6 +274,7 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
     AstBinExp *bin_exp;
     Register *left;
     Register *right;
+    Register *reg;
 
     bin_exp = (AstBinExp *)node->as;
     left = asm_eval(bin_exp->left, _asm);
@@ -289,6 +290,27 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
     case '/':
         return reg_div(left, right, _asm);
     default:
+
+        if (!strcmp(bin_exp->value, "==") || !strcmp(bin_exp->value, "!="))
+        {
+            reg = alloc_register(_asm);
+
+            fprintf(_asm->out, "\tsub %s, %s, %s \n", reg->label, right->label, left->label);
+            if (!strcmp(bin_exp->value, "=="))
+            {
+
+                // == Check if equal
+                fprintf(_asm->out, "\tseqz %s, %s \n", reg->label, reg->label);
+            }
+            else
+            {
+                // !=
+                fprintf(_asm->out, "\tsnez %s, %s \n", reg->label, reg->label);
+            }
+
+            return reg;
+        }
+
         perror("Unexpected node type.");
         exit(1);
     }
@@ -452,35 +474,6 @@ Register *eval_ident(AstNode *node, RISCV *_asm)
     return reg;
 }
 
-Register *eval_bool_expr(AstNode *node, RISCV *_asm)
-{
-    AstBoolExpr *bool_expr;
-    Register *left;
-    Register *right;
-    Register *reg;
-
-    bool_expr = (AstBoolExpr *)node->as;
-    //  evaulte expr
-    left = asm_eval(bool_expr->left, _asm);
-    right = asm_eval(bool_expr->right, _asm);
-
-    reg = alloc_register(_asm);
-
-    fprintf(_asm->out, "\tsub %s, %s, %s \n", reg->label, right->label, left->label);
-    if (!strcmp(bool_expr->value, "=="))
-    {
-        // == Check if equal
-        fprintf(_asm->out, "\tseqz %s, %s \n", reg->label, reg->label);
-    }
-    else
-    {
-        // !=
-        fprintf(_asm->out, "\tsnez %s, %s \n", reg->label, reg->label);
-    }
-
-    return reg;
-}
-
 Register *eval_var_asgn(AstNode *node, RISCV *_asm)
 {
     int offset;
@@ -546,8 +539,6 @@ Register *asm_eval(AstNode *node, RISCV *_asm)
         return eval_var_def(node, _asm);
     case AST_IDENT:
         return eval_ident(node, _asm);
-    case AST_BOOL_EXPR:
-        return eval_bool_expr(node, _asm);
     case AST_BIN_EXP:
         return eval_bin_exp(node, _asm);
     case AST_VAR_ASGN:

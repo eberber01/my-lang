@@ -77,7 +77,6 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
     AstVarDef *var_def;
     AstBinExp *bin_exp;
     AstFuncDef *func_def;
-    AstBoolExpr *bool_expr;
     AstIdent *ident;
     AstFuncCall *func_call;
     AstRet *ret;
@@ -160,11 +159,6 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
 
         scope_add(scope, entry);
 
-        break;
-    case AST_BOOL_EXPR:
-        bool_expr = (AstBoolExpr *)node->as;
-        sym_check(bool_expr->left, frame, scope, type_env);
-        sym_check(bool_expr->right, frame, scope, type_env);
         break;
     case AST_IDENT:
         ident = (AstIdent *)node->as;

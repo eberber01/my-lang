@@ -28,7 +28,6 @@ void _print_ast(AstNode *node, int level)
     AstIntConst *cons;
     AstEnum *enm;
     AstIf *if_stmt;
-    AstBoolExpr *bool_expr;
     AstVarDec *dec;
     AstVarAsgn *asgn;
     AstWhile *w_stmt;
@@ -69,7 +68,7 @@ void _print_ast(AstNode *node, int level)
     case AST_BIN_EXP:
         bin_exp = (AstBinExp *)node->as;
         printlvl("BinExp(", level);
-        printlvl("\top=%c", level, *(bin_exp->value));
+        printlvl("\top=%s", level, bin_exp->value);
 
         printlvl("\tleft=(", level);
         _print_ast(bin_exp->left, level + 1);
@@ -136,20 +135,6 @@ void _print_ast(AstNode *node, int level)
         printlvl("\tbody=[", level);
         _print_ast(if_stmt->body, level);
         printlvl("\t]", level);
-        break;
-    case AST_BOOL_EXPR:
-        bool_expr = (AstBoolExpr *)node->as;
-        printlvl("BoolExpr(", level);
-        printlvl("\toperator='%s'", level, bool_expr->value);
-
-        printlvl("\tleft=(", level);
-        _print_ast(bool_expr->left, level + 1);
-        printlvl("\t)", level);
-
-        printlvl("\tright=(", level);
-        _print_ast(bool_expr->right, level + 1);
-        printlvl("\t)", level);
-
         break;
     case AST_VAR_DEC:
         dec = (AstVarDec *)node->as;
@@ -299,15 +284,6 @@ AstNode *make_ast_var_def(char *value, char *type, AstNode *expr)
     return make_ast_node(AST_VAR_DEF, var_def);
 }
 
-AstNode *make_ast_bool_expr(char *value, AstNode *left, AstNode *right)
-{
-    AstBoolExpr *bool_expr = (AstBoolExpr *)my_malloc(sizeof(AstBoolExpr));
-    bool_expr->left = left;
-    bool_expr->right = right;
-    bool_expr->value = value;
-    return make_ast_node(AST_BOOL_EXPR, bool_expr);
-}
-
 AstNode *make_ast_if(AstNode *expr, AstNode *body)
 {
     AstIf *if_stmt = (AstIf *)my_malloc(sizeof(AstIf));
@@ -332,7 +308,6 @@ void ast_free(AstNode *node)
     AstBinExp *bin_exp;
     AstIntConst *int_const;
     AstFuncDef *func_def;
-    AstBoolExpr *bool_expr;
     AstIdent *ident;
     AstFuncCall *func_call;
     AstRet *ret;
@@ -390,13 +365,6 @@ void ast_free(AstNode *node)
         free(func_def->value);
         free(func_def->type);
         free(func_def);
-        break;
-    case AST_BOOL_EXPR:
-        bool_expr = (AstBoolExpr *)node->as;
-        ast_free(bool_expr->left);
-        ast_free(bool_expr->right);
-        free(bool_expr->value);
-        free(bool_expr);
         break;
     case AST_IDENT:
         ident = (AstIdent *)node->as;

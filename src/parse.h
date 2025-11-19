@@ -31,6 +31,10 @@ AstNode *parse_var_dec(TokenStream *stream);
 
 AstNode *parse_var_asgn(TokenStream *stream);
 
+AstNode *parse_func_call(TokenStream *stream);
+
+int is_func_call_start(TokenStream *stream);
+
 void next_token(TokenStream *stream);
 
 TokenStream *make_token_stream(Vector *tokens);

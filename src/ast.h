@@ -103,13 +103,6 @@ typedef struct AstVarAsgn
     SymTabEntry *symbol;
 } AstVarAsgn;
 
-typedef struct AstBoolExpr
-{
-    char *value;
-    AstNode *left;
-    AstNode *right;
-} AstBoolExpr;
-
 typedef struct AstIf
 {
     AstNode *expr;

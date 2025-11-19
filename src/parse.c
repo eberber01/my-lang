@@ -70,69 +70,9 @@ Token *expect(TokenStream *stream, TokenType expect)
     exit(1);
 }
 
-AstNode *parse_expression(TokenStream *stream)
+AstNode *parse_primary_expression(TokenStream *stream)
 {
-    AstNode *left = parse_term(stream);
-    Token *current;
-    while ((current = current_token(stream)) && (current->type == TOK_ADD || current->type == TOK_SUB))
-    {
-        char *value = as_str(current->value);
-        next_token(stream);
-        AstNode *right = parse_term(stream);
-        left = make_ast_bin_exp(value, left, right);
-    }
-    return left;
-}
 
-AstNode *parse_term(TokenStream *stream)
-{
-    AstNode *left = parse_factor(stream);
-    Token *current;
-    while ((current = current_token(stream)) && (current->type == TOK_DIV || current->type == TOK_MULT))
-    {
-        char *value = as_str(current->value);
-        next_token(stream);
-        AstNode *right = parse_factor(stream);
-        left = make_ast_bin_exp(value, left, right);
-    }
-    return left;
-}
-
-int is_func_call_start(TokenStream *stream)
-{
-    Token *func_name = current_token(stream);
-    Token *lparen = peek(stream, 1);
-    return func_name->type == TOK_IDENT && lparen->type == TOK_LPAREN;
-}
-
-AstNode *parse_func_call(TokenStream *stream)
-{
-    Token *name = expect(stream, TOK_IDENT);
-    char *name_str = as_str(name->value);
-    expect(stream, TOK_LPAREN);
-
-    Vector *args = vector_new();
-    while (current_token(stream)->type != TOK_RPAREN)
-    {
-
-        AstNode *expr = parse_expression(stream);
-
-        vector_push(args, expr);
-
-        if (current_token(stream)->type == TOK_RPAREN)
-        {
-            break;
-        }
-
-        expect(stream, TOK_COMMA);
-    }
-    expect(stream, TOK_RPAREN);
-
-    return make_ast_func_call(name_str, args);
-}
-
-AstNode *parse_factor(TokenStream *stream)
-{
     Token *current = current_token(stream);
     if (current->type == TOK_NUM)
     {
@@ -169,6 +109,123 @@ AstNode *parse_factor(TokenStream *stream)
     }
 }
 
+AstNode *parse_postfix_expression(TokenStream *stream)
+{
+    return parse_primary_expression(stream);
+}
+
+AstNode *parse_unary_expression(TokenStream *stream)
+{
+    return parse_postfix_expression(stream);
+}
+
+AstNode *parse_cast_expression(TokenStream *stream)
+{
+    return parse_postfix_expression(stream);
+}
+
+AstNode *parse_multiplicative_expression(TokenStream *stream)
+{
+    AstNode *left = parse_cast_expression(stream);
+    Token *current;
+
+    while ((current = current_token(stream)) && (current->type == TOK_MULT || current->type == TOK_DIV))
+    {
+        char *value = as_str(current->value);
+
+        next_token(stream);
+        AstNode *right = parse_cast_expression(stream);
+        left = make_ast_bin_exp(value, left, right);
+    }
+    return left;
+}
+
+AstNode *parse_additive_expression(TokenStream *stream)
+{
+    AstNode *left = parse_multiplicative_expression(stream);
+    Token *current;
+
+    while ((current = current_token(stream)) && (current->type == TOK_ADD || current->type == TOK_SUB))
+    {
+        char *value = as_str(current->value);
+
+        next_token(stream);
+        AstNode *right = parse_multiplicative_expression(stream);
+        left = make_ast_bin_exp(value, left, right);
+    }
+    return left;
+}
+
+AstNode *parse_shift_expression(TokenStream *stream)
+{
+    return parse_additive_expression(stream);
+}
+
+AstNode *parse_relational_expression(TokenStream *stream)
+{
+    return parse_shift_expression(stream);
+}
+
+AstNode *parse_equality_expression(TokenStream *stream)
+{
+    return parse_relational_expression(stream);
+}
+
+AstNode *parse_conditional_expression(TokenStream *stream)
+{
+
+    AstNode *left = parse_relational_expression(stream);
+    Token *current;
+
+    while ((current = current_token(stream)) && (current->type == TOK_NOT_EQUAL || current->type == TOK_EQUAL))
+    {
+        char *value = as_str(current->value);
+
+        next_token(stream);
+        AstNode *right = parse_relational_expression(stream);
+        left = make_ast_bin_exp(value, left, right);
+    }
+    return left;
+}
+
+AstNode *parse_expression(TokenStream *stream)
+{
+    return parse_conditional_expression(stream);
+}
+
+int is_func_call_start(TokenStream *stream)
+{
+    Token *func_name = current_token(stream);
+    Token *lparen = peek(stream, 1);
+    return func_name->type == TOK_IDENT && lparen->type == TOK_LPAREN;
+}
+
+AstNode *parse_func_call(TokenStream *stream)
+{
+    Token *name = expect(stream, TOK_IDENT);
+    char *name_str = as_str(name->value);
+    expect(stream, TOK_LPAREN);
+
+    Vector *args = vector_new();
+    while (current_token(stream)->type != TOK_RPAREN)
+    {
+
+        AstNode *expr = parse_expression(stream);
+
+        vector_push(args, expr);
+
+        if (current_token(stream)->type == TOK_RPAREN)
+        {
+            break;
+        }
+
+        expect(stream, TOK_COMMA);
+    }
+    expect(stream, TOK_RPAREN);
+
+    return make_ast_func_call(name_str, args);
+}
+
 int is_func_def_start(TokenStream *stream)
 {
     Token *func_type = current_token(stream);
@@ -200,25 +257,11 @@ bool is_var_asgn(TokenStream *stream)
     return var_name->type == TOK_IDENT && asgn->type == TOK_ASSIGN;
 }
 
-AstNode *parse_boolean_expression(TokenStream *stream)
-{
-    Token *current;
-    AstNode *left = parse_expression(stream);
-    while ((current = current_token(stream)) && (current->type == TOK_EQUAL || current->type == TOK_NOT_EQUAL))
-    {
-        char *value = as_str(current->value);
-        next_token(stream);
-        AstNode *right = parse_expression(stream);
-        left = make_ast_bool_expr(value, left, right);
-    }
-    return left;
-}
-
 AstNode *parse_if_statement(TokenStream *stream)
 {
     expect(stream, TOK_IF);
     expect(stream, TOK_LPAREN);
-    AstNode *expr = parse_boolean_expression(stream);
+    AstNode *expr = parse_conditional_expression(stream);
 
     expect(stream, TOK_RPAREN);
 
@@ -282,7 +325,7 @@ AstNode *parse_while(TokenStream *stream)
     expect(stream, TOK_WHILE);
     expect(stream, TOK_LPAREN);
 
-    expr = parse_boolean_expression(stream);
+    expr = parse_conditional_expression(stream);
 
     expect(stream, TOK_RPAREN);
 
