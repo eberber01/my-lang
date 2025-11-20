@@ -91,6 +91,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
     switch (node->type)
     {
     case AST_COMP_STMT:
+        printf("ast comp\n");
         comp_stmt = (AstCompStmt *)node->as;
         Scope *child = enter_scope(scope);
         for (size_t i = 0; i < comp_stmt->body->length; i++)
@@ -98,12 +99,17 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         exit_scope(child);
         break;
     case AST_IF:
+        printf("astif\n");
         if_stmt = (AstIfElse *)node->as;
+        printf("before body\n");
+
         sym_check(if_stmt->if_body, frame, scope, type_env);
+        printf("body\n");
         sym_check(if_stmt->if_expr, frame, scope, type_env);
         if (if_stmt->else_body != NULL)
             sym_check(if_stmt->else_body, frame, scope, type_env);
 
+        printf("astif after\n");
         break;
     case AST_VAR_DEF:
         var_def = (AstVarDef *)node->as;
@@ -131,6 +137,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
     case AST_INT_CONST:
         break;
     case AST_FUNC_DEF:
+        printf("ast funcdef\n");
         func_def = (AstFuncDef *)node->as;
         // Check if symbol exists in table
         if (in_scope(scope, func_def->value))
@@ -278,6 +285,9 @@ void sema_check(Vector *prog, HashMap *type_env)
     for (size_t i = 0; i < prog->length; i++)
     {
         node = (AstNode *)vector_get(prog, i);
+        printf("before\n");
+        printf("nodetype: %d\n", node->type);
+        printf("after\n");
         sym_check(node, NULL, global, type_env);
     }
 }

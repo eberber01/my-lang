@@ -34,6 +34,7 @@ Token *peek(TokenStream *stream, int n)
 // Set next token in stream
 void next_token(TokenStream *stream)
 {
+    print_token((Token *)vector_get(stream->tokens, stream->current));
     if (stream->current >= stream->tokens->length)
     {
         return;
@@ -75,7 +76,7 @@ AstNode *parse_primary_expression(TokenStream *stream)
 {
 
     Token *current = current_token(stream);
-    if (current->type == TOK_NUM)
+    if (current != NULL && current->type == TOK_NUM)
     {
         int lit;
         next_token(stream);
@@ -84,7 +85,7 @@ AstNode *parse_primary_expression(TokenStream *stream)
         free(int_str);
         return make_int_const(lit);
     }
-    else if (current->type == TOK_IDENT)
+    else if (current != NULL && current->type == TOK_IDENT)
     {
         char *value = as_str(current->value);
         if (is_func_call_start(stream))
@@ -95,7 +96,7 @@ AstNode *parse_primary_expression(TokenStream *stream)
         next_token(stream);
         return make_ast_ident(value);
     }
-    else if (current->type == TOK_LPAREN)
+    else if (current != NULL && current->type == TOK_LPAREN)
     {
         next_token(stream);
         AstNode *ret = parse_expression(stream);
@@ -106,7 +107,9 @@ AstNode *parse_primary_expression(TokenStream *stream)
     }
     else
     {
-        return make_ast_node(AST_EMPTY_EXPR, NULL);
+        print_token(current_token(stream));
+        perror("parse primary error");
+        exit(1);
     }
 }
 
@@ -159,7 +162,23 @@ AstNode *parse_additive_expression(TokenStream *stream)
 
 AstNode *parse_shift_expression(TokenStream *stream)
 {
-    return parse_additive_expression(stream);
+    AstNode *left = parse_additive_expression(stream);
+    Token *current;
+
+    while ((current = current_token(stream)) && (current->type == TOK_LSHIFT || current->type == TOK_RSHIFT))
+    {
+        char *value = as_str(current->value);
+
+        next_token(stream);
+        AstNode *right = parse_additive_expression(stream);
+        left = make_ast_bin_exp(value, left, right);
+    
+    } return left;
+    //return parse_additive_expression(stream);
+}
+
+bool is_relational_op(TokenType type){
+    return type == TOK_GT || type == TOK_LT || type == TOK_GT_EQ || TOK_LT_EQ;
 }
 
 AstNode *parse_relational_expression(TokenStream *stream)
@@ -167,14 +186,9 @@ AstNode *parse_relational_expression(TokenStream *stream)
     return parse_shift_expression(stream);
 }
 
+
 AstNode *parse_equality_expression(TokenStream *stream)
 {
-    return parse_relational_expression(stream);
-}
-
-AstNode *parse_conditional_expression(TokenStream *stream)
-{
-
     AstNode *left = parse_relational_expression(stream);
     Token *current;
 
@@ -187,6 +201,91 @@ AstNode *parse_conditional_expression(TokenStream *stream)
         left = make_ast_bin_exp(value, left, right);
     }
     return left;
+}
+
+AstNode *parse_and_expression(TokenStream* stream){
+    AstNode *left = parse_equality_expression(stream);
+    Token *current;
+
+    while ((current = current_token(stream)) && (current->type == TOK_AND))
+    {
+        char *value = as_str(current->value);
+
+        next_token(stream);
+        AstNode *right = parse_equality_expression(stream);
+        left = make_ast_bin_exp(value, left, right);
+    }
+    return left;
+
+}
+
+AstNode *parse_xor_expression(TokenStream* stream){
+    AstNode *left = parse_and_expression(stream);
+    Token *current;
+
+    while ((current = current_token(stream)) && (current->type == TOK_XOR))
+    {
+        char *value = as_str(current->value);
+
+        next_token(stream);
+        AstNode *right = parse_and_expression(stream);
+        left = make_ast_bin_exp(value, left, right);
+    }
+    return left;
+
+}
+
+AstNode *parse_or_expression(TokenStream* stream){
+    AstNode *left = parse_xor_expression(stream);
+    Token *current;
+
+    while ((current = current_token(stream)) && (current->type == TOK_OR))
+    {
+        char *value = as_str(current->value);
+
+        next_token(stream);
+        AstNode *right = parse_xor_expression(stream);
+        left = make_ast_bin_exp(value, left, right);
+    }
+    return left;
+
+}
+
+AstNode *parse_log_and_expression(TokenStream* stream){
+    AstNode *left = parse_or_expression(stream);
+    Token *current;
+
+    while ((current = current_token(stream)) && (current->type == TOK_LOG_AND))
+    {
+        char *value = as_str(current->value);
+
+        next_token(stream);
+        AstNode *right = parse_or_expression(stream);
+        left = make_ast_bin_exp(value, left, right);
+    }
+    return left;
+
+}
+
+AstNode *parse_log_or_expression(TokenStream* stream){
+    AstNode *left = parse_log_and_expression(stream);
+    Token *current;
+
+    while ((current = current_token(stream)) && (current->type == TOK_LOG_OR))
+    {
+        char *value = as_str(current->value);
+
+        next_token(stream);
+        AstNode *right = parse_log_and_expression(stream);
+        left = make_ast_bin_exp(value, left, right);
+    }
+    return left;
+
+}
+
+AstNode *parse_conditional_expression(TokenStream *stream)
+{
+    return parse_log_or_expression(stream);
 }
 
 AstNode *parse_expression(TokenStream *stream)
@@ -263,15 +362,16 @@ bool is_var_asgn(TokenStream *stream)
 
 AstNode *parse_if_else_statement(TokenStream *stream)
 {
+    Token* current;
     AstNode *else_body = NULL;
     expect(stream, TOK_IF);
     expect(stream, TOK_LPAREN);
-    AstNode *expr = parse_conditional_expression(stream);
+    AstNode *expr = parse_expression(stream);
 
     expect(stream, TOK_RPAREN);
 
     AstNode *if_body = parse_statement(stream);
-    if (current_token(stream)->type == TOK_ELSE)
+    if ((current = current_token(stream)) && current->type == TOK_ELSE)
     {
         expect(stream, TOK_ELSE);
         else_body = parse_statement(stream);
@@ -551,6 +651,7 @@ Vector *parse_prog(TokenStream *stream)
 // Returns list of AstNode representing program
 Vector *parse(Vector *tokens)
 {
+    printf("PARSE\n");
     TokenStream *stream = make_token_stream(tokens);
     Vector *prog = parse_prog(stream);
     free(stream);

@@ -40,7 +40,18 @@ typedef enum TokenType
     TOK_NOT,
     TOK_ENUM,
     TOK_WHILE,
-    TOK_FOR
+    TOK_FOR,
+    TOK_AND,
+    TOK_OR,
+    TOK_XOR,
+    TOK_LOG_OR,
+    TOK_LOG_AND,
+    TOK_LSHIFT,
+    TOK_RSHIFT,
+    TOK_GT,
+    TOK_LT,
+    TOK_GT_EQ,
+    TOK_LT_EQ,
 } TokenType;
 
 typedef struct Token

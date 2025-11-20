@@ -16,9 +16,10 @@ void my_lang(char *file_name)
     type_env_init(type_env);
 
     Vector *tokens = tokenize(input, input_length);
-
+    printf("TOKENIZE\n");
+    for (size_t i = 0; i < tokens->length; i++)
+        print_token((Token *)vector_get(tokens, i));
     Vector *prog = parse(tokens);
-
     sema_check(prog, type_env);
 
 #ifdef DEBUG
@@ -26,7 +27,8 @@ void my_lang(char *file_name)
         print_token((Token *)vector_get(tokens, i));
 
     print_ast(prog);
-#endif
+#endif   
+exit(0);
 
     gen_asm(prog);
 

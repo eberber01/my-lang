@@ -102,6 +102,33 @@ Vector *tokenize(const char *input, size_t length)
             t->type = TOK_RBRACE;
             t->value = string("}");
             break;
+        case '^':
+            t->type = TOK_XOR;
+            t->value = string("^");
+            break;
+        case '&':
+            if((peek = next(lexer)) != '&'){
+
+                t->type = TOK_AND;
+                t->value = string("&");
+                back(lexer);
+            }
+            else{
+                t->type = TOK_LOG_AND;
+                t->value = string("&&");
+            }
+            break;
+        case '|':
+            if((peek = next(lexer)) != '|'){
+                t->type = TOK_OR;
+                t->value = string("|");
+                back(lexer);
+            }
+            else{
+                t->type = TOK_LOG_OR;
+                t->value = string("||");
+            }
+            break;
         case '=':
             if ((peek = next(lexer)) == '=')
             {
@@ -128,6 +155,42 @@ Vector *tokenize(const char *input, size_t length)
                 t->value = string("!");
             }
             break;
+        case '<':
+            peek = next(lexer);
+            if (peek == '<')
+            {
+                t->type = TOK_LSHIFT;
+                t->value = string("<<");
+            }
+            else if(peek == '='){
+
+                t->type = TOK_LT_EQ;
+                t->value = string("<=");
+            }
+            else{
+                t->type = TOK_LT;
+                t->value = string("<");
+                back(lexer);
+            }
+            break;
+        case '>':
+            peek = next(lexer);
+            if (peek == '>')
+            {
+                t->type = TOK_RSHIFT;
+                t->value = string(">>");
+            }
+            else if(peek == '='){
+
+                t->type = TOK_GT_EQ;
+                t->value = string(">=");
+            }
+            else{
+                t->type = TOK_GT;
+                t->value = string(">");
+                back(lexer);
+            }
+            break;
         case ',':
             t->type = TOK_COMMA;
             t->value = string(",");
@@ -152,7 +215,7 @@ Vector *tokenize(const char *input, size_t length)
                 tokenize_ident(c, t, lexer);
                 break;
             }
-            printf("%d\n", c);
+            printf("%c\n", c);
             perror("Unexpected char.");
             exit(1);
         }
