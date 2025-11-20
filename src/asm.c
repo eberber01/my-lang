@@ -525,6 +525,7 @@ Register *eval_for(AstNode *node, RISCV *_asm)
     AstFor *f_stmt = (AstFor *)node->as;
     Register *reg;
     int id = cond_count;
+    cond_count++;
 
     // Add label
     fprintf(_asm->out, "for_init%d:\n", id);
@@ -557,7 +558,6 @@ Register *eval_for(AstNode *node, RISCV *_asm)
     fprintf(_asm->out, "\tj for_cond%d\n", id);
     fprintf(_asm->out, "for_end%d:\n", id);
 
-    cond_count++;
     return NULL;
 }
 
