@@ -307,7 +307,8 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
                 // !=
                 fprintf(_asm->out, "\tsnez %s, %s \n", reg->label, reg->label);
             }
-
+            free_register(left);
+            free_register(right);
             return reg;
         }
 
