@@ -6,6 +6,7 @@
 
 #include "ast.h"
 #include "hashmap.h"
+#include "lex.h"
 #include "util.h"
 
 int cond_count = 0;
@@ -279,38 +280,36 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
     bin_exp = (AstBinExp *)node->as;
     left = asm_eval(bin_exp->left, _asm);
     right = asm_eval(bin_exp->right, _asm);
-    switch (*(bin_exp->value))
+    switch (bin_exp->op_type)
     {
-    case '+':
+    case TOK_ADD:
         return reg_add(left, right, _asm);
-    case '-':
+    case TOK_SUB:
         return reg_sub(left, right, _asm);
-    case '*':
+    case TOK_MULT:
         return reg_mult(left, right, _asm);
-    case '/':
+    case TOK_DIV:
         return reg_div(left, right, _asm);
+    case TOK_EQUAL:
+        reg = alloc_register(_asm);
+
+        fprintf(_asm->out, "\tsub %s, %s, %s \n", reg->label, right->label, left->label);
+        // == Check if equal
+        fprintf(_asm->out, "\tseqz %s, %s \n", reg->label, reg->label);
+        free_register(left);
+        free_register(right);
+        return reg;
+    case TOK_NOT_EQUAL:
+        reg = alloc_register(_asm);
+
+        fprintf(_asm->out, "\tsub %s, %s, %s \n", reg->label, right->label, left->label);
+        // !=
+        fprintf(_asm->out, "\tsnez %s, %s \n", reg->label, reg->label);
+
+        free_register(left);
+        free_register(right);
+        return reg;
     default:
-
-        if (!strcmp(bin_exp->value, "==") || !strcmp(bin_exp->value, "!="))
-        {
-            reg = alloc_register(_asm);
-
-            fprintf(_asm->out, "\tsub %s, %s, %s \n", reg->label, right->label, left->label);
-            if (!strcmp(bin_exp->value, "=="))
-            {
-
-                // == Check if equal
-                fprintf(_asm->out, "\tseqz %s, %s \n", reg->label, reg->label);
-            }
-            else
-            {
-                // !=
-                fprintf(_asm->out, "\tsnez %s, %s \n", reg->label, reg->label);
-            }
-            free_register(left);
-            free_register(right);
-            return reg;
-        }
 
         perror("Unexpected node type.");
         exit(1);
