@@ -79,5 +79,5 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --target build_compile_tests
 
     - name: Run Test Programs
-      run: cmake --build ${{github.workspace}}/build --target run_all_tests
+      run: cmake --build ${{github.workspace}}/build --target runtime_tests
 

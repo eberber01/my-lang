@@ -143,7 +143,7 @@ add_custom_target(build_compile_tests
 # ----------------------
 # Run tests
 # ----------------------
-file(GLOB RUN_TESTS tests/run/*.c)
+file(GLOB RUN_TESTS tests/runtime/*.c)
 
 set(OUT_DIR ${CMAKE_BINARY_DIR}/out)
 file(MAKE_DIRECTORY ${OUT_DIR})
@@ -208,7 +208,7 @@ foreach(TEST_FILE ${RUN_TESTS})
 endforeach()
 
 # Master target to run all tests
-add_custom_target(run_all_tests DEPENDS ${RUN_TARGETS})
+add_custom_target(runtime_tests DEPENDS ${RUN_TARGETS})
 
 
 
