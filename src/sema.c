@@ -36,6 +36,7 @@ Scope *enter_scope(Scope *parent)
 Scope *exit_scope(Scope *scope)
 {
     Scope *parent = scope->parent;
+    hashmap_free(scope->symtab);
     free(scope);
     return parent;
 }
@@ -69,7 +70,7 @@ bool in_scope(Scope *scope, char *key)
     return entry;
 }
 
-void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env)
+void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env, Vector *symbols)
 {
 
     AstCompStmt *comp_stmt;
@@ -94,15 +95,15 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         comp_stmt = (AstCompStmt *)node->as;
         Scope *child = enter_scope(scope);
         for (size_t i = 0; i < comp_stmt->body->length; i++)
-            sym_check((AstNode *)vector_get(comp_stmt->body, i), frame, child, type_env);
+            sym_check((AstNode *)vector_get(comp_stmt->body, i), frame, child, type_env, symbols);
         exit_scope(child);
         break;
     case AST_IF:
         if_stmt = (AstIfElse *)node->as;
-        sym_check(if_stmt->if_body, frame, scope, type_env);
-        sym_check(if_stmt->if_expr, frame, scope, type_env);
+        sym_check(if_stmt->if_body, frame, scope, type_env, symbols);
+        sym_check(if_stmt->if_expr, frame, scope, type_env, symbols);
         if (if_stmt->else_body != NULL)
-            sym_check(if_stmt->else_body, frame, scope, type_env);
+            sym_check(if_stmt->else_body, frame, scope, type_env, symbols);
 
         break;
     case AST_VAR_DEF:
@@ -114,10 +115,11 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
             exit(1);
         }
 
-        sym_check(var_def->expr, frame, scope, type_env);
+        sym_check(var_def->expr, frame, scope, type_env, symbols);
 
         entry_type = hashmap_get(type_env, var_def->type);
         entry = make_symtab_entry(str_clone(var_def->value), entry_type->ts, SYM_VARIABLE);
+        vector_push(symbols, entry);
         entry->offset = stackframe_add(frame);
         var_def->symbol = entry;
 
@@ -125,11 +127,11 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         break;
     case AST_BIN_EXP:
         bin_exp = (AstBinExp *)node->as;
-        sym_check(bin_exp->left, frame, scope, type_env);
-        sym_check(bin_exp->right, frame, scope, type_env);
+        sym_check(bin_exp->left, frame, scope, type_env, symbols);
+        sym_check(bin_exp->right, frame, scope, type_env, symbols);
         break;
     case AST_INT_CONST:
-        break;
+    break;
     case AST_FUNC_DEF:
         func_def = (AstFuncDef *)node->as;
         // Check if symbol exists in table
@@ -154,15 +156,14 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         // Insert params into symbol table
         TypeEnvEntry *ret_type = hashmap_get(type_env, func_def->type);
         SymTabEntry *entry = make_symtab_entry(str_clone(func_def->value), ret_type->ts, SYM_FUNCTION);
-
-        sym_check(func_def->body, frame, scope, type_env);
+        vector_push(symbols,  entry);
+        sym_check(func_def->body, frame, scope, type_env, symbols);
 
         entry->params = func_def->params;
         entry->frame = frame;
         func_def->symbol = entry;
 
         scope_add(scope, entry);
-
         break;
     case AST_IDENT:
         ident = (AstIdent *)node->as;
@@ -195,13 +196,13 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         }
 
         for (size_t i = 0; i < func_call->args->length; i++)
-            sym_check((AstNode *)vector_get(func_call->args, i), frame, scope, type_env);
+            sym_check((AstNode *)vector_get(func_call->args, i), frame, scope, type_env,symbols);
 
         break;
     case AST_RET:
         ret = (AstRet *)node->as;
         ret->func = frame->func;
-        sym_check(ret->expr, frame, scope, type_env);
+        sym_check(ret->expr, frame, scope, type_env, symbols);
         break;
     case AST_ENUM:
         enm = (AstEnum *)node->as;
@@ -227,7 +228,6 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         dec->symbol = entry;
         scope_add(scope, entry);
         break;
-
     case AST_VAR_ASGN:
         asgn = (AstVarAsgn *)node->as;
 
@@ -238,38 +238,39 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
             exit(1);
         }
 
-        sym_check(asgn->expr, frame, scope, type_env);
+        sym_check(asgn->expr, frame, scope, type_env,symbols);
         asgn->symbol = scope_lookup(scope, asgn->value);
-
         break;
     case AST_WHILE:
         w_stmt = (AstWhile *)node->as;
 
-        sym_check(w_stmt->expr, frame, scope, type_env);
-        sym_check(w_stmt->body, frame, scope, type_env);
+        sym_check(w_stmt->expr, frame, scope, type_env, symbols);
+        sym_check(w_stmt->body, frame, scope, type_env, symbols);
 
         break;
 
     case AST_FOR:
         f_stmt = (AstFor *)node->as;
-        sym_check(f_stmt->init, frame, scope, type_env);
-        sym_check(f_stmt->cond, frame, scope, type_env);
-        sym_check(f_stmt->step, frame, scope, type_env);
-        sym_check(f_stmt->body, frame, scope, type_env);
+        sym_check(f_stmt->init, frame, scope, type_env, symbols);
+        sym_check(f_stmt->cond, frame, scope, type_env, symbols);
+        sym_check(f_stmt->step, frame, scope, type_env, symbols);
+        sym_check(f_stmt->body, frame, scope, type_env, symbols);
         break;
     case AST_EMPTY_EXPR:
         break;
     default:
         printf("type%d", node->type);
         perror("unkown ast type");
-        break;
+        exit(1);
     }
+
 }
 
-void sema_check(Vector *prog, HashMap *type_env)
+Vector* sema_check(Vector *prog, HashMap *type_env)
 {
     AstNode *node;
     HashMap *symtab = hashmap_new();
+    Vector *symbols = vector_new();
 
     Scope *global = (Scope *)my_malloc(sizeof(Scope));
     global->symtab = symtab;
@@ -278,6 +279,8 @@ void sema_check(Vector *prog, HashMap *type_env)
     for (size_t i = 0; i < prog->length; i++)
     {
         node = (AstNode *)vector_get(prog, i);
-        sym_check(node, NULL, global, type_env);
+        sym_check(node, NULL, global, type_env, symbols);
     }
+    exit_scope(global);
+    return  symbols;
 }

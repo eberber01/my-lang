@@ -387,6 +387,7 @@ void ast_free(AstNode *node)
         var_def = (AstVarDef *)node->as;
         ast_free(var_def->expr);
         free(var_def->value);
+        free(var_def->type);
         free(var_def);
         break;
     case AST_BIN_EXP:
