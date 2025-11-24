@@ -162,19 +162,7 @@ AstNode *parse_additive_expression(TokenStream *stream)
 
 AstNode *parse_shift_expression(TokenStream *stream)
 {
-    AstNode *left = parse_additive_expression(stream);
-    Token *current;
-
-    while ((current = current_token(stream)) && (current->type == TOK_LSHIFT || current->type == TOK_RSHIFT))
-    {
-        char *value = as_str(current->value);
-
-        next_token(stream);
-        AstNode *right = parse_additive_expression(stream);
-        left = make_ast_bin_exp(value, left, right);
-    
-    } return left;
-    //return parse_additive_expression(stream);
+    return parse_additive_expression(stream);
 }
 
 bool is_relational_op(TokenType type){
@@ -205,51 +193,15 @@ AstNode *parse_equality_expression(TokenStream *stream)
 }
 
 AstNode *parse_and_expression(TokenStream* stream){
-    AstNode *left = parse_equality_expression(stream);
-    Token *current;
-
-    while ((current = current_token(stream)) && (current->type == TOK_AND))
-    {
-        char *value = as_str(current->value);
-
-        next_token(stream);
-        AstNode *right = parse_equality_expression(stream);
-        left = make_ast_bin_exp(value, left, right);
-    }
-    return left;
-
+    return  parse_equality_expression(stream);
 }
 
 AstNode *parse_xor_expression(TokenStream* stream){
-    AstNode *left = parse_and_expression(stream);
-    Token *current;
-
-    while ((current = current_token(stream)) && (current->type == TOK_XOR))
-    {
-        char *value = as_str(current->value);
-
-        next_token(stream);
-        AstNode *right = parse_and_expression(stream);
-        left = make_ast_bin_exp(value, left, right);
-    }
-    return left;
-
+    return parse_and_expression(stream);
 }
 
 AstNode *parse_or_expression(TokenStream* stream){
-    AstNode *left = parse_xor_expression(stream);
-    Token *current;
-
-    while ((current = current_token(stream)) && (current->type == TOK_OR))
-    {
-        char *value = as_str(current->value);
-
-        next_token(stream);
-        AstNode *right = parse_xor_expression(stream);
-        left = make_ast_bin_exp(value, left, right);
-    }
-    return left;
-
+    return parse_xor_expression(stream);
 }
 
 AstNode *parse_log_and_expression(TokenStream* stream){
@@ -260,9 +212,10 @@ AstNode *parse_log_and_expression(TokenStream* stream){
     {
         char *value = as_str(current->value);
 
+        TokenType op_type = current->type;
         next_token(stream);
         AstNode *right = parse_or_expression(stream);
-        left = make_ast_bin_exp(value, left, right);
+        left = make_ast_bin_exp(value, op_type, left, right);
     }
     return left;
 
@@ -276,9 +229,10 @@ AstNode *parse_log_or_expression(TokenStream* stream){
     {
         char *value = as_str(current->value);
 
+        TokenType op_type = current->type;
         next_token(stream);
         AstNode *right = parse_log_and_expression(stream);
-        left = make_ast_bin_exp(value, left, right);
+        left = make_ast_bin_exp(value, op_type, left, right);
     }
     return left;
 

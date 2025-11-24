@@ -309,6 +309,12 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
         free_register(left);
         free_register(right);
         return reg;
+    case TOK_LOG_AND:
+        reg = alloc_register(_asm);
+         
+        //fprintf(_asm->out, "\tand rd,rs1,rs2")
+
+        return reg;
     default:
 
         perror("Unexpected node type.");
