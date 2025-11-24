@@ -133,10 +133,10 @@ AstNode *parse_multiplicative_expression(TokenStream *stream)
     while ((current = current_token(stream)) && (current->type == TOK_MULT || current->type == TOK_DIV))
     {
         char *value = as_str(current->value);
-
+        TokenType op_type = current->type;
         next_token(stream);
         AstNode *right = parse_cast_expression(stream);
-        left = make_ast_bin_exp(value, left, right);
+        left = make_ast_bin_exp(value, op_type, left, right);
     }
     return left;
 }
@@ -149,10 +149,10 @@ AstNode *parse_additive_expression(TokenStream *stream)
     while ((current = current_token(stream)) && (current->type == TOK_ADD || current->type == TOK_SUB))
     {
         char *value = as_str(current->value);
-
+        TokenType op_type = current->type;
         next_token(stream);
         AstNode *right = parse_multiplicative_expression(stream);
-        left = make_ast_bin_exp(value, left, right);
+        left = make_ast_bin_exp(value, op_type, left, right);
     }
     return left;
 }
@@ -181,10 +181,11 @@ AstNode *parse_conditional_expression(TokenStream *stream)
     while ((current = current_token(stream)) && (current->type == TOK_NOT_EQUAL || current->type == TOK_EQUAL))
     {
         char *value = as_str(current->value);
+        TokenType op_type = current->type;
 
         next_token(stream);
         AstNode *right = parse_relational_expression(stream);
-        left = make_ast_bin_exp(value, left, right);
+        left = make_ast_bin_exp(value, op_type, left, right);
     }
     return left;
 }

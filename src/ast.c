@@ -252,12 +252,13 @@ AstNode *make_int_const(int value)
     return make_ast_node(AST_INT_CONST, int_const);
 }
 
-AstNode *make_ast_bin_exp(char *value, AstNode *left, AstNode *right)
+AstNode *make_ast_bin_exp(char *value, TokenType op_type, AstNode *left, AstNode *right)
 {
     AstBinExp *bin_exp = (AstBinExp *)my_malloc(sizeof(AstBinExp));
     bin_exp->left = left;
     bin_exp->right = right;
     bin_exp->value = value;
+    bin_exp->op_type = op_type;
     return make_ast_node(AST_BIN_EXP, bin_exp);
 }
 

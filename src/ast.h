@@ -1,6 +1,7 @@
 #ifndef AST_H
 #define AST_H
 #include "hashmap.h"
+#include "lex.h"
 #include "util.h"
 
 typedef enum AstNodeType
@@ -50,6 +51,7 @@ typedef struct AstIntConst
 typedef struct AstBinExp
 {
     char *value;
+    TokenType op_type;
     struct AstNode *left;
     struct AstNode *right;
 } AstBinExp;
@@ -145,7 +147,7 @@ AstNode *make_ast_comp_stmt(Vector *body);
 
 AstNode *make_int_const(int value);
 
-AstNode *make_ast_bin_exp(char *value, AstNode *left, AstNode *right);
+AstNode *make_ast_bin_exp(char *value, TokenType op_type, AstNode *left, AstNode *right);
 
 AstNode *make_ast_func_def(char *value, char *type, AstNode *body, Vector *params);
 
