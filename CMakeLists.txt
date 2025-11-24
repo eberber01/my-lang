@@ -196,11 +196,22 @@ foreach(TEST_FILE ${RUN_TESTS})
 
     # Create a target to build + run this test
     add_custom_target(run_${TEST_NAME} DEPENDS ${RUN_LOG})
+
+    # Prevent GNU Make from deleting run log files on failure
+    set_property(
+        SOURCE ${RUN_LOG}
+        PROPERTY
+            SYMBOLIC TRUE
+    )
+
     list(APPEND RUN_TARGETS run_${TEST_NAME})
 endforeach()
 
 # Master target to run all tests
 add_custom_target(run_all_tests DEPENDS ${RUN_TARGETS})
+
+
+
 
 
 if(CLANG_FORMAT_BIN)
