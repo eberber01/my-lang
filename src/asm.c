@@ -596,8 +596,9 @@ void _gen_asm(AstNode *node, RISCV *_asm)
     case AST_EXPR_STMT:
         expr_stmt = (AstExprStmt*)node->as;
         if(expr_stmt->expr->type != AST_EMPTY_EXPR){
+
             reg = eval_asm(expr_stmt->expr, _asm);
-            free(reg);
+            free_register(reg);
         }
         break;
     case AST_ENUM:
