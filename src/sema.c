@@ -88,7 +88,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
     AstFor *f_stmt;
     SymTabEntry *entry;
     TypeEnvEntry *entry_type;
-    Scope* child;
+    Scope *child;
 
     switch (node->type)
     {
