@@ -19,7 +19,7 @@ void my_lang(char *file_name)
 
     Vector *prog = parse(tokens);
 
-    Vector* symbols =sema_check(prog, type_env);
+    Vector *symbols = sema_check(prog, type_env);
 
 #ifdef DEBUG
     for (size_t i = 0; i < tokens->length; i++)
@@ -38,16 +38,16 @@ void my_lang(char *file_name)
 
     type_env_free(type_env);
 
-    for (size_t i = 0; i < symbols->length; i++){
-        SymTabEntry* symbol = (SymTabEntry*)vector_get(symbols, i);
-        if(symbol->symbol == SYM_FUNCTION)
+    for (size_t i = 0; i < symbols->length; i++)
+    {
+        SymTabEntry *symbol = (SymTabEntry *)vector_get(symbols, i);
+        if (symbol->symbol == SYM_FUNCTION)
             free(symbol->frame);
         free(symbol->key);
         free(symbol);
     }
     vector_free(symbols);
     free(input);
-
 }
 
 int main(int argc, char **argv)

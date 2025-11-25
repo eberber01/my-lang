@@ -354,19 +354,9 @@ Register *eval_ret(AstNode *node, RISCV *_asm)
     // return val
     reg = asm_eval(ret->expr, _asm);
 
-    // Exit status 0, if main function
-    if (!strcmp(ret->func, "main"))
-    {
-        // Syscall Exit 10
-        fprintf(_asm->out, "\tli  a7, 93\n");
-        move_register(reg, vector_get(_asm->arg, 0), _asm);
-        ecall(_asm);
-    }
-    else
-    {
-        // move to return a0
-        fprintf(_asm->out, "\tadd a0, %s, zero\n", reg->label);
-    }
+    // move to return a0
+    fprintf(_asm->out, "\tadd a0, %s, zero\n", reg->label);
+
     free_register(reg);
     return NULL;
 }
@@ -423,11 +413,7 @@ Register *eval_func_def(AstNode *node, RISCV *_asm)
     if (frame_size > 0)
         sp_increase(frame_size, _asm);
 
-    // Not main function, return
-    if (strcmp(func_def->value, "main"))
-    {
-        return_from_jump(_asm);
-    }
+    return_from_jump(_asm);
 
     return NULL;
 }
@@ -604,9 +590,13 @@ void asm_init(RISCV *riscv)
 {
     // Create and set up out file
     FILE *out = fopen("./asm.s", "w");
-    fprintf(out, ".globl main\n\n");
-    fprintf(out, "\tj main\n");
     riscv->out = out;
+    fprintf(out, ".section .text\n");
+    fprintf(out, "\t.globl _start\n");
+    fprintf(out, "_start:\n");
+    fprintf(out, "\tcall main\n");
+    fprintf(out, "\tli a7, 93\n");
+    ecall(riscv);
 }
 
 void asm_free(RISCV *riscv)
@@ -634,24 +624,12 @@ void ecall(RISCV *_asm)
 // Generate Assembly file from AST
 void gen_asm(Vector *prog)
 {
-    int linux_exit_syscall = 93;
-    int exit_code = 0;
-
     RISCV *_asm = make_riscv();
     asm_init(_asm);
     for (size_t i = 0; i < prog->length; i++)
     {
         asm_eval((AstNode *)vector_get(prog, i), _asm);
     }
-
-    // Linux prologue
-
-    // a7
-    load_register(vector_get(_asm->arg, 7), linux_exit_syscall, _asm);
-
-    // a0
-    load_register(vector_get(_asm->arg, 0), exit_code, _asm);
-    ecall(_asm);
 
     asm_free(_asm);
 }

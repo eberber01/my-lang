@@ -131,7 +131,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         sym_check(bin_exp->right, frame, scope, type_env, symbols);
         break;
     case AST_INT_CONST:
-    break;
+        break;
     case AST_FUNC_DEF:
         func_def = (AstFuncDef *)node->as;
         // Check if symbol exists in table
@@ -156,7 +156,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         // Insert params into symbol table
         TypeEnvEntry *ret_type = hashmap_get(type_env, func_def->type);
         SymTabEntry *entry = make_symtab_entry(str_clone(func_def->value), ret_type->ts, SYM_FUNCTION);
-        vector_push(symbols,  entry);
+        vector_push(symbols, entry);
         sym_check(func_def->body, frame, scope, type_env, symbols);
 
         entry->params = func_def->params;
@@ -196,7 +196,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         }
 
         for (size_t i = 0; i < func_call->args->length; i++)
-            sym_check((AstNode *)vector_get(func_call->args, i), frame, scope, type_env,symbols);
+            sym_check((AstNode *)vector_get(func_call->args, i), frame, scope, type_env, symbols);
 
         break;
     case AST_RET:
@@ -238,7 +238,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
             exit(1);
         }
 
-        sym_check(asgn->expr, frame, scope, type_env,symbols);
+        sym_check(asgn->expr, frame, scope, type_env, symbols);
         asgn->symbol = scope_lookup(scope, asgn->value);
         break;
     case AST_WHILE:
@@ -263,10 +263,9 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         perror("unkown ast type");
         exit(1);
     }
-
 }
 
-Vector* sema_check(Vector *prog, HashMap *type_env)
+Vector *sema_check(Vector *prog, HashMap *type_env)
 {
     AstNode *node;
     HashMap *symtab = hashmap_new();
@@ -282,5 +281,5 @@ Vector* sema_check(Vector *prog, HashMap *type_env)
         sym_check(node, NULL, global, type_env, symbols);
     }
     exit_scope(global);
-    return  symbols;
+    return symbols;
 }

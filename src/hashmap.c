@@ -192,7 +192,7 @@ void type_env_free(HashMap *map)
 
         while (curr)
         {
-            TypeEnvEntry* entry = (TypeEnvEntry*)curr->data;
+            TypeEnvEntry *entry = (TypeEnvEntry *)curr->data;
             free(entry);
             tmp = curr->next;
 
