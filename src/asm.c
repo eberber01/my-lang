@@ -497,11 +497,7 @@ void gen_for(AstNode *node, RISCV *_asm)
 
     fprintf(_asm->out, "for_cond%d:\n", id);
 
-    if (f_stmt->cond->type == AST_EMPTY_EXPR)
-    {
-        _gen_asm(f_stmt->cond, _asm);
-    }
-    else
+    if (f_stmt->cond->type != AST_EMPTY_EXPR)
     {
         reg = eval_asm(f_stmt->cond, _asm);
         // cmp and branch to end label
@@ -514,12 +510,7 @@ void gen_for(AstNode *node, RISCV *_asm)
 
     fprintf(_asm->out, "for_step%d:\n", id);
 
-    printf("here3\n");
-    if (f_stmt->step->type == AST_EMPTY_EXPR)
-    {
-        _gen_asm(f_stmt->step, _asm);
-    }
-    else
+    if (f_stmt->step->type != AST_EMPTY_EXPR)
     {
         reg = eval_asm(f_stmt->step, _asm);
         free_register(reg);
