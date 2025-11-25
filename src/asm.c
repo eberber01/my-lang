@@ -356,6 +356,7 @@ Register *eval_ret(AstNode *node, RISCV *_asm)
 
     // move to return a0
     fprintf(_asm->out, "\tadd a0, %s, zero\n", reg->label);
+    return_from_jump(_asm);
 
     free_register(reg);
     return NULL;
@@ -413,7 +414,8 @@ Register *eval_func_def(AstNode *node, RISCV *_asm)
     if (frame_size > 0)
         sp_increase(frame_size, _asm);
 
-    return_from_jump(_asm);
+    if (!strcmp(func_def->type, "void"))
+        return_from_jump(_asm);
 
     return NULL;
 }

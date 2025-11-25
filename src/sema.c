@@ -157,13 +157,14 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         TypeEnvEntry *ret_type = hashmap_get(type_env, func_def->type);
         SymTabEntry *entry = make_symtab_entry(str_clone(func_def->value), ret_type->ts, SYM_FUNCTION);
         vector_push(symbols, entry);
-        sym_check(func_def->body, frame, scope, type_env, symbols);
 
         entry->params = func_def->params;
         entry->frame = frame;
         func_def->symbol = entry;
-
         scope_add(scope, entry);
+
+        sym_check(func_def->body, frame, scope, type_env, symbols);
+
         break;
     case AST_IDENT:
         ident = (AstIdent *)node->as;
