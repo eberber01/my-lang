@@ -86,6 +86,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
     AstVarAsgn *asgn;
     AstWhile *w_stmt;
     AstFor *f_stmt;
+    AstExprStmt *expr_stmt;
     SymTabEntry *entry;
     TypeEnvEntry *entry_type;
     Scope *child;
@@ -261,6 +262,10 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         sym_check(f_stmt->body, frame, child, type_env, symbols);
 
         exit_scope(child);
+        break;
+    case AST_EXPR_STMT:
+        expr_stmt =(AstExprStmt*) node->as;
+        sym_check(expr_stmt->expr, frame, scope, type_env, symbols);
         break;
     case AST_EMPTY_EXPR:
         break;
