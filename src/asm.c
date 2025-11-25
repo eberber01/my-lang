@@ -47,20 +47,17 @@ RISCV *make_riscv(void)
     riscv->save = save_reg;
     riscv->ret = make_register("ra");
     riscv->sp = make_register("sp");
-    riscv->sp->value = 0;
     return riscv;
 }
 
 void sp_increase(size_t bytes, RISCV *_asm)
 {
     fprintf(_asm->out, "\taddi sp, sp, -%zu\n", bytes);
-    _asm->sp->value += bytes;
 }
 
 void sp_decrease(size_t bytes, RISCV *_asm)
 {
     fprintf(_asm->out, "\taddi sp, sp, %zu\n", bytes);
-    _asm->sp->value -= bytes;
 }
 
 // Load value at sp offset into reg

@@ -13,9 +13,6 @@ typedef struct Register
 {
     // Name of register
     char *label;
-    // Loaded value
-    int value;
-
     bool free;
 } Register;
 
