@@ -6,6 +6,14 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#ifdef DEBUG
+# define DEBUG_PRINT(x) printf x
+#else
+# define DEBUG_PRINT(x) do {} while (0)
+#endif
+
+
+
 #define VECTOR_INIT_SIZE 10
 typedef enum
 {
