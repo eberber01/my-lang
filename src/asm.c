@@ -76,27 +76,6 @@ void sp_store(int offset, Register *reg, RISCV *_asm)
     fprintf(_asm->out, "\tsw %s, %d(sp)\n", reg->label, offset);
 }
 
-void print_newline(RISCV *_asm)
-{
-    fprintf(_asm->out, "\tli a7, 11\n"); // service 11 is print integer
-    Register *r = alloc_register(_asm);
-    load_register(r, 10, _asm);
-    fprintf(_asm->out, "\tadd a0, %s, zero\n",
-            r->label); // load desired value into argument register a0, using
-                       // pseudo-op
-    fprintf(_asm->out, "\tecall\n");
-    free_register(r);
-}
-
-void print_register(Register *reg, RISCV *_asm)
-{
-    fprintf(_asm->out, "\tli  a7, 1\n"); // service 1 is print integer
-    fprintf(_asm->out, "\tadd a0, %s, zero\n",
-            reg->label); // load desired value into argument register a0, using
-                         // pseudo-op
-    fprintf(_asm->out, "\tecall\n");
-}
-
 // Allocate free temporary register
 Register *alloc_register(RISCV *_asm)
 {
