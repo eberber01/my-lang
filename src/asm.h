@@ -36,15 +36,15 @@ Register *alloc_register(RISCV *_asm);
 
 void free_register(Register *reg);
 
-Register *reg_add(Register *reg1, Register *reg2, RISCV *_asm);
+Register *emit_reg_add(Register *reg1, Register *reg2, RISCV *_asm);
 
-Register *reg_sub(Register *reg1, Register *reg2, RISCV *_asm);
+Register *emit_reg_sub(Register *reg1, Register *reg2, RISCV *_asm);
 
-Register *reg_mult(Register *, Register *reg2, RISCV *_asm);
+Register *emit_reg_mult(Register *, Register *reg2, RISCV *_asm);
 
-Register *reg_div(Register *, Register *reg2, RISCV *_asm);
+Register *emit_reg_div(Register *, Register *reg2, RISCV *_asm);
 
-Register *load_register(Register *reg, int value, RISCV *_asm);
+Register *emit_load_register(Register *reg, int value, RISCV *_asm);
 
 Register *eval_asm(AstNode *node, RISCV *_asm);
 
