@@ -264,7 +264,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         exit_scope(child);
         break;
     case AST_EXPR_STMT:
-        expr_stmt =(AstExprStmt*) node->as;
+        expr_stmt = (AstExprStmt *)node->as;
         sym_check(expr_stmt->expr, frame, scope, type_env, symbols);
         break;
     case AST_EMPTY_EXPR:

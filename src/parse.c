@@ -424,7 +424,7 @@ AstNode *parse_declartion(TokenStream *stream)
 AstNode *parse_statement(TokenStream *stream)
 {
     Token *current = current_token(stream);
-    
+
     if (current->type == TOK_WHILE || current->type == TOK_FOR)
         return parse_iter_statement(stream);
     else if (is_declartion(stream))

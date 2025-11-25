@@ -153,7 +153,7 @@ AstNode *make_ast_comp_stmt(Vector *body);
 
 AstNode *make_int_const(int value);
 
-AstNode *make_expr_stmt(AstNode* expr);
+AstNode *make_expr_stmt(AstNode *expr);
 
 AstNode *make_ast_bin_exp(char *value, TokenType op_type, AstNode *left, AstNode *right);
 

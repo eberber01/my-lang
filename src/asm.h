@@ -46,7 +46,7 @@ Register *reg_div(Register *, Register *reg2, RISCV *_asm);
 
 Register *load_register(Register *reg, int value, RISCV *_asm);
 
-Register* eval_asm(AstNode*node, RISCV * _asm);
+Register *eval_asm(AstNode *node, RISCV *_asm);
 
 void gen_asm(Vector *prog);
 
