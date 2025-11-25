@@ -237,8 +237,9 @@ AstNode *make_ast_node(AstNodeType type, void *inner)
     return node;
 }
 
-AstNode *make_expr_stmt(AstNode* expr){
-    AstExprStmt* stmt = (AstExprStmt*)my_malloc(sizeof(AstExprStmt));
+AstNode *make_expr_stmt(AstNode *expr)
+{
+    AstExprStmt *stmt = (AstExprStmt *)my_malloc(sizeof(AstExprStmt));
     stmt->expr = expr;
     return make_ast_node(AST_EXPR_STMT, stmt);
 }
@@ -484,9 +485,9 @@ void ast_free(AstNode *node)
         free(f_stmt);
         break;
     case AST_EXPR_STMT:
-        expr_stmt = (AstExprStmt*)node->as;
+        expr_stmt = (AstExprStmt *)node->as;
         ast_free(expr_stmt->expr);
-        break; 
+        break;
     case AST_EMPTY_EXPR:
         break;
     default:

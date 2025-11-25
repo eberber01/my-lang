@@ -529,7 +529,7 @@ Register *eval_for(AstNode *node, RISCV *_asm)
 Register *asm_eval(AstNode *node, RISCV *_asm)
 {
     AstExprStmt *expr_stmt;
-    Register* reg;
+    Register *reg;
     switch (node->type)
     {
     case AST_FUNC_CALL:
@@ -557,9 +557,9 @@ Register *asm_eval(AstNode *node, RISCV *_asm)
     case AST_FOR:
         return eval_for(node, _asm);
     case AST_EXPR_STMT:
-        expr_stmt = (AstExprStmt*)node->as;
+        expr_stmt = (AstExprStmt *)node->as;
         reg = asm_eval(expr_stmt->expr, _asm);
-        if(reg != NULL)
+        if (reg != NULL)
             free_register(reg);
         return NULL;
     case AST_ENUM:
