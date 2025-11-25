@@ -88,12 +88,13 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
     AstFor *f_stmt;
     SymTabEntry *entry;
     TypeEnvEntry *entry_type;
+    Scope* child;
 
     switch (node->type)
     {
     case AST_COMP_STMT:
         comp_stmt = (AstCompStmt *)node->as;
-        Scope *child = enter_scope(scope);
+        child = enter_scope(scope);
         for (size_t i = 0; i < comp_stmt->body->length; i++)
             sym_check((AstNode *)vector_get(comp_stmt->body, i), frame, child, type_env, symbols);
         exit_scope(child);
@@ -252,10 +253,14 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
 
     case AST_FOR:
         f_stmt = (AstFor *)node->as;
-        sym_check(f_stmt->init, frame, scope, type_env, symbols);
-        sym_check(f_stmt->cond, frame, scope, type_env, symbols);
-        sym_check(f_stmt->step, frame, scope, type_env, symbols);
-        sym_check(f_stmt->body, frame, scope, type_env, symbols);
+        child = enter_scope(scope);
+
+        sym_check(f_stmt->init, frame, child, type_env, symbols);
+        sym_check(f_stmt->cond, frame, child, type_env, symbols);
+        sym_check(f_stmt->step, frame, child, type_env, symbols);
+        sym_check(f_stmt->body, frame, child, type_env, symbols);
+
+        exit_scope(child);
         break;
     case AST_EMPTY_EXPR:
         break;
