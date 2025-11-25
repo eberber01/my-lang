@@ -7,36 +7,14 @@
 #include "util.h"
 #include <stdio.h>
 
-void my_lang(char *file_name)
+void my_lang_cleanup(char *input, HashMap *type_env, Vector *tokens, Vector *prog, Vector *symbols)
 {
-    size_t input_length = 0;
-    char *input = read_file(file_name, &input_length);
-    HashMap *type_env = hashmap_new();
-
-    type_env_init(type_env);
-
-    Vector *tokens = tokenize(input, input_length);
-
-    Vector *prog = parse(tokens);
-
-    Vector *symbols = sema_check(prog, type_env);
-
-#ifdef DEBUG
-    for (size_t i = 0; i < tokens->length; i++)
-        print_token((Token *)vector_get(tokens, i));
-
-    print_ast(prog);
-#endif
-
-    gen_asm(prog);
-
+    type_env_free(type_env);
     free_tokens(tokens);
 
     for (size_t i = 0; i < prog->length; i++)
         ast_free((AstNode *)vector_get(prog, i));
     vector_free(prog);
-
-    type_env_free(type_env);
 
     for (size_t i = 0; i < symbols->length; i++)
     {
@@ -48,6 +26,32 @@ void my_lang(char *file_name)
     }
     vector_free(symbols);
     free(input);
+}
+
+void my_lang(char *file_name)
+{
+    size_t input_length = 0;
+    char *input = read_file(file_name, &input_length);
+
+    HashMap *type_env = hashmap_new();
+    type_env_init(type_env);
+
+    Vector *tokens = tokenize(input, input_length);
+
+    Vector *prog = parse(tokens);
+
+    Vector *symbols = sema_check(prog, type_env);
+
+    gen_asm(prog);
+
+#ifdef DEBUG
+    for (size_t i = 0; i < tokens->length; i++)
+        print_token((Token *)vector_get(tokens, i));
+
+    print_ast(prog);
+#endif
+
+    my_lang_cleanup(input, type_env, tokens, prog, symbols);
 }
 
 int main(int argc, char **argv)
