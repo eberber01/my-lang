@@ -32,6 +32,7 @@ void _print_ast(AstNode *node, int level)
     AstVarAsgn *asgn;
     AstWhile *w_stmt;
     AstFor *f_stmt;
+    AstExprStmt *expr_stmt;
 
     switch (node->type)
     {
@@ -204,6 +205,12 @@ void _print_ast(AstNode *node, int level)
         _print_ast(f_stmt->body, level + 1);
         printlvl("\t]", level);
         break;
+    case AST_EXPR_STMT:
+        expr_stmt = node->as;
+        printlvl("Expr Stmt(", level);
+        _print_ast(expr_stmt->expr, level);
+        printlvl(")", level);
+        break;
     case AST_EMPTY_EXPR:
         printlvl("Empty Expr()", level);
         break;
@@ -228,6 +235,13 @@ AstNode *make_ast_node(AstNodeType type, void *inner)
     node->type = type;
     node->as = inner;
     return node;
+}
+
+AstNode *make_expr_stmt(AstNode *expr)
+{
+    AstExprStmt *stmt = (AstExprStmt *)my_malloc(sizeof(AstExprStmt));
+    stmt->expr = expr;
+    return make_ast_node(AST_EXPR_STMT, stmt);
 }
 
 AstNode *make_ast_enum(char *value, Vector *enums)
@@ -362,6 +376,7 @@ void ast_free(AstNode *node)
     AstVarAsgn *asgn;
     AstFor *f_stmt;
     AstWhile *w_stmt;
+    AstExprStmt *expr_stmt;
 
     if (node == NULL)
         return;
@@ -387,6 +402,7 @@ void ast_free(AstNode *node)
         var_def = (AstVarDef *)node->as;
         ast_free(var_def->expr);
         free(var_def->value);
+        free(var_def->type);
         free(var_def);
         break;
     case AST_BIN_EXP:
@@ -467,6 +483,10 @@ void ast_free(AstNode *node)
         ast_free(f_stmt->step);
         ast_free(f_stmt->body);
         free(f_stmt);
+        break;
+    case AST_EXPR_STMT:
+        expr_stmt = (AstExprStmt *)node->as;
+        ast_free(expr_stmt->expr);
         break;
     case AST_EMPTY_EXPR:
         break;

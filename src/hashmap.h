@@ -94,7 +94,9 @@ void *hashmap_get(HashMap *map, char *key);
 
 HashMap *hashmap_new(void);
 
-void symtab_free(HashMap *table);
+void hashmap_free(HashMap *table);
+
+void type_env_free(HashMap *table);
 
 void type_env_init(HashMap *table);
 

@@ -430,7 +430,7 @@ AstNode *parse_expression_statement(TokenStream *stream)
 
     AstNode *expr = parse_expression(stream);
     expect(stream, TOK_SEMICOLON);
-    return expr;
+    return make_expr_stmt(expr);
 }
 
 AstNode *parse_iter_statement(TokenStream *stream)
@@ -477,29 +477,22 @@ AstNode *parse_declartion(TokenStream *stream)
 
 AstNode *parse_statement(TokenStream *stream)
 {
-    Token *current;
-    while ((current = current_token(stream)))
-    {
-        if (current->type == TOK_WHILE || current->type == TOK_FOR)
-            return parse_iter_statement(stream);
-        else if (is_declartion(stream))
-            return parse_declartion(stream);
-        else if (current->type == TOK_RETURN)
-            return parse_jump_statement(stream);
-        else if (current->type == TOK_IF)
-            return parse_selection_statement(stream);
-        else if (current->type == TOK_ENUM)
-        {
-            return parse_enum(stream);
-        }
-        else if (current->type == TOK_LBRACE)
-            return parse_comp_stmt(stream);
-        else
-        {
-            return parse_expression_statement(stream);
-        }
-    }
-    return NULL;
+    Token *current = current_token(stream);
+
+    if (current->type == TOK_WHILE || current->type == TOK_FOR)
+        return parse_iter_statement(stream);
+    else if (is_declartion(stream))
+        return parse_declartion(stream);
+    else if (current->type == TOK_RETURN)
+        return parse_jump_statement(stream);
+    else if (current->type == TOK_IF)
+        return parse_selection_statement(stream);
+    else if (current->type == TOK_ENUM)
+        return parse_enum(stream);
+    else if (current->type == TOK_LBRACE)
+        return parse_comp_stmt(stream);
+    else
+        return parse_expression_statement(stream);
 }
 
 Vector *parse_func_params(TokenStream *stream)

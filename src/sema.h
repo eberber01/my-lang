@@ -3,6 +3,7 @@
 
 #include "ast.h"
 #include "hashmap.h"
+#include "util.h"
 
 typedef struct Scope Scope;
 
@@ -13,8 +14,8 @@ struct Scope
     int id;
 };
 
-void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env);
+void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env, Vector *symbols);
 
-void sema_check(Vector *prog, HashMap *type_env);
+Vector *sema_check(Vector *prog, HashMap *type_env);
 
 #endif

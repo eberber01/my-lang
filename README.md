@@ -34,7 +34,7 @@ A self-hosting C compiler targeting the **RISC-V instruction set architecture**.
 
 * [ ] Implement RISC-V calling convention (registers/stack)
 * [ ] Support multiple parameters
-* [ ] Handle simple recursion
+* [x] Handle simple recursion
 
 ### Type System Expansion
 

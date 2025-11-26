@@ -152,25 +152,15 @@ HashMap *symtab_clone(HashMap *symtab)
     return clone;
 }
 
-void symtab_free(HashMap *symtab)
+void hashmap_free(HashMap *map)
 {
-    for (size_t i = 0; i < symtab->size; i++)
+    for (size_t i = 0; i < map->size; i++)
     {
         TableNode *tmp;
-        TableNode *curr = symtab->table[i];
+        TableNode *curr = map->table[i];
 
         while (curr)
         {
-
-            SymTabEntry *entry = (SymTabEntry *)curr->data;
-            SymbolType sym = entry->symbol;
-
-            if (sym != SYM_KEYWORD)
-                free(entry->key);
-
-            // Free  Symbol entry
-            free(curr->data);
-
             tmp = curr->next;
 
             // Free Table Node
@@ -179,8 +169,8 @@ void symtab_free(HashMap *symtab)
             curr = tmp;
         }
     }
-    free(symtab->table);
-    free(symtab);
+    free(map->table);
+    free(map);
 }
 
 void type_env_init(HashMap *type_env)
@@ -191,4 +181,27 @@ void type_env_init(HashMap *type_env)
     hashmap_add(type_env, make_type_env_entry("float", TS_FLOAT), "float");
     hashmap_add(type_env, make_type_env_entry("double", TS_DOUBLE), "double");
     hashmap_add(type_env, make_type_env_entry("long", TS_LONG), "long");
+}
+
+void type_env_free(HashMap *map)
+{
+    for (size_t i = 0; i < map->size; i++)
+    {
+        TableNode *tmp;
+        TableNode *curr = map->table[i];
+
+        while (curr)
+        {
+            TypeEnvEntry *entry = (TypeEnvEntry *)curr->data;
+            free(entry);
+            tmp = curr->next;
+
+            // Free Table Node
+            free(curr);
+
+            curr = tmp;
+        }
+    }
+    free(map->table);
+    free(map);
 }

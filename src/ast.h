@@ -22,6 +22,7 @@ typedef enum AstNodeType
     AST_WHILE,
     AST_FOR,
     AST_EMPTY_EXPR,
+    AST_EXPR_STMT,
 } AstNodeType;
 
 typedef struct Param
@@ -134,6 +135,11 @@ typedef struct AstFor
     AstNode *body;
 } AstFor;
 
+typedef struct AstExprStmt
+{
+    AstNode *expr;
+} AstExprStmt;
+
 void print_ast(Vector *tree);
 void visit(AstNode *node);
 
@@ -146,6 +152,8 @@ struct AstNode *make_ast_node(AstNodeType type, void *inner);
 AstNode *make_ast_comp_stmt(Vector *body);
 
 AstNode *make_int_const(int value);
+
+AstNode *make_expr_stmt(AstNode *expr);
 
 AstNode *make_ast_bin_exp(char *value, TokenType op_type, AstNode *left, AstNode *right);
 

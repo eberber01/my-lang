@@ -9,8 +9,6 @@
 #include "lex.h"
 #include "util.h"
 
-int cond_count = 0;
-
 Register *make_register(char *label)
 {
     Register *reg = my_malloc(sizeof(Register));
@@ -47,54 +45,76 @@ RISCV *make_riscv(void)
     riscv->save = save_reg;
     riscv->ret = make_register("ra");
     riscv->sp = make_register("sp");
-    riscv->sp->value = 0;
+    riscv->while_count = 0;
+    riscv->for_count = 0;
+    riscv->if_count = 0;
+    riscv->else_count = 0;
     return riscv;
 }
 
-void sp_increase(size_t bytes, RISCV *_asm)
+Label create_base_cond_label(LabelKind kind, RISCV *_asm)
 {
-    fprintf(_asm->out, "\taddi sp, sp, -%zu\n", bytes);
-    _asm->sp->value += bytes;
+    char tmp[64];
+    switch (kind)
+    {
+    case LBL_FOR:
+        snprintf(tmp, sizeof(tmp), "for%zu", _asm->for_count);
+        _asm->for_count++;
+        break;
+    case LBL_IF:
+        snprintf(tmp, sizeof(tmp), "if%zu", _asm->if_count);
+        _asm->if_count++;
+        break;
+    case LBL_WHILE:
+        snprintf(tmp, sizeof(tmp), "while%zu", _asm->while_count);
+        _asm->while_count++;
+        break;
+    case LBL_ELSE:
+        snprintf(tmp, sizeof(tmp), "else%zu", _asm->else_count);
+        _asm->else_count++;
+        break;
+    }
+    Label label = my_malloc(sizeof(char) * strlen(tmp) + 1);
+    strcpy(label, tmp);
+    return label;
 }
 
-void sp_decrease(size_t bytes, RISCV *_asm)
+Label extend_label(Label label, char *str)
+{
+    char tmp[64];
+    snprintf(tmp, sizeof(tmp), "%s%s", label, str);
+
+    Label new_label = my_malloc(sizeof(char) * strlen(tmp) + 1);
+    strcpy(new_label, tmp);
+    return new_label;
+}
+
+void emit_jump_label(Label label, RISCV *_asm)
+{
+    fprintf(_asm->out, "\tj %s\n", label);
+}
+
+void emit_sp_increase(size_t bytes, RISCV *_asm)
+{
+    fprintf(_asm->out, "\taddi sp, sp, -%zu\n", bytes);
+}
+
+void emit_sp_decrease(size_t bytes, RISCV *_asm)
 {
     fprintf(_asm->out, "\taddi sp, sp, %zu\n", bytes);
-    _asm->sp->value -= bytes;
 }
 
 // Load value at sp offset into reg
-Register *sp_load(Register *reg, int offset, RISCV *_asm)
+Register *emit_sp_load(Register *reg, int offset, RISCV *_asm)
 {
     fprintf(_asm->out, "\tlw %s, %d(sp)\n", reg->label, offset);
     return reg;
 }
 
 // Store value at reg at sp plus offset
-void sp_store(int offset, Register *reg, RISCV *_asm)
+void emit_sp_store(int offset, Register *reg, RISCV *_asm)
 {
     fprintf(_asm->out, "\tsw %s, %d(sp)\n", reg->label, offset);
-}
-
-void print_newline(RISCV *_asm)
-{
-    fprintf(_asm->out, "\tli a7, 11\n"); // service 11 is print integer
-    Register *r = alloc_register(_asm);
-    load_register(r, 10, _asm);
-    fprintf(_asm->out, "\tadd a0, %s, zero\n",
-            r->label); // load desired value into argument register a0, using
-                       // pseudo-op
-    fprintf(_asm->out, "\tecall\n");
-    free_register(r);
-}
-
-void print_register(Register *reg, RISCV *_asm)
-{
-    fprintf(_asm->out, "\tli  a7, 1\n"); // service 1 is print integer
-    fprintf(_asm->out, "\tadd a0, %s, zero\n",
-            reg->label); // load desired value into argument register a0, using
-                         // pseudo-op
-    fprintf(_asm->out, "\tecall\n");
 }
 
 // Allocate free temporary register
@@ -120,7 +140,7 @@ void free_register(Register *reg)
 
 // Register Addition
 // Free's Reg2
-Register *reg_add(Register *reg1, Register *reg2, RISCV *_asm)
+Register *emit_reg_add(Register *reg1, Register *reg2, RISCV *_asm)
 {
     fprintf(_asm->out, "\tadd %s, %s, %s\n", reg1->label, reg1->label, reg2->label);
     free_register(reg2);
@@ -129,7 +149,7 @@ Register *reg_add(Register *reg1, Register *reg2, RISCV *_asm)
 
 // Register Subtraction
 // Free's Reg2
-Register *reg_sub(Register *reg1, Register *reg2, RISCV *_asm)
+Register *emit_reg_sub(Register *reg1, Register *reg2, RISCV *_asm)
 {
     fprintf(_asm->out, "\tsub %s, %s, %s\n", reg1->label, reg1->label, reg2->label);
     free_register(reg2);
@@ -138,7 +158,7 @@ Register *reg_sub(Register *reg1, Register *reg2, RISCV *_asm)
 
 // Register Multiplication
 //  Free's Reg2
-Register *reg_mult(Register *reg1, Register *reg2, RISCV *_asm)
+Register *emit_reg_mult(Register *reg1, Register *reg2, RISCV *_asm)
 {
     fprintf(_asm->out, "\tmul %s, %s, %s\n", reg1->label, reg1->label, reg2->label);
     free_register(reg2);
@@ -147,7 +167,7 @@ Register *reg_mult(Register *reg1, Register *reg2, RISCV *_asm)
 
 // Register Division
 //  Free's Reg2
-Register *reg_div(Register *reg1, Register *reg2, RISCV *_asm)
+Register *emit_reg_div(Register *reg1, Register *reg2, RISCV *_asm)
 {
     fprintf(_asm->out, "\tdiv %s, %s, %s\n", reg1->label, reg1->label, reg2->label);
     free_register(reg2);
@@ -155,30 +175,30 @@ Register *reg_div(Register *reg1, Register *reg2, RISCV *_asm)
 }
 
 // Load register with int value
-Register *load_register(Register *reg, int value, RISCV *_asm)
+Register *emit_load_register(Register *reg, int value, RISCV *_asm)
 {
     fprintf(_asm->out, "\taddi %s, zero, %d\n", reg->label, value);
     return reg;
 }
 
-void jump_to_label(char *label, RISCV *_asm)
+void emit_jump_to_label(char *label, RISCV *_asm)
 {
     fprintf(_asm->out, "\tjal %s\n", label);
 }
 
-void return_from_jump(RISCV *_asm)
+void emit_return_from_jump(RISCV *_asm)
 {
     fprintf(_asm->out, "\tjalr ra\n");
 }
 
 // Add Label to RISCV out file
 // name:
-void label_add(char *name, RISCV *_asm)
+void emit_label(char *name, RISCV *_asm)
 {
     fprintf(_asm->out, "%s:\n", name);
 }
 // Move value from reg1 to reg2
-void move_register(Register *reg1, Register *reg2, RISCV *_asm)
+void emit_move_register(Register *reg1, Register *reg2, RISCV *_asm)
 {
     fprintf(_asm->out, "\tmv %s, %s\n", reg2->label, reg1->label);
 }
@@ -196,15 +216,15 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
     size_t offset = 0;
 
     // Allocate space for return address
-    sp_increase(stack_space, _asm);
-    sp_store(offset, _asm->ret, _asm);
+    emit_sp_increase(stack_space, _asm);
+    emit_sp_store(offset, _asm->ret, _asm);
     offset += REGISTER_SIZE;
 
     // Save arg registers
     for (size_t i = 0; i < _asm->arg->length; i++)
     {
         reg = vector_get(_asm->arg, i);
-        sp_store(offset, reg, _asm);
+        emit_sp_store(offset, reg, _asm);
         offset += REGISTER_SIZE;
     }
 
@@ -216,7 +236,7 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
         if (!reg->free)
         {
 
-            sp_store(offset, reg, _asm);
+            emit_sp_store(offset, reg, _asm);
             offset += REGISTER_SIZE;
             freed[i] = 1;
             free_register(reg);
@@ -228,14 +248,14 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
     {
         AstNode *arg = (AstNode *)vector_get(func_call->args, i);
         // This is always going to be an expression
-        reg = asm_eval(arg, _asm);
-        move_register(reg, vector_get(_asm->arg, i), _asm);
+        reg = eval_asm(arg, _asm);
+        emit_move_register(reg, vector_get(_asm->arg, i), _asm);
         free_register(reg);
     }
 
     // TODO move left over args to stack
 
-    jump_to_label(func_call->value, _asm);
+    emit_jump_to_label(func_call->value, _asm);
 
     // Restore temp registers
     for (int i = _asm->temp->length - 1; i >= 0; i--)
@@ -244,7 +264,7 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
         {
             reg = vector_get(_asm->temp, i);
             offset -= REGISTER_SIZE;
-            sp_load(reg, offset, _asm);
+            emit_sp_load(reg, offset, _asm);
             reg->free = false;
         }
     }
@@ -258,13 +278,13 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
     {
 
         offset -= REGISTER_SIZE;
-        sp_load(vector_get(_asm->arg, i), offset, _asm);
+        emit_sp_load(vector_get(_asm->arg, i), offset, _asm);
     }
 
     offset -= REGISTER_SIZE;
     // restore return address
-    sp_load(_asm->ret, offset, _asm);
-    sp_decrease(stack_space, _asm);
+    emit_sp_load(_asm->ret, offset, _asm);
+    emit_sp_decrease(stack_space, _asm);
 
     // Return register with return value
     return reg;
@@ -278,18 +298,18 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
     Register *reg;
 
     bin_exp = (AstBinExp *)node->as;
-    left = asm_eval(bin_exp->left, _asm);
-    right = asm_eval(bin_exp->right, _asm);
+    left = eval_asm(bin_exp->left, _asm);
+    right = eval_asm(bin_exp->right, _asm);
     switch (bin_exp->op_type)
     {
     case TOK_ADD:
-        return reg_add(left, right, _asm);
+        return emit_reg_add(left, right, _asm);
     case TOK_SUB:
-        return reg_sub(left, right, _asm);
+        return emit_reg_sub(left, right, _asm);
     case TOK_MULT:
-        return reg_mult(left, right, _asm);
+        return emit_reg_mult(left, right, _asm);
     case TOK_DIV:
-        return reg_div(left, right, _asm);
+        return emit_reg_div(left, right, _asm);
     case TOK_EQUAL:
         reg = alloc_register(_asm);
 
@@ -322,62 +342,54 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
     }
 }
 
-Register *eval_if(AstNode *node, RISCV *_asm)
+void gen_if(AstNode *node, RISCV *_asm)
 {
     AstIfElse *if_stmt;
     Register *reg;
-    int id = cond_count;
+    Label if_label = create_base_cond_label(LBL_IF, _asm);
+    Label else_label = create_base_cond_label(LBL_ELSE, _asm);
 
     if_stmt = (AstIfElse *)node->as;
     // Add label
-    fprintf(_asm->out, "if%d:\n", id);
+    emit_label(if_label, _asm);
 
     // eval bool expression, reg = 0 for false and reg = 1 for true
-    reg = asm_eval(if_stmt->if_expr, _asm);
+    reg = eval_asm(if_stmt->if_expr, _asm);
 
     // cmp and branch to end label
-    fprintf(_asm->out, "\tbeq %s, zero, else%d\n", reg->label, id);
+    fprintf(_asm->out, "\tbeq %s, zero, %s\n", reg->label, else_label);
     free_register(reg);
 
     // eval body
-    asm_eval(if_stmt->if_body, _asm);
+    _gen_asm(if_stmt->if_body, _asm);
 
     // add other label
-    fprintf(_asm->out, "else%d:\n", id);
-    if (if_stmt->else_body != NULL)
-        asm_eval(if_stmt->else_body, _asm);
+    emit_label(else_label, _asm);
 
-    cond_count++;
-    return NULL;
+    if (if_stmt->else_body != NULL)
+        _gen_asm(if_stmt->else_body, _asm);
+
+    free(if_label);
+    free(else_label);
 }
 
-Register *eval_ret(AstNode *node, RISCV *_asm)
+void gen_ret(AstNode *node, RISCV *_asm)
 {
     AstRet *ret;
     Register *reg;
 
     ret = (AstRet *)node->as;
     // return val
-    reg = asm_eval(ret->expr, _asm);
+    reg = eval_asm(ret->expr, _asm);
 
-    // Exit status 0, if main function
-    if (!strcmp(ret->func, "main"))
-    {
-        // Syscall Exit 10
-        fprintf(_asm->out, "\tli  a7, 93\n");
-        move_register(reg, vector_get(_asm->arg, 0), _asm);
-        ecall(_asm);
-    }
-    else
-    {
-        // move to return a0
-        fprintf(_asm->out, "\tadd a0, %s, zero\n", reg->label);
-    }
+    // move to return a0
+    fprintf(_asm->out, "\tadd a0, %s, zero\n", reg->label);
+    emit_return_from_jump(_asm);
+
     free_register(reg);
-    return NULL;
 }
 
-Register *eval_comp_stmt(AstNode *node, RISCV *_asm)
+void gen_comp_stmt(AstNode *node, RISCV *_asm)
 {
     AstCompStmt *comp_stmt;
     comp_stmt = (AstCompStmt *)node->as;
@@ -385,9 +397,8 @@ Register *eval_comp_stmt(AstNode *node, RISCV *_asm)
     for (size_t i = 0; i < comp_stmt->body->length; i++)
     {
         AstNode *stmt = (AstNode *)vector_get(comp_stmt->body, i);
-        asm_eval(stmt, _asm);
+        _gen_asm(stmt, _asm);
     }
-    return NULL;
 }
 
 Register *eval_int_const(AstNode *node, RISCV *_asm)
@@ -397,15 +408,15 @@ Register *eval_int_const(AstNode *node, RISCV *_asm)
     int_node = (AstIntConst *)node->as;
 
     reg = alloc_register(_asm);
-    load_register(reg, int_node->value, _asm);
+    emit_load_register(reg, int_node->value, _asm);
     return reg;
 }
 
-Register *eval_func_def(AstNode *node, RISCV *_asm)
+void gen_func_def(AstNode *node, RISCV *_asm)
 {
     AstFuncDef *func_def;
     func_def = (AstFuncDef *)node->as;
-    label_add(func_def->value, _asm);
+    emit_label(func_def->value, _asm);
 
     if (func_def->params->length > 8)
     {
@@ -422,23 +433,17 @@ Register *eval_func_def(AstNode *node, RISCV *_asm)
     // Create stack space for frame
 
     if (frame_size > 0)
-        sp_increase(frame_size, _asm);
+        emit_sp_increase(frame_size, _asm);
 
-    asm_eval(func_def->body, _asm);
+    _gen_asm(func_def->body, _asm);
 
     if (frame_size > 0)
-        sp_increase(frame_size, _asm);
+        emit_sp_increase(frame_size, _asm);
 
-    // Not main function, return
-    if (strcmp(func_def->value, "main"))
-    {
-        return_from_jump(_asm);
-    }
-
-    return NULL;
+    emit_return_from_jump(_asm);
 }
 
-Register *eval_var_def(AstNode *node, RISCV *_asm)
+void gen_var_def(AstNode *node, RISCV *_asm)
 {
     int offset;
     AstVarDef *var_def;
@@ -449,11 +454,9 @@ Register *eval_var_def(AstNode *node, RISCV *_asm)
     offset = var_def->symbol->offset;
 
     // store value on to stack
-    reg = asm_eval(var_def->expr, _asm);
-    sp_store(offset, reg, _asm);
+    reg = eval_asm(var_def->expr, _asm);
+    emit_sp_store(offset, reg, _asm);
     free_register(reg);
-
-    return NULL;
 }
 
 Register *eval_ident(AstNode *node, RISCV *_asm)
@@ -469,7 +472,7 @@ Register *eval_ident(AstNode *node, RISCV *_asm)
     if (var->symbol == SYM_CONST)
     {
         reg = alloc_register(_asm);
-        load_register(reg, var->const_value, _asm);
+        emit_load_register(reg, var->const_value, _asm);
         return reg;
     }
     if (var->is_arg_loaded)
@@ -479,7 +482,7 @@ Register *eval_ident(AstNode *node, RISCV *_asm)
 
     // Load value from sp
     reg = alloc_register(_asm);
-    sp_load(reg, var->offset, _asm);
+    emit_sp_load(reg, var->offset, _asm);
     return reg;
 }
 
@@ -492,127 +495,186 @@ Register *eval_var_asgn(AstNode *node, RISCV *_asm)
     asgn = (AstVarAsgn *)node->as;
 
     offset = asgn->symbol->offset;
-
-    reg = asm_eval(asgn->expr, _asm);
-
-    sp_store(offset, reg, _asm);
+    reg = eval_asm(asgn->expr, _asm);
+    emit_sp_store(offset, reg, _asm);
 
     return reg;
 }
 
-Register *eval_while(AstNode *node, RISCV *_asm)
+void gen_while(AstNode *node, RISCV *_asm)
 {
     AstWhile *w_stmt = (AstWhile *)node->as;
     Register *reg;
-    int id = cond_count;
-    // Add label
-    fprintf(_asm->out, "while_start%d:\n", id);
+    Label label = create_base_cond_label(LBL_WHILE, _asm);
+    Label start_label = extend_label(label, "start");
+    Label end_label = extend_label(label, "end");
 
-    reg = asm_eval(w_stmt->expr, _asm);
+    // Add label
+    emit_label(start_label, _asm);
+
+    reg = eval_asm(w_stmt->expr, _asm);
     // cmp and branch to end label
-    fprintf(_asm->out, "\tbeq %s, zero, while_end%d\n", reg->label, id);
+    fprintf(_asm->out, "\tbeq %s, zero, %s\n", reg->label, end_label);
 
     free_register(reg);
 
-    asm_eval(w_stmt->body, _asm);
+    _gen_asm(w_stmt->body, _asm);
 
     // Jump back to start
-    fprintf(_asm->out, "\tj while_start%d\n", id);
+    emit_jump_label(start_label, _asm);
 
     // add other label
-    fprintf(_asm->out, "while_end%d:\n", id);
+    emit_label(end_label, _asm);
 
-    cond_count++;
-    return NULL;
+    free(label);
+    free(start_label);
+    free(end_label);
 }
 
-Register *eval_for(AstNode *node, RISCV *_asm)
+void gen_for(AstNode *node, RISCV *_asm)
 {
     AstFor *f_stmt = (AstFor *)node->as;
-    Register *reg;
-    int id = cond_count;
-    cond_count++;
+    Register *reg = NULL;
+    Label label = create_base_cond_label(LBL_FOR, _asm);
 
-    // Add label
-    fprintf(_asm->out, "for_init%d:\n", id);
-    reg = asm_eval(f_stmt->init, _asm);
+    Label init_label = extend_label(label, "init");
+    Label cond_label = extend_label(label, "cond");
+    Label body_label = extend_label(label, "body");
+    Label step_label = extend_label(label, "step");
+    Label end_label = extend_label(label, "end");
 
+    emit_label(init_label, _asm);
     // Could be expression or declartion so we need to free register
-    if (reg != NULL)
-        free_register(reg);
-
-    fprintf(_asm->out, "for_cond%d:\n", id);
-    reg = asm_eval(f_stmt->cond, _asm);
-
-    if (reg != NULL)
+    if (f_stmt->init->type == AST_VAR_DEC || f_stmt->init->type == AST_VAR_DEF || f_stmt->init->type == AST_EMPTY_EXPR)
     {
+        _gen_asm(f_stmt->init, _asm);
+    }
+    else
+    {
+        reg = eval_asm(f_stmt->init, _asm);
+        free_register(reg);
+    }
+
+    emit_label(cond_label, _asm);
+
+    if (f_stmt->cond->type != AST_EMPTY_EXPR)
+    {
+        reg = eval_asm(f_stmt->cond, _asm);
         // cmp and branch to end label
-        fprintf(_asm->out, "\tbeq %s, zero, for_end%d\n", reg->label, id);
+        fprintf(_asm->out, "\tbeq %s, zero, %s\n", reg->label, end_label);
         free_register(reg);
     }
 
-    fprintf(_asm->out, "for_body%d:\n", id);
-    asm_eval(f_stmt->body, _asm);
+    emit_label(body_label, _asm);
 
-    fprintf(_asm->out, "for_step%d:\n", id);
-    reg = asm_eval(f_stmt->step, _asm);
-    if (reg != NULL)
+    _gen_asm(f_stmt->body, _asm);
+
+    emit_label(step_label, _asm);
+
+    if (f_stmt->step->type != AST_EMPTY_EXPR)
     {
+        reg = eval_asm(f_stmt->step, _asm);
         free_register(reg);
     }
 
-    fprintf(_asm->out, "\tj for_cond%d\n", id);
-    fprintf(_asm->out, "for_end%d:\n", id);
+    emit_jump_label(cond_label, _asm);
+    emit_label(end_label, _asm);
 
-    return NULL;
+    free(init_label);
+    free(cond_label);
+    free(body_label);
+    free(step_label);
+    free(end_label);
 }
 
-// Recursively write AST representation to Assembly file
-Register *asm_eval(AstNode *node, RISCV *_asm)
+Register *eval_asm(AstNode *node, RISCV *_asm)
 {
+
     switch (node->type)
     {
-    case AST_FUNC_CALL:
-        return eval_func_call(node, _asm);
-    case AST_IF:
-        return eval_if(node, _asm);
-    case AST_RET:
-        return eval_ret(node, _asm);
-    case AST_COMP_STMT:
-        return eval_comp_stmt(node, _asm);
+
     case AST_INT_CONST:
         return eval_int_const(node, _asm);
-    case AST_FUNC_DEF:
-        return eval_func_def(node, _asm);
-    case AST_VAR_DEF:
-        return eval_var_def(node, _asm);
+    case AST_FUNC_CALL:
+        return eval_func_call(node, _asm);
     case AST_IDENT:
         return eval_ident(node, _asm);
     case AST_BIN_EXP:
         return eval_bin_exp(node, _asm);
     case AST_VAR_ASGN:
         return eval_var_asgn(node, _asm);
-    case AST_WHILE:
-        return eval_while(node, _asm);
-    case AST_FOR:
-        return eval_for(node, _asm);
-    case AST_ENUM:
-    case AST_EMPTY_EXPR:
-    case AST_VAR_DEC:
-        return NULL;
     default:
-        perror("unkown ast type");
+        printf("%d\n", node->type);
+        perror("eval asm unkown ast type");
         exit(1);
     }
 }
 
-void asm_init(RISCV *riscv)
+// Recursively write AST representation to Assembly file
+void _gen_asm(AstNode *node, RISCV *_asm)
+{
+    Register *reg;
+    AstExprStmt *expr_stmt;
+
+    switch (node->type)
+    {
+    case AST_RET:
+        gen_ret(node, _asm);
+        break;
+    case AST_IF:
+        gen_if(node, _asm);
+        break;
+    case AST_COMP_STMT:
+        gen_comp_stmt(node, _asm);
+        break;
+    case AST_FUNC_DEF:
+        gen_func_def(node, _asm);
+        break;
+    case AST_VAR_DEF:
+        gen_var_def(node, _asm);
+        break;
+    case AST_WHILE:
+        gen_while(node, _asm);
+        break;
+    case AST_FOR:
+        gen_for(node, _asm);
+        break;
+    case AST_EXPR_STMT:
+        expr_stmt = (AstExprStmt *)node->as;
+        if (expr_stmt->expr->type != AST_EMPTY_EXPR)
+        {
+
+            reg = eval_asm(expr_stmt->expr, _asm);
+            free_register(reg);
+        }
+        break;
+    case AST_ENUM:
+    case AST_EMPTY_EXPR:
+    case AST_VAR_DEC:
+        break;
+    default:
+        printf("%d\n", node->type);
+        perror("gen asm unkown ast type");
+        exit(1);
+    }
+}
+
+void emit_linux_prologue(RISCV *_asm)
+{
+    fprintf(_asm->out, ".section .text\n");
+    fprintf(_asm->out, "\t.globl _start\n");
+    fprintf(_asm->out, "_start:\n");
+    fprintf(_asm->out, "\tcall main\n");
+    fprintf(_asm->out, "\tli a7, 93\n");
+    ecall(_asm);
+}
+
+void asm_init(RISCV *_asm)
 {
     // Create and set up out file
     FILE *out = fopen("./asm.s", "w");
-    fprintf(out, ".globl main\n\n");
-    fprintf(out, "\tj main\n");
-    riscv->out = out;
+    _asm->out = out;
+    emit_linux_prologue(_asm);
 }
 
 void asm_free(RISCV *riscv)
@@ -640,24 +702,12 @@ void ecall(RISCV *_asm)
 // Generate Assembly file from AST
 void gen_asm(Vector *prog)
 {
-    int linux_exit_syscall = 93;
-    int exit_code = 0;
-
     RISCV *_asm = make_riscv();
     asm_init(_asm);
     for (size_t i = 0; i < prog->length; i++)
     {
-        asm_eval((AstNode *)vector_get(prog, i), _asm);
+        _gen_asm((AstNode *)vector_get(prog, i), _asm);
     }
-
-    // Linux prologue
-
-    // a7
-    load_register(vector_get(_asm->arg, 7), linux_exit_syscall, _asm);
-
-    // a0
-    load_register(vector_get(_asm->arg, 0), exit_code, _asm);
-    ecall(_asm);
 
     asm_free(_asm);
 }
