@@ -76,7 +76,7 @@ typedef struct AstIdent
 typedef struct AstRet
 {
     AstNode *expr;
-    char *func;
+    SymTabEntry *func;
 } AstRet;
 
 typedef struct AstFuncCall

@@ -204,7 +204,10 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         break;
     case AST_RET:
         ret = (AstRet *)node->as;
-        ret->func = frame->func;
+        // Get function symbol
+
+        entry = scope_lookup(scope, frame->func);
+        ret->func = entry;
         sym_check(ret->expr, frame, scope, type_env, symbols);
         break;
     case AST_ENUM:
