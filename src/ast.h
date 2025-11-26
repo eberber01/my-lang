@@ -23,6 +23,7 @@ typedef enum AstNodeType
     AST_FOR,
     AST_EMPTY_EXPR,
     AST_EXPR_STMT,
+    AST_UNARY_EXPR
 } AstNodeType;
 
 typedef struct Param
@@ -140,6 +141,13 @@ typedef struct AstExprStmt
     AstNode *expr;
 } AstExprStmt;
 
+typedef struct AstUnaryExpr
+{
+    AstNode *postfix_expr;
+    char *value;
+    TokenType op_type;
+} AstUnaryExpr;
+
 void print_ast(Vector *tree);
 void visit(AstNode *node);
 
@@ -180,6 +188,8 @@ AstNode *make_ast_var_asgn(char *value, AstNode *expr);
 AstNode *make_ast_while(AstNode *expr, AstNode *body);
 
 AstNode *make_ast_for(AstNode *init, AstNode *cond, AstNode *step, AstNode *body);
+
+AstNode *make_ast_unary_expr(AstNode *postfix_expr, char *value, TokenType op_type);
 
 void _print_ast(AstNode *, int);
 

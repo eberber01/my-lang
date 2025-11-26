@@ -87,6 +87,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
     AstWhile *w_stmt;
     AstFor *f_stmt;
     AstExprStmt *expr_stmt;
+    AstUnaryExpr *unary_expr;
     SymTabEntry *entry;
     TypeEnvEntry *entry_type;
     Scope *child;
@@ -271,6 +272,11 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
     case AST_EXPR_STMT:
         expr_stmt = (AstExprStmt *)node->as;
         sym_check(expr_stmt->expr, frame, scope, type_env, symbols);
+        break;
+    case AST_UNARY_EXPR:
+        unary_expr = (AstUnaryExpr *)node->as;
+
+        sym_check(unary_expr->postfix_expr, frame, scope, type_env, symbols);
         break;
     case AST_EMPTY_EXPR:
         break;

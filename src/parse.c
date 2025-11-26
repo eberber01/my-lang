@@ -34,7 +34,6 @@ Token *peek(TokenStream *stream, int n)
 // Set next token in stream
 void next_token(TokenStream *stream)
 {
-    print_token((Token *)vector_get(stream->tokens, stream->current));
     if (stream->current >= stream->tokens->length)
     {
         return;
@@ -116,14 +115,32 @@ AstNode *parse_postfix_expression(TokenStream *stream)
     return parse_primary_expression(stream);
 }
 
+bool is_unary_op(TokenType op_type)
+{
+    return op_type == TOK_NOT;
+}
+
 AstNode *parse_unary_expression(TokenStream *stream)
 {
+
+    char *value;
+    TokenType op_type;
+    Token *current = current_token(stream);
+
+    if (is_unary_op(current->type))
+    {
+        value = as_str(current->value);
+        op_type = current->type;
+        next_token(stream);
+        return make_ast_unary_expr(parse_postfix_expression(stream), value, op_type);
+    }
+
     return parse_postfix_expression(stream);
 }
 
 AstNode *parse_cast_expression(TokenStream *stream)
 {
-    return parse_postfix_expression(stream);
+    return parse_unary_expression(stream);
 }
 
 AstNode *parse_multiplicative_expression(TokenStream *stream)

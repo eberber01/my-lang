@@ -661,6 +661,31 @@ Register *eval_var_asgn(AstNode *node, RISCV *_asm)
     return reg;
 }
 
+Register *eval_unary_expr(AstNode *node, RISCV *_asm)
+{
+    Register *reg;
+    Register *tmp;
+    AstUnaryExpr *unary_expr;
+
+    unary_expr = (AstUnaryExpr *)node->as;
+
+    switch (unary_expr->op_type)
+    {
+    case TOK_NOT:
+        reg = alloc_register(_asm);
+
+        tmp = eval_asm(unary_expr->postfix_expr, _asm);
+        fprintf(_asm->out, "\tseqz %s, %s\n", reg->label, tmp->label);
+
+        free_register(tmp);
+        return reg;
+    default:
+        printf("%d\n", node->type);
+        perror("unkown unary operator");
+        exit(1);
+    }
+}
+
 void gen_while(AstNode *node, RISCV *_asm)
 {
     AstWhile *w_stmt = (AstWhile *)node->as;
@@ -752,7 +777,8 @@ Register *eval_asm(AstNode *node, RISCV *_asm)
 
     switch (node->type)
     {
-
+    case AST_UNARY_EXPR:
+        return eval_unary_expr(node, _asm);
     case AST_INT_CONST:
         return eval_int_const(node, _asm);
     case AST_FUNC_CALL:

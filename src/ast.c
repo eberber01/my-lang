@@ -33,6 +33,7 @@ void _print_ast(AstNode *node, int level)
     AstWhile *w_stmt;
     AstFor *f_stmt;
     AstExprStmt *expr_stmt;
+    AstUnaryExpr *unary_expr;
 
     switch (node->type)
     {
@@ -211,6 +212,16 @@ void _print_ast(AstNode *node, int level)
         _print_ast(expr_stmt->expr, level);
         printlvl(")", level);
         break;
+
+    case AST_UNARY_EXPR:
+        unary_expr = node->as;
+        printlvl("Unary Expr( ", level);
+        printlvl("\top=%s", level, unary_expr->value);
+        printlvl("\texpr=[", level);
+        _print_ast(unary_expr->postfix_expr, level + 1);
+        printlvl("\t]", level);
+        printlvl(")", level);
+        break;
     case AST_EMPTY_EXPR:
         printlvl("Empty Expr()", level);
         break;
@@ -235,6 +246,15 @@ AstNode *make_ast_node(AstNodeType type, void *inner)
     node->type = type;
     node->as = inner;
     return node;
+}
+
+AstNode *make_ast_unary_expr(AstNode *postfix_expr, char *value, TokenType op_type)
+{
+    AstUnaryExpr *unary_expr = (AstUnaryExpr *)my_malloc(sizeof(AstUnaryExpr));
+    unary_expr->postfix_expr = postfix_expr;
+    unary_expr->value = value;
+    unary_expr->op_type = op_type;
+    return make_ast_node(AST_UNARY_EXPR, unary_expr);
 }
 
 AstNode *make_expr_stmt(AstNode *expr)
@@ -377,6 +397,7 @@ void ast_free(AstNode *node)
     AstFor *f_stmt;
     AstWhile *w_stmt;
     AstExprStmt *expr_stmt;
+    AstUnaryExpr *unary_expr;
 
     if (node == NULL)
         return;
@@ -487,6 +508,13 @@ void ast_free(AstNode *node)
     case AST_EXPR_STMT:
         expr_stmt = (AstExprStmt *)node->as;
         ast_free(expr_stmt->expr);
+        break;
+    case AST_UNARY_EXPR:
+        unary_expr = (AstUnaryExpr *)node->as;
+        if (unary_expr->value != NULL)
+            free(unary_expr->value);
+        ast_free(unary_expr->postfix_expr);
+        free(unary_expr);
         break;
     case AST_EMPTY_EXPR:
         break;
