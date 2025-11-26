@@ -600,7 +600,6 @@ Vector *parse_prog(TokenStream *stream)
 // Returns list of AstNode representing program
 Vector *parse(Vector *tokens)
 {
-    printf("PARSE\n");
     TokenStream *stream = make_token_stream(tokens);
     Vector *prog = parse_prog(stream);
     free(stream);
