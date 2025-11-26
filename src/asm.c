@@ -446,6 +446,23 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
         free_register(right);
         free_register(tmp);
         return reg;
+    case TOK_LSHIFT:
+        reg = alloc_register(_asm);
+
+        fprintf(_asm->out, "\tsll %s, %s, %s\n", reg->label, left->label, right->label);
+        free_register(left);
+        free_register(right);
+
+        return reg;
+    case TOK_RSHIFT:
+        reg = alloc_register(_asm);
+
+        // Signed bit shift
+        fprintf(_asm->out, "\tsra %s, %s, %s\n", reg->label, left->label, right->label);
+        free_register(left);
+        free_register(right);
+
+        return reg;
     default:
 
         perror("Unexpected node type.");

@@ -47,7 +47,6 @@ void my_lang(char *file_name)
 
     print_ast(prog);
 #endif
-
     gen_asm(prog);
 
     my_lang_cleanup(input, type_env, tokens, prog, symbols);

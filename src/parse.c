@@ -160,7 +160,18 @@ AstNode *parse_additive_expression(TokenStream *stream)
 
 AstNode *parse_shift_expression(TokenStream *stream)
 {
-    return parse_additive_expression(stream);
+    AstNode *left = parse_additive_expression(stream);
+    Token *current;
+
+    while ((current = current_token(stream)) && (current->type == TOK_LSHIFT || current->type == TOK_RSHIFT))
+    {
+        char *value = as_str(current->value);
+        TokenType op_type = current->type;
+        next_token(stream);
+        AstNode *right = parse_additive_expression(stream);
+        left = make_ast_bin_exp(value, op_type, left, right);
+    }
+    return left;
 }
 
 bool is_relational_op(TokenType type)
