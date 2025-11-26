@@ -49,6 +49,8 @@ RISCV *make_riscv(void)
     riscv->for_count = 0;
     riscv->if_count = 0;
     riscv->else_count = 0;
+    riscv->and_count = 0;
+    riscv->or_count = 0;
     return riscv;
 }
 
@@ -72,6 +74,15 @@ Label create_base_cond_label(LabelKind kind, RISCV *_asm)
     case LBL_ELSE:
         snprintf(tmp, sizeof(tmp), "else%zu", _asm->else_count);
         _asm->else_count++;
+        break;
+    case LBL_LOG_AND:
+        snprintf(tmp, sizeof(tmp), "and%zu", _asm->and_count);
+        _asm->and_count++;
+        break;
+        break;
+    case LBL_LOG_OR:
+        snprintf(tmp, sizeof(tmp), "or%zu", _asm->or_count);
+        _asm->or_count++;
         break;
     }
     Label label = my_malloc(sizeof(char) * strlen(tmp) + 1);
@@ -290,6 +301,64 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
     return reg;
 }
 
+Register *eval_log_and(Register *left, Register *right, RISCV *_asm)
+{
+
+    Register *reg = alloc_register(_asm);
+    Label and_label = create_base_cond_label(LBL_LOG_AND, _asm);
+    Label false_label = extend_label(and_label, "false");
+    Label end_label = extend_label(and_label, "end");
+
+    fprintf(_asm->out, "\tbeq %s, zero, %s\n", left->label, false_label);
+    fprintf(_asm->out, "\tbeq %s, zero, %s\n", right->label, false_label);
+
+    emit_load_register(reg, 1, _asm);
+    emit_jump_label(end_label, _asm);
+
+    emit_label(false_label, _asm);
+    emit_load_register(reg, 0, _asm);
+
+    emit_label(end_label, _asm);
+
+    free(and_label);
+    free(false_label);
+    free(end_label);
+
+    free_register(left);
+    free_register(right);
+
+    return reg;
+}
+
+Register *eval_log_or(Register *left, Register *right, RISCV *_asm)
+{
+
+    Register *reg = alloc_register(_asm);
+
+    Label or_label = create_base_cond_label(LBL_LOG_OR, _asm);
+    Label true_label = extend_label(or_label, "true");
+    Label end_label = extend_label(or_label, "end");
+
+    fprintf(_asm->out, "\tbne %s, zero, %s\n", left->label, true_label);
+    fprintf(_asm->out, "\tbne %s, zero, %s\n", right->label, true_label);
+
+    emit_load_register(reg, 0, _asm);
+    emit_jump_label(end_label, _asm);
+
+    emit_label(true_label, _asm);
+
+    emit_load_register(reg, 1, _asm);
+    emit_label(end_label, _asm);
+
+    free(or_label);
+    free(true_label);
+    free(end_label);
+
+    free_register(left);
+    free_register(right);
+    return reg;
+}
+
 Register *eval_bin_exp(AstNode *node, RISCV *_asm)
 {
     AstBinExp *bin_exp;
@@ -330,11 +399,9 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
         free_register(right);
         return reg;
     case TOK_LOG_AND:
-        reg = alloc_register(_asm);
-         
-        //fprintf(_asm->out, "\tand rd,rs1,rs2")
-
-        return reg;
+        return eval_log_and(left, right, _asm);
+    case TOK_LOG_OR:
+        return eval_log_or(left, right, _asm);
     default:
 
         perror("Unexpected node type.");

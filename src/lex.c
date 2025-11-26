@@ -107,24 +107,28 @@ Vector *tokenize(const char *input, size_t length)
             t->value = string("^");
             break;
         case '&':
-            if((peek = next(lexer)) != '&'){
+            if ((peek = next(lexer)) != '&')
+            {
 
                 t->type = TOK_AND;
                 t->value = string("&");
                 back(lexer);
             }
-            else{
+            else
+            {
                 t->type = TOK_LOG_AND;
                 t->value = string("&&");
             }
             break;
         case '|':
-            if((peek = next(lexer)) != '|'){
+            if ((peek = next(lexer)) != '|')
+            {
                 t->type = TOK_OR;
                 t->value = string("|");
                 back(lexer);
             }
-            else{
+            else
+            {
                 t->type = TOK_LOG_OR;
                 t->value = string("||");
             }
@@ -162,12 +166,14 @@ Vector *tokenize(const char *input, size_t length)
                 t->type = TOK_LSHIFT;
                 t->value = string("<<");
             }
-            else if(peek == '='){
+            else if (peek == '=')
+            {
 
                 t->type = TOK_LT_EQ;
                 t->value = string("<=");
             }
-            else{
+            else
+            {
                 t->type = TOK_LT;
                 t->value = string("<");
                 back(lexer);
@@ -180,12 +186,14 @@ Vector *tokenize(const char *input, size_t length)
                 t->type = TOK_RSHIFT;
                 t->value = string(">>");
             }
-            else if(peek == '='){
+            else if (peek == '=')
+            {
 
                 t->type = TOK_GT_EQ;
                 t->value = string(">=");
             }
-            else{
+            else
+            {
                 t->type = TOK_GT;
                 t->value = string(">");
                 back(lexer);

@@ -107,9 +107,7 @@ AstNode *parse_primary_expression(TokenStream *stream)
     }
     else
     {
-        print_token(current_token(stream));
-        perror("parse primary error");
-        exit(1);
+        return make_ast_node(AST_EMPTY_EXPR, NULL);
     }
 }
 
@@ -165,7 +163,8 @@ AstNode *parse_shift_expression(TokenStream *stream)
     return parse_additive_expression(stream);
 }
 
-bool is_relational_op(TokenType type){
+bool is_relational_op(TokenType type)
+{
     return type == TOK_GT || type == TOK_LT || type == TOK_GT_EQ || TOK_LT_EQ;
 }
 
@@ -173,7 +172,6 @@ AstNode *parse_relational_expression(TokenStream *stream)
 {
     return parse_shift_expression(stream);
 }
-
 
 AstNode *parse_equality_expression(TokenStream *stream)
 {
@@ -192,19 +190,23 @@ AstNode *parse_equality_expression(TokenStream *stream)
     return left;
 }
 
-AstNode *parse_and_expression(TokenStream* stream){
-    return  parse_equality_expression(stream);
+AstNode *parse_and_expression(TokenStream *stream)
+{
+    return parse_equality_expression(stream);
 }
 
-AstNode *parse_xor_expression(TokenStream* stream){
+AstNode *parse_xor_expression(TokenStream *stream)
+{
     return parse_and_expression(stream);
 }
 
-AstNode *parse_or_expression(TokenStream* stream){
+AstNode *parse_or_expression(TokenStream *stream)
+{
     return parse_xor_expression(stream);
 }
 
-AstNode *parse_log_and_expression(TokenStream* stream){
+AstNode *parse_log_and_expression(TokenStream *stream)
+{
     AstNode *left = parse_or_expression(stream);
     Token *current;
 
@@ -218,10 +220,10 @@ AstNode *parse_log_and_expression(TokenStream* stream){
         left = make_ast_bin_exp(value, op_type, left, right);
     }
     return left;
-
 }
 
-AstNode *parse_log_or_expression(TokenStream* stream){
+AstNode *parse_log_or_expression(TokenStream *stream)
+{
     AstNode *left = parse_log_and_expression(stream);
     Token *current;
 
@@ -235,7 +237,6 @@ AstNode *parse_log_or_expression(TokenStream* stream){
         left = make_ast_bin_exp(value, op_type, left, right);
     }
     return left;
-
 }
 
 AstNode *parse_conditional_expression(TokenStream *stream)
@@ -317,7 +318,7 @@ bool is_var_asgn(TokenStream *stream)
 
 AstNode *parse_if_else_statement(TokenStream *stream)
 {
-    Token* current;
+    Token *current;
     AstNode *else_body = NULL;
     expect(stream, TOK_IF);
     expect(stream, TOK_LPAREN);

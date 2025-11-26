@@ -17,7 +17,9 @@ typedef enum LabelKind
     LBL_FOR,
     LBL_IF,
     LBL_WHILE,
-    LBL_ELSE
+    LBL_ELSE,
+    LBL_LOG_AND,
+    LBL_LOG_OR
 } LabelKind;
 
 typedef struct Register
@@ -45,6 +47,8 @@ typedef struct RISCV
     size_t while_count;
     size_t if_count;
     size_t else_count;
+    size_t and_count;
+    size_t or_count;
 } RISCV;
 
 Register *alloc_register(RISCV *_asm);
