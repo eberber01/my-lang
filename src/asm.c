@@ -552,7 +552,6 @@ void gen_ret(AstNode *node, RISCV *_asm)
         emit_sp_decrease(ret->func->frame->size, _asm);
 
     emit_return_from_jump(_asm);
-
 }
 
 void gen_comp_stmt(AstNode *node, RISCV *_asm)
@@ -607,7 +606,6 @@ void gen_func_def(AstNode *node, RISCV *_asm)
         emit_sp_decrease(frame_size, _asm);
 
     emit_return_from_jump(_asm);
-
 }
 
 void gen_var_def(AstNode *node, RISCV *_asm)
