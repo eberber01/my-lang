@@ -2,7 +2,6 @@
 #include "ast.h"
 #include "hashmap.h"
 #include "util.h"
-#include <cstddef>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -71,7 +70,18 @@ bool in_scope(Scope *scope, char *key)
     return entry;
 }
 
-void type_check(AstNode* node){
+void assert_type_eq(TypeSpecifier type1, TypeSpecifier type2)
+{
+
+    if (type1 != type2)
+    {
+        fprintf(stderr, "Type Error: got types (%d) and (%d)", type1, type2);
+        exit(1);
+    }
+}
+
+TypeSpecifier type_check(AstNode *node)
+{
 
     AstCompStmt *comp_stmt;
     AstIfElse *if_stmt;
@@ -81,69 +91,92 @@ void type_check(AstNode* node){
     AstIdent *ident;
     AstFuncCall *func_call;
     AstRet *ret;
-    AstEnum *enm;
-    AstVarDec *dec;
+    // AstEnum *enm;
+    // AstVarDec *dec;
     AstVarAsgn *asgn;
     AstWhile *w_stmt;
     AstFor *f_stmt;
     AstExprStmt *expr_stmt;
     AstUnaryExpr *unary_expr;
-    // SymTabEntry *entry;
-    // TypeEnvEntry *entry_type;
-    // Scope *child;
+
+    TypeSpecifier left;
+    TypeSpecifier right;
+
+    TypeSpecifier expected;
+    TypeSpecifier actual;
 
     switch (node->type)
     {
     case AST_COMP_STMT:
         comp_stmt = (AstCompStmt *)node->as;
-        for(size_t i =0; i < comp_stmt->body->length;i++)
+        for (size_t i = 0; i < comp_stmt->body->length; i++)
             type_check((AstNode *)vector_get(comp_stmt->body, i));
-        break;
+        return TS_VOID;
     case AST_IF:
-        break;
+        if_stmt = (AstIfElse *)node->as;
+        type_check(if_stmt->if_body);
+
+        if (if_stmt->else_body != NULL)
+            type_check(if_stmt->else_body);
+        return TS_VOID;
     case AST_VAR_DEF:
         var_def = (AstVarDef *)node->as;
-        break;
+
+        expected = var_def->symbol->type;
+        actual = type_check(var_def->expr);
+
+        assert_type_eq(expected, actual);
+        return TS_VOID;
     case AST_BIN_EXP:
         bin_exp = (AstBinExp *)node->as;
-        break;
+        left = type_check(bin_exp->left);
+        right = type_check(bin_exp->left);
+
+        assert_type_eq(left, right);
+        return left;
     case AST_INT_CONST:
-        break;
+        return TS_INT;
     case AST_FUNC_DEF:
         func_def = (AstFuncDef *)node->as;
-        break;
+        type_check(func_def->body);
+        return TS_VOID;
     case AST_IDENT:
         ident = (AstIdent *)node->as;
-        break;
+        return ident->symbol->type;
     case AST_FUNC_CALL:
         func_call = (AstFuncCall *)node->as;
-        break;
+        return func_call->symbol->type;
     case AST_RET:
         ret = (AstRet *)node->as;
-        break;
-    case AST_ENUM:
-        enm = (AstEnum *)node->as;
-        break;
-    case AST_VAR_DEC:
-        dec = (AstVarDec *)node->as;
-        break;
+        expected = ret->func->type;
+        actual = type_check(ret->expr);
+        assert_type_eq(expected, actual);
+
+        return expected;
     case AST_VAR_ASGN:
         asgn = (AstVarAsgn *)node->as;
-        break;
+
+        expected = asgn->symbol->type;
+        actual = type_check(asgn->expr);
+
+        assert_type_eq(expected, actual);
+        return expected;
     case AST_WHILE:
         w_stmt = (AstWhile *)node->as;
-        break;
+        return type_check(w_stmt->body);
     case AST_FOR:
         f_stmt = (AstFor *)node->as;
-        break;
+        return type_check(f_stmt->body);
     case AST_EXPR_STMT:
         expr_stmt = (AstExprStmt *)node->as;
-        break;
+        return type_check(expr_stmt->expr);
     case AST_UNARY_EXPR:
         unary_expr = (AstUnaryExpr *)node->as;
-        break;
+        return type_check(unary_expr->postfix_expr);
+    case AST_ENUM:
+    case AST_VAR_DEC:
     case AST_EMPTY_EXPR:
-        break;
+        return TS_VOID;
     default:
         printf("type%d", node->type);
         perror("unkown ast type");
@@ -384,5 +417,12 @@ Vector *sema_check(Vector *prog, HashMap *type_env)
         sym_check(node, NULL, global, type_env, symbols);
     }
     exit_scope(global);
+
+    for (size_t i = 0; i < prog->length; i++)
+    {
+        node = (AstNode *)vector_get(prog, i);
+        type_check(node);
+    }
+
     return symbols;
 }

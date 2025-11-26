@@ -535,18 +535,23 @@ void gen_ret(AstNode *node, RISCV *_asm)
     frame = ret->func->frame;
 
     // return val
-    reg = eval_asm(ret->expr, _asm);
+    if (ret->expr->type == AST_EMPTY_EXPR)
+        _gen_asm(ret->expr, _asm);
+    else
+    {
 
-    // move to return a0
-    fprintf(_asm->out, "\tadd a0, %s, zero\n", reg->label);
+        reg = eval_asm(ret->expr, _asm);
+
+        // move to return a0
+        fprintf(_asm->out, "\tadd a0, %s, zero\n", reg->label);
+        free_register(reg);
+    }
 
     // restore stack
     if (frame->size > 0)
         emit_sp_decrease(ret->func->frame->size, _asm);
 
     emit_return_from_jump(_asm);
-
-    free_register(reg);
 }
 
 void gen_comp_stmt(AstNode *node, RISCV *_asm)
