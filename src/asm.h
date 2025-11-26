@@ -6,8 +6,19 @@
 #include "util.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define REGISTER_SIZE 4
+
+typedef char *Label;
+
+typedef enum LabelKind
+{
+    LBL_FOR,
+    LBL_IF,
+    LBL_WHILE,
+    LBL_ELSE
+} LabelKind;
 
 typedef struct Register
 {
@@ -30,6 +41,10 @@ typedef struct RISCV
     Register *sp;
     // Assembly file
     FILE *out;
+    size_t for_count;
+    size_t while_count;
+    size_t if_count;
+    size_t else_count;
 } RISCV;
 
 Register *alloc_register(RISCV *_asm);

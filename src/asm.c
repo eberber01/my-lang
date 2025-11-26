@@ -9,8 +9,6 @@
 #include "lex.h"
 #include "util.h"
 
-int cond_count = 0;
-
 Register *make_register(char *label)
 {
     Register *reg = my_malloc(sizeof(Register));
@@ -47,7 +45,53 @@ RISCV *make_riscv(void)
     riscv->save = save_reg;
     riscv->ret = make_register("ra");
     riscv->sp = make_register("sp");
+    riscv->while_count = 0;
+    riscv->for_count = 0;
+    riscv->if_count = 0;
+    riscv->else_count = 0;
     return riscv;
+}
+
+Label create_base_cond_label(LabelKind kind, RISCV *_asm)
+{
+    char tmp[64];
+    switch (kind)
+    {
+    case LBL_FOR:
+        snprintf(tmp, sizeof(tmp), "for%zu", _asm->for_count);
+        _asm->for_count++;
+        break;
+    case LBL_IF:
+        snprintf(tmp, sizeof(tmp), "if%zu", _asm->if_count);
+        _asm->if_count++;
+        break;
+    case LBL_WHILE:
+        snprintf(tmp, sizeof(tmp), "while%zu", _asm->while_count);
+        _asm->while_count++;
+        break;
+    case LBL_ELSE:
+        snprintf(tmp, sizeof(tmp), "else%zu", _asm->else_count);
+        _asm->else_count++;
+        break;
+    }
+    Label label = my_malloc(sizeof(char) * strlen(tmp) + 1);
+    strcpy(label, tmp);
+    return label;
+}
+
+Label extend_label(Label label, char *str)
+{
+    char tmp[64];
+    snprintf(tmp, sizeof(tmp), "%s%s", label, str);
+
+    Label new_label = my_malloc(sizeof(char) * strlen(tmp) + 1);
+    strcpy(new_label, tmp);
+    return new_label;
+}
+
+void emit_jump_label(Label label, RISCV *_asm)
+{
+    fprintf(_asm->out, "\tj %s\n", label);
 }
 
 void emit_sp_increase(size_t bytes, RISCV *_asm)
@@ -296,28 +340,31 @@ void gen_if(AstNode *node, RISCV *_asm)
 {
     AstIfElse *if_stmt;
     Register *reg;
-    int id = cond_count;
+    Label if_label = create_base_cond_label(LBL_IF, _asm);
+    Label else_label = create_base_cond_label(LBL_ELSE, _asm);
 
     if_stmt = (AstIfElse *)node->as;
     // Add label
-    fprintf(_asm->out, "if%d:\n", id);
+    emit_label(if_label, _asm);
 
     // eval bool expression, reg = 0 for false and reg = 1 for true
     reg = eval_asm(if_stmt->if_expr, _asm);
 
     // cmp and branch to end label
-    fprintf(_asm->out, "\tbeq %s, zero, else%d\n", reg->label, id);
+    fprintf(_asm->out, "\tbeq %s, zero, %s\n", reg->label, else_label);
     free_register(reg);
 
     // eval body
     _gen_asm(if_stmt->if_body, _asm);
 
     // add other label
-    fprintf(_asm->out, "else%d:\n", id);
+    emit_label(else_label, _asm);
+
     if (if_stmt->else_body != NULL)
         _gen_asm(if_stmt->else_body, _asm);
 
-    cond_count++;
+    free(if_label);
+    free(else_label);
 }
 
 void gen_ret(AstNode *node, RISCV *_asm)
@@ -387,8 +434,7 @@ void gen_func_def(AstNode *node, RISCV *_asm)
     if (frame_size > 0)
         emit_sp_increase(frame_size, _asm);
 
-    if (!strcmp(func_def->type, "void"))
-        emit_return_from_jump(_asm);
+    emit_return_from_jump(_asm);
 }
 
 void gen_var_def(AstNode *node, RISCV *_asm)
@@ -453,37 +499,45 @@ void gen_while(AstNode *node, RISCV *_asm)
 {
     AstWhile *w_stmt = (AstWhile *)node->as;
     Register *reg;
-    int id = cond_count;
+    Label label = create_base_cond_label(LBL_WHILE, _asm);
+    Label start_label = extend_label(label, "start");
+    Label end_label = extend_label(label, "end");
+
     // Add label
-    fprintf(_asm->out, "while_start%d:\n", id);
+    emit_label(start_label, _asm);
 
     reg = eval_asm(w_stmt->expr, _asm);
     // cmp and branch to end label
-    fprintf(_asm->out, "\tbeq %s, zero, while_end%d\n", reg->label, id);
+    fprintf(_asm->out, "\tbeq %s, zero, %s\n", reg->label, end_label);
 
     free_register(reg);
 
     _gen_asm(w_stmt->body, _asm);
 
     // Jump back to start
-    fprintf(_asm->out, "\tj while_start%d\n", id);
+    emit_jump_label(start_label, _asm);
 
     // add other label
-    fprintf(_asm->out, "while_end%d:\n", id);
+    emit_label(end_label, _asm);
 
-    cond_count++;
+    free(label);
+    free(start_label);
+    free(end_label);
 }
 
 void gen_for(AstNode *node, RISCV *_asm)
 {
     AstFor *f_stmt = (AstFor *)node->as;
     Register *reg = NULL;
-    int id = cond_count;
-    cond_count++;
+    Label label = create_base_cond_label(LBL_FOR, _asm);
 
-    // Add label
-    fprintf(_asm->out, "for_init%d:\n", id);
+    Label init_label = extend_label(label, "init");
+    Label cond_label = extend_label(label, "cond");
+    Label body_label = extend_label(label, "body");
+    Label step_label = extend_label(label, "step");
+    Label end_label = extend_label(label, "end");
 
+    emit_label(init_label, _asm);
     // Could be expression or declartion so we need to free register
     if (f_stmt->init->type == AST_VAR_DEC || f_stmt->init->type == AST_VAR_DEF || f_stmt->init->type == AST_EMPTY_EXPR)
     {
@@ -495,20 +549,21 @@ void gen_for(AstNode *node, RISCV *_asm)
         free_register(reg);
     }
 
-    fprintf(_asm->out, "for_cond%d:\n", id);
+    emit_label(cond_label, _asm);
 
     if (f_stmt->cond->type != AST_EMPTY_EXPR)
     {
         reg = eval_asm(f_stmt->cond, _asm);
         // cmp and branch to end label
-        fprintf(_asm->out, "\tbeq %s, zero, for_end%d\n", reg->label, id);
+        fprintf(_asm->out, "\tbeq %s, zero, %s\n", reg->label, end_label);
         free_register(reg);
     }
 
-    fprintf(_asm->out, "for_body%d:\n", id);
+    emit_label(body_label, _asm);
+
     _gen_asm(f_stmt->body, _asm);
 
-    fprintf(_asm->out, "for_step%d:\n", id);
+    emit_label(step_label, _asm);
 
     if (f_stmt->step->type != AST_EMPTY_EXPR)
     {
@@ -516,8 +571,14 @@ void gen_for(AstNode *node, RISCV *_asm)
         free_register(reg);
     }
 
-    fprintf(_asm->out, "\tj for_cond%d\n", id);
-    fprintf(_asm->out, "for_end%d:\n", id);
+    emit_jump_label(cond_label, _asm);
+    emit_label(end_label, _asm);
+
+    free(init_label);
+    free(cond_label);
+    free(body_label);
+    free(step_label);
+    free(end_label);
 }
 
 Register *eval_asm(AstNode *node, RISCV *_asm)
