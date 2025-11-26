@@ -365,6 +365,7 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
     Register *left;
     Register *right;
     Register *reg;
+    Register *tmp;
 
     bin_exp = (AstBinExp *)node->as;
     left = eval_asm(bin_exp->left, _asm);
@@ -402,6 +403,49 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
         return eval_log_and(left, right, _asm);
     case TOK_LOG_OR:
         return eval_log_or(left, right, _asm);
+    case TOK_LT:
+        reg = alloc_register(_asm);
+        fprintf(_asm->out, "\tslt %s, %s, %s\n", reg->label, left->label, right->label);
+
+        free_register(left);
+        free_register(right);
+        return reg;
+    case TOK_LT_EQ:
+        reg = alloc_register(_asm);
+        tmp = alloc_register(_asm);
+
+        //temp = rhs < lhs
+        fprintf(_asm->out, "\tslt %s, %s, %s\n", tmp->label, right->label, left->label);
+
+        //invert → lhs <= rhs
+        fprintf(_asm->out, "\txori %s, %s, %d\n", reg->label, tmp->label, 1);
+
+        free_register(left);
+        free_register(right);
+        free_register(tmp);
+        return reg;
+    case TOK_GT:
+        reg = alloc_register(_asm);
+        fprintf(_asm->out, "\tslt %s, %s, %s\n", reg->label, right->label, left->label);
+
+        free_register(left);
+        free_register(right);
+        return reg;
+
+    case TOK_GT_EQ:
+        reg = alloc_register(_asm);
+        tmp = alloc_register(_asm);
+
+        //temp = lhs < rhs
+        fprintf(_asm->out, "\tslt %s, %s, %s\n", tmp->label, left->label, right->label);
+
+        //invert → lhs >= rhs
+        fprintf(_asm->out, "\txori %s, %s, %d\n", reg->label, tmp->label, 1);
+
+        free_register(left);
+        free_register(right);
+        free_register(tmp);
+        return reg;
     default:
 
         perror("Unexpected node type.");
@@ -444,19 +488,19 @@ void gen_ret(AstNode *node, RISCV *_asm)
 {
     AstRet *ret;
     Register *reg;
-    StackFrame *frame;
+    StackFrame* frame;
 
     ret = (AstRet *)node->as;
     frame = ret->func->frame;
-
+    
     // return val
     reg = eval_asm(ret->expr, _asm);
 
     // move to return a0
     fprintf(_asm->out, "\tadd a0, %s, zero\n", reg->label);
 
-    // restore stack
-    if (frame->size > 0)
+    //restore stack
+    if(frame->size > 0)
         emit_sp_decrease(ret->func->frame->size, _asm);
 
     emit_return_from_jump(_asm);

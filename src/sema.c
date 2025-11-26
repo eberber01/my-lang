@@ -110,6 +110,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         break;
     case AST_VAR_DEF:
         var_def = (AstVarDef *)node->as;
+        printf("var def:%s\n", var_def->value);
         // Check if symbol exists in scope
         if (in_scope(scope, var_def->value))
         {
@@ -173,6 +174,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         entry = scope_lookup(scope, ident->value);
         if (entry == NULL)
         {
+            printf("%s\n", ident->value);
             perror("Cannot used undefined variable");
             exit(1);
         }

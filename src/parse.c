@@ -165,12 +165,24 @@ AstNode *parse_shift_expression(TokenStream *stream)
 
 bool is_relational_op(TokenType type)
 {
-    return type == TOK_GT || type == TOK_LT || type == TOK_GT_EQ || TOK_LT_EQ;
+    return type == TOK_GT || type == TOK_LT || type == TOK_GT_EQ || type == TOK_LT_EQ;
 }
 
 AstNode *parse_relational_expression(TokenStream *stream)
 {
-    return parse_shift_expression(stream);
+    AstNode *left = parse_shift_expression(stream);
+    Token *current;
+
+    while ((current = current_token(stream)) && is_relational_op(current->type))
+    {
+        char *value = as_str(current->value);
+        TokenType op_type = current->type;
+
+        next_token(stream);
+        AstNode *right = parse_shift_expression(stream);
+        left = make_ast_bin_exp(value, op_type, left, right);
+    }
+    return left;
 }
 
 AstNode *parse_equality_expression(TokenStream *stream)
