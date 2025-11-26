@@ -2,6 +2,7 @@
 #include "ast.h"
 #include "hashmap.h"
 #include "util.h"
+#include <cstddef>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -68,6 +69,86 @@ bool in_scope(Scope *scope, char *key)
 {
     SymTabEntry *entry = scope_lookup(scope, key);
     return entry;
+}
+
+void type_check(AstNode* node){
+
+    AstCompStmt *comp_stmt;
+    AstIfElse *if_stmt;
+    AstVarDef *var_def;
+    AstBinExp *bin_exp;
+    AstFuncDef *func_def;
+    AstIdent *ident;
+    AstFuncCall *func_call;
+    AstRet *ret;
+    AstEnum *enm;
+    AstVarDec *dec;
+    AstVarAsgn *asgn;
+    AstWhile *w_stmt;
+    AstFor *f_stmt;
+    AstExprStmt *expr_stmt;
+    AstUnaryExpr *unary_expr;
+    // SymTabEntry *entry;
+    // TypeEnvEntry *entry_type;
+    // Scope *child;
+
+    switch (node->type)
+    {
+    case AST_COMP_STMT:
+        comp_stmt = (AstCompStmt *)node->as;
+        for(size_t i =0; i < comp_stmt->body->length;i++)
+            type_check((AstNode *)vector_get(comp_stmt->body, i));
+        break;
+    case AST_IF:
+        break;
+    case AST_VAR_DEF:
+        var_def = (AstVarDef *)node->as;
+        break;
+    case AST_BIN_EXP:
+        bin_exp = (AstBinExp *)node->as;
+        break;
+    case AST_INT_CONST:
+        break;
+    case AST_FUNC_DEF:
+        func_def = (AstFuncDef *)node->as;
+        break;
+    case AST_IDENT:
+        ident = (AstIdent *)node->as;
+        break;
+    case AST_FUNC_CALL:
+        func_call = (AstFuncCall *)node->as;
+        break;
+    case AST_RET:
+        ret = (AstRet *)node->as;
+        break;
+    case AST_ENUM:
+        enm = (AstEnum *)node->as;
+        break;
+    case AST_VAR_DEC:
+        dec = (AstVarDec *)node->as;
+        break;
+    case AST_VAR_ASGN:
+        asgn = (AstVarAsgn *)node->as;
+        break;
+    case AST_WHILE:
+        w_stmt = (AstWhile *)node->as;
+        break;
+    case AST_FOR:
+        f_stmt = (AstFor *)node->as;
+        break;
+    case AST_EXPR_STMT:
+        expr_stmt = (AstExprStmt *)node->as;
+        break;
+    case AST_UNARY_EXPR:
+        unary_expr = (AstUnaryExpr *)node->as;
+        break;
+    case AST_EMPTY_EXPR:
+        break;
+    default:
+        printf("type%d", node->type);
+        perror("unkown ast type");
+        exit(1);
+    }
 }
 
 void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env, Vector *symbols)
