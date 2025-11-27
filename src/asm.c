@@ -523,7 +523,7 @@ void gen_if(AstNode *node, RISCV *_asm)
     reg = eval_asm(if_stmt->if_expr, _asm);
 
     // cmp and branch to end label
-    emit_branch_eq(reg,  _asm->zero,  else_label,  _asm);
+    emit_branch_eq(reg, _asm->zero, else_label, _asm);
     free_register(reg);
 
     // eval body
@@ -543,6 +543,7 @@ void gen_ret(AstNode *node, RISCV *_asm)
 {
     AstRet *ret;
     Register *reg;
+    Register *ret_reg;
     StackFrame *frame;
 
     ret = (AstRet *)node->as;
@@ -555,9 +556,9 @@ void gen_ret(AstNode *node, RISCV *_asm)
     {
 
         reg = eval_asm(ret->expr, _asm);
-
+        ret_reg = vector_get(_asm->arg, 0);
         // move to return a0
-        fprintf(_asm->out, "\tadd a0, %s, zero\n", reg->label);
+        emit_move_register(reg, ret_reg, _asm);
         free_register(reg);
     }
 
