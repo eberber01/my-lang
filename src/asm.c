@@ -101,6 +101,11 @@ Label extend_label(Label label, char *str)
     return new_label;
 }
 
+void emit_or(Register *rd, Register *reg1, Register *reg2, RISCV *_asm)
+{
+    fprintf(_asm->out, "\tor %s, %s, %s\n", rd->label, reg1->label, reg2->label);
+}
+
 void emit_xor(Register *rd, Register *reg1, Register *reg2, RISCV *_asm)
 {
 
@@ -498,7 +503,7 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
     case TOK_OR:
         reg = alloc_register(_asm);
 
-        fprintf(_asm->out, "\tor %s, %s, %s\n", reg->label, left->label, right->label);
+        emit_or(reg, left, right, _asm);
         free_register(left);
         free_register(right);
 
