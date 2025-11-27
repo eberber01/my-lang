@@ -100,6 +100,10 @@ Label extend_label(Label label, char *str)
     strcpy(new_label, tmp);
     return new_label;
 }
+void emit_and(Register *rd, Register *reg1, Register *reg2, RISCV *_asm)
+{
+    fprintf(_asm->out, "\tand %s, %s, %s\n", rd->label, reg1->label, reg2->label);
+}
 
 void emit_or(Register *rd, Register *reg1, Register *reg2, RISCV *_asm)
 {
@@ -496,6 +500,7 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
         reg = alloc_register(_asm);
 
         fprintf(_asm->out, "\tand %s, %s, %s\n", reg->label, left->label, right->label);
+        emit_and(reg, left, right, _asm);
         free_register(left);
         free_register(right);
 
