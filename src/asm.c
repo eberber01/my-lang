@@ -523,7 +523,7 @@ void gen_if(AstNode *node, RISCV *_asm)
     reg = eval_asm(if_stmt->if_expr, _asm);
 
     // cmp and branch to end label
-    fprintf(_asm->out, "\tbeq %s, zero, %s\n", reg->label, else_label);
+    emit_branch_eq(reg,  _asm->zero,  else_label,  _asm);
     free_register(reg);
 
     // eval body
