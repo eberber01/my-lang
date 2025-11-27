@@ -101,6 +101,12 @@ Label extend_label(Label label, char *str)
     return new_label;
 }
 
+void emit_xor(Register *rd, Register *reg1, Register *reg2, RISCV *_asm)
+{
+
+    fprintf(_asm->out, "\txor %s, %s, %s\n", rd->label, reg1->label, reg2->label);
+}
+
 void emit_set_eq_zero(Register *reg1, Register *reg2, RISCV *_asm)
 {
     fprintf(_asm->out, "\tseqz %s, %s\n", reg1->label, reg2->label);
@@ -500,7 +506,7 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
     case TOK_XOR:
         reg = alloc_register(_asm);
 
-        fprintf(_asm->out, "\txor %s, %s, %s\n", reg->label, left->label, right->label);
+        emit_xor(reg, left, right, _asm);
         free_register(left);
         free_register(right);
 
