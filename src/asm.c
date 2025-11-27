@@ -499,7 +499,6 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
     case TOK_AND:
         reg = alloc_register(_asm);
 
-        fprintf(_asm->out, "\tand %s, %s, %s\n", reg->label, left->label, right->label);
         emit_and(reg, left, right, _asm);
         free_register(left);
         free_register(right);
