@@ -101,6 +101,11 @@ Label extend_label(Label label, char *str)
     return new_label;
 }
 
+void emit_sub(Register *rd, Register *reg1, Register *reg2, RISCV *_asm)
+{
+    fprintf(_asm->out, "\tsub %s, %s, %s \n", rd->label, reg1->label, reg2->label);
+}
+
 void emit_set_eq_zero(Register *reg1, Register *reg2, RISCV *_asm)
 {
     fprintf(_asm->out, "\tseqz %s, %s \n", reg1->label, reg2->label);
@@ -442,7 +447,7 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
     case TOK_EQUAL:
         reg = alloc_register(_asm);
 
-        fprintf(_asm->out, "\tsub %s, %s, %s \n", reg->label, right->label, left->label);
+        emit_sub(reg, right, left, _asm);
         // == Check if equal
         emit_set_eq_zero(reg, reg, _asm);
 
@@ -452,7 +457,7 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
     case TOK_NOT_EQUAL:
         reg = alloc_register(_asm);
 
-        fprintf(_asm->out, "\tsub %s, %s, %s \n", reg->label, right->label, left->label);
+        emit_sub(reg, right, left, _asm);
         // !=
         emit_set_not_eq_zero(reg, reg, _asm);
 
