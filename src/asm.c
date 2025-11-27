@@ -719,7 +719,7 @@ void gen_while(AstNode *node, RISCV *_asm)
 
     reg = eval_asm(w_stmt->expr, _asm);
     // cmp and branch to end label
-    fprintf(_asm->out, "\tbeq %s, zero, %s\n", reg->label, end_label);
+    emit_branch_eq(reg, _asm->zero, end_label, _asm);
 
     free_register(reg);
 
