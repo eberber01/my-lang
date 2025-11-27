@@ -101,6 +101,11 @@ Label extend_label(Label label, char *str)
     return new_label;
 }
 
+void emit_shift_left_log(Register *rd, Register *reg1, Register *reg2, RISCV *_asm)
+{
+    fprintf(_asm->out, "\tsll %s, %s, %s\n", rd->label, reg1->label, reg2->label);
+}
+
 void emit_shift_right_arth(Register *rd, Register *reg1, Register *reg2, RISCV *_asm)
 {
     fprintf(_asm->out, "\tsra %s, %s, %s\n", rd->label, reg1->label, reg2->label);
@@ -488,7 +493,7 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
     case TOK_LSHIFT:
         reg = alloc_register(_asm);
 
-        fprintf(_asm->out, "\tsll %s, %s, %s\n", reg->label, left->label, right->label);
+        emit_shift_left_log(reg, left, right, _asm);
         free_register(left);
         free_register(right);
 
