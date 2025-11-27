@@ -147,10 +147,6 @@ void emit_xor(Register *rd, Register *reg1, Register *reg2, RISCV *_asm)
     fprintf(_asm->out, "\txor %s, %s, %s\n", rd->label, reg1->label, reg2->label);
 }
 
-void emit_set_eq_zero(Register *reg1, Register *reg2, RISCV *_asm)
-{
-    fprintf(_asm->out, "\tseqz %s, %s\n", reg1->label, reg2->label);
-}
 void emit_branch_eq(Register *reg1, Register *reg2, Label label, RISCV *_asm)
 {
     fprintf(_asm->out, "\tbeq %s, %s, %s\n", reg1->label, reg2->label, label);
