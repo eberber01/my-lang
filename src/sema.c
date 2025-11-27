@@ -17,11 +17,11 @@ StackFrame *make_stack_frame(char *func)
 }
 
 // Returns variable offset from current stack pointer
-int stackframe_add(StackFrame *frame)
+int stackframe_add(StackFrame *frame, size_t n, size_t type_size)
 {
     // Change for different Types
     int tmp = frame->size;
-    frame->size += INT_SIZE;
+    frame->size += (type_size * n);
     return tmp;
 }
 
@@ -92,7 +92,7 @@ TypeSpecifier type_check(AstNode *node)
     AstRet *ret;
     // AstEnum *enm;
     // AstVarDec *dec;
-    AstVarAsgn *asgn;
+    // AstVarAsgn *asgn;
     AstWhile *w_stmt;
     AstFor *f_stmt;
     AstExprStmt *expr_stmt;
@@ -153,13 +153,14 @@ TypeSpecifier type_check(AstNode *node)
 
         return expected;
     case AST_VAR_ASGN:
-        asgn = (AstVarAsgn *)node->as;
+        // asgn = (AstVarAsgn *)node->as;
 
-        expected = asgn->symbol->type;
-        actual = type_check(asgn->expr);
+        // expected = asgn->symbol->type;
+        // actual = type_check(asgn->expr);
 
-        assert_type_eq(expected, actual);
-        return expected;
+        // assert_type_eq(expected, actual);
+        // return expected;
+        return TS_VOID;
     case AST_WHILE:
         w_stmt = (AstWhile *)node->as;
         return type_check(w_stmt->body);
@@ -201,6 +202,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
     AstFor *f_stmt;
     AstExprStmt *expr_stmt;
     AstUnaryExpr *unary_expr;
+    AstLValue *lvalue;
     SymTabEntry *entry;
     TypeEnvEntry *entry_type;
     Scope *child;
@@ -237,7 +239,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         entry_type = hashmap_get(type_env, var_def->type);
         entry = make_symtab_entry(str_clone(var_def->value), entry_type->ts, SYM_VARIABLE);
         vector_push(symbols, entry);
-        entry->offset = stackframe_add(frame);
+        entry->offset = stackframe_add(frame, 1, INT_SIZE);
         var_def->symbol = entry;
 
         scope_add(scope, entry);
@@ -294,6 +296,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         }
 
         ident->symbol = entry;
+        printf("ident %s, offset: %zu\n", ident->symbol->key, ident->symbol->offset);
         break;
     case AST_FUNC_CALL:
         func_call = (AstFuncCall *)node->as;
@@ -346,22 +349,14 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
 
         entry_type = hashmap_get(type_env, dec->type);
         entry = make_symtab_entry(str_clone(dec->value), entry_type->ts, SYM_VARIABLE);
-        entry->offset = stackframe_add(frame);
+        entry->offset = stackframe_add(frame, 1, INT_SIZE);
         dec->symbol = entry;
         scope_add(scope, entry);
         break;
     case AST_VAR_ASGN:
         asgn = (AstVarAsgn *)node->as;
-
-        // Check if symbol exists in scope
-        if (!in_scope(scope, asgn->value))
-        {
-            perror("Undefined variable.");
-            exit(1);
-        }
-
-        sym_check(asgn->expr, frame, scope, type_env, symbols);
-        asgn->symbol = scope_lookup(scope, asgn->value);
+        sym_check(asgn->lval, frame, scope, type_env, symbols);
+        sym_check(asgn->rval, frame, scope, type_env, symbols);
         break;
     case AST_WHILE:
         w_stmt = (AstWhile *)node->as;
@@ -390,6 +385,11 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         unary_expr = (AstUnaryExpr *)node->as;
 
         sym_check(unary_expr->postfix_expr, frame, scope, type_env, symbols);
+        break;
+
+    case AST_LVAL:
+        lvalue = (AstLValue *)node->as;
+        sym_check(lvalue->u.ident, frame, scope, type_env, symbols);
         break;
     case AST_EMPTY_EXPR:
         break;

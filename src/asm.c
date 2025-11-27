@@ -279,8 +279,8 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
 
     func_call = (AstFuncCall *)node->as;
 
-    // Allocate enough space for ra + temp and arg registers
-    size_t stack_space = REGISTER_SIZE * (_asm->temp->length + _asm->arg->length + 1);
+    // Allocate enough space for ra + + fp +temp and arg registers
+    size_t stack_space = REGISTER_SIZE * (_asm->temp->length + _asm->arg->length + 2);
 
     size_t offset = 0;
 
@@ -312,6 +312,11 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
         }
     }
 
+    //Save frame pointer
+    emit_sp_store(offset, vector_get(_asm->save,  0), _asm);
+    offset += REGISTER_SIZE;
+
+
     // Eval func args and move them into arg register
     for (size_t i = 0; i < func_call->args->length; i++)
     {
@@ -322,9 +327,15 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
         free_register(reg);
     }
 
+    
+
     // TODO move left over args to stack
 
     emit_jump_to_label(func_call->value, _asm);
+
+    //restore frame pointer
+    emit_sp_load(vector_get(_asm->save,  0), offset, _asm);
+    offset -= REGISTER_SIZE;
 
     // Restore temp registers
     for (int i = _asm->temp->length - 1; i >= 0; i--)
@@ -658,6 +669,12 @@ void gen_func_def(AstNode *node, RISCV *_asm)
         param->symbol->arg_reg = i;
     }
 
+    
+ 
+    //Save sp in fp(s0);
+    emit_move_register(_asm->sp, vector_get(_asm->save,  0), _asm);
+
+
     size_t frame_size = func_def->symbol->frame->size;
     // Create stack space for frame
 
@@ -674,7 +691,7 @@ void gen_func_def(AstNode *node, RISCV *_asm)
 
 void gen_var_def(AstNode *node, RISCV *_asm)
 {
-    int offset;
+    size_t offset;
     AstVarDef *var_def;
     Register *reg;
 
@@ -684,7 +701,12 @@ void gen_var_def(AstNode *node, RISCV *_asm)
 
     // store value on to stack
     reg = eval_asm(var_def->expr, _asm);
-    emit_sp_store(offset, reg, _asm);
+
+    //
+    //emit_sp_store(offset, reg, _asm);
+    //Store from fp
+    fprintf(_asm->out, "\tsw %s, %zu(s0)", reg->label ,offset) ;
+
     free_register(reg);
 }
 
@@ -711,23 +733,36 @@ Register *eval_ident(AstNode *node, RISCV *_asm)
 
     // Load value from sp
     reg = alloc_register(_asm);
-    emit_sp_load(reg, var->offset, _asm);
+
+    // Emit offset from frame pointer
+    //emit_sp_load(reg, var->offset, _asm);
+    fprintf(_asm->out, "\tlw %s, %zu(s0)", reg->label ,var->offset) ;
     return reg;
 }
 
 Register *eval_var_asgn(AstNode *node, RISCV *_asm)
 {
-    int offset;
     AstVarAsgn *asgn;
-    Register *reg;
+    Register *lval;
+    Register *rval;
+    Register *fp;
 
     asgn = (AstVarAsgn *)node->as;
 
-    offset = asgn->symbol->offset;
-    reg = eval_asm(asgn->expr, _asm);
-    emit_sp_store(offset, reg, _asm);
+    lval = eval_asm(asgn->lval, _asm);
+    rval = eval_asm(asgn->rval, _asm);
 
-    return reg;
+    // emit_sp_store(lval, reg, _asm);
+    // Calculate from current frame pointer
+    
+    fp = (Register*)vector_get(_asm->save, 0);
+
+    fprintf(_asm->out, "\tadd %s, %s, %s", lval->label, lval->label, fp->label) ;
+
+    fprintf(_asm->out, "\tsw %s, 0(%s)\n", rval->label, lval->label);
+    free_register(lval);
+
+    return rval;
 }
 
 Register *eval_unary_expr(AstNode *node, RISCV *_asm)
@@ -841,6 +876,29 @@ void gen_for(AstNode *node, RISCV *_asm)
     free(end_label);
 }
 
+Register *eval_lval(AstNode *node, RISCV *_asm)
+{
+    Register *reg;
+    AstIdent *ident_node;
+    size_t offset;
+    AstLValue *lval = (AstLValue *)node->as;
+
+    switch (lval->kind)
+    {
+    case AST_LVAL_IDENT:
+        ident_node = (AstIdent *)(lval->u.ident->as);
+
+        reg = alloc_register(_asm);
+        offset = ident_node->symbol->offset;
+
+        emit_load_register(reg, offset, _asm);
+        return reg;
+    default:
+        perror("Unknown Lval type");
+        exit(1);
+    }
+}
+
 Register *eval_asm(AstNode *node, RISCV *_asm)
 {
 
@@ -858,6 +916,8 @@ Register *eval_asm(AstNode *node, RISCV *_asm)
         return eval_bin_exp(node, _asm);
     case AST_VAR_ASGN:
         return eval_var_asgn(node, _asm);
+    case AST_LVAL:
+        return eval_lval(node, _asm);
     default:
         printf("%d\n", node->type);
         perror("eval asm unkown ast type");

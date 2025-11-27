@@ -29,7 +29,7 @@ void _print_ast(AstNode *node, int level)
     AstEnum *enm;
     AstIfElse *if_stmt;
     AstVarDec *dec;
-    AstVarAsgn *asgn;
+    // AstVarAsgn *asgn;
     AstWhile *w_stmt;
     AstFor *f_stmt;
     AstExprStmt *expr_stmt;
@@ -156,17 +156,14 @@ void _print_ast(AstNode *node, int level)
         break;
 
     case AST_VAR_ASGN:
-        asgn = (AstVarAsgn *)node->as;
+        // asgn = (AstVarAsgn *)node->as;
 
-        printlvl("VarAsgn(", level);
-        printlvl("\tvalue='%s'", level, asgn->value);
-        printlvl("\tstack_offset='%d'", level, asgn->symbol->offset);
+        printlvl("VarAsgn()", level);
+        // printlvl("\texpr=[", level);
+        // _print_ast(asgn->expr, level + 1);
+        // printlvl("\t]", level);
 
-        printlvl("\texpr=[", level);
-        _print_ast(asgn->expr, level + 1);
-        printlvl("\t]", level);
-
-        printlvl(")", level);
+        // printlvl(")", level);
         break;
     case AST_WHILE:
         w_stmt = (AstWhile *)node->as;
@@ -242,6 +239,13 @@ AstNode *make_ast_node(AstNodeType type, void *inner)
     node->type = type;
     node->as = inner;
     return node;
+}
+
+AstNode *make_ast_lval(AstLValueKind kind)
+{
+    AstLValue *lval = (AstLValue *)my_malloc(sizeof(AstLValue));
+    lval->kind = kind;
+    return make_ast_node(AST_LVAL, lval);
 }
 
 AstNode *make_ast_unary_expr(AstNode *postfix_expr, char *value, TokenType op_type)
@@ -332,11 +336,11 @@ AstNode *make_ast_var_dec(char *value, char *type)
     return make_ast_node(AST_VAR_DEC, dec);
 }
 
-AstNode *make_ast_var_asgn(char *value, AstNode *expr)
+AstNode *make_ast_var_asgn(AstNode *lval, AstNode *rval)
 {
     AstVarAsgn *asgn = (AstVarAsgn *)my_malloc(sizeof(AstVarAsgn));
-    asgn->value = value;
-    asgn->expr = expr;
+    asgn->rval = rval;
+    asgn->lval = lval;
     return make_ast_node(AST_VAR_ASGN, asgn);
 }
 
@@ -483,8 +487,8 @@ void ast_free(AstNode *node)
         break;
     case AST_VAR_ASGN:
         asgn = (AstVarAsgn *)node->as;
-        ast_free(asgn->expr);
-        free(asgn->value);
+        ast_free(asgn->lval);
+        free(asgn->rval);
         free(asgn);
         break;
     case AST_WHILE:

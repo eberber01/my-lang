@@ -23,7 +23,8 @@ typedef enum AstNodeType
     AST_FOR,
     AST_EMPTY_EXPR,
     AST_EXPR_STMT,
-    AST_UNARY_EXPR
+    AST_UNARY_EXPR,
+    AST_LVAL
 } AstNodeType;
 
 typedef struct Param
@@ -38,6 +39,21 @@ typedef struct AstNode
     AstNodeType type;
     void *as;
 } AstNode;
+
+typedef enum AstLValueKind
+{
+    AST_LVAL_IDENT,
+} AstLValueKind;
+
+typedef struct AstLValue
+{
+    AstLValueKind kind;
+    union {
+        AstNode *ident;
+
+    } u;
+
+} AstLValue;
 
 typedef struct AstCompStmt
 {
@@ -104,9 +120,9 @@ typedef struct AstVarDec
 
 typedef struct AstVarAsgn
 {
-    char *value;
-    AstNode *expr;
-    SymTabEntry *symbol;
+    AstNode *lval;
+    AstNode *rval;
+    // SymTabEntry *symbol;
 } AstVarAsgn;
 
 typedef struct AstIfElse
@@ -183,13 +199,15 @@ AstNode *make_ast_enum(char *value, Vector *enums);
 
 AstNode *make_ast_var_dec(char *value, char *type);
 
-AstNode *make_ast_var_asgn(char *value, AstNode *expr);
+AstNode *make_ast_var_asgn(AstNode *lval, AstNode *rval);
 
 AstNode *make_ast_while(AstNode *expr, AstNode *body);
 
 AstNode *make_ast_for(AstNode *init, AstNode *cond, AstNode *step, AstNode *body);
 
 AstNode *make_ast_unary_expr(AstNode *postfix_expr, char *value, TokenType op_type);
+
+AstNode *make_ast_lval(AstLValueKind kind);
 
 void _print_ast(AstNode *, int);
 
