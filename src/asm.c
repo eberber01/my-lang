@@ -100,6 +100,12 @@ Label extend_label(Label label, char *str)
     strcpy(new_label, tmp);
     return new_label;
 }
+
+void emit_shift_right_arth(Register *rd, Register *reg1, Register *reg2, RISCV *_asm)
+{
+    fprintf(_asm->out, "\tsra %s, %s, %s\n", rd->label, reg1->label, reg2->label);
+}
+
 void emit_and(Register *rd, Register *reg1, Register *reg2, RISCV *_asm)
 {
     fprintf(_asm->out, "\tand %s, %s, %s\n", rd->label, reg1->label, reg2->label);
@@ -491,7 +497,7 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
         reg = alloc_register(_asm);
 
         // Signed bit shift
-        fprintf(_asm->out, "\tsra %s, %s, %s\n", reg->label, left->label, right->label);
+        emit_shift_right_arth(reg, left, right, _asm);
         free_register(left);
         free_register(right);
 
