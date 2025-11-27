@@ -101,6 +101,10 @@ Label extend_label(Label label, char *str)
     return new_label;
 }
 
+void emit_set_eq_zero(Register *reg1, Register *reg2, RISCV *_asm)
+{
+    fprintf(_asm->out, "\tseqz %s, %s\n", reg1->label, reg2->label);
+}
 void emit_branch_eq(Register *reg1, Register *reg2, Label label, RISCV *_asm)
 {
     fprintf(_asm->out, "\tbeq %s, %s, %s\n", reg1->label, reg2->label, label);
@@ -695,7 +699,7 @@ Register *eval_unary_expr(AstNode *node, RISCV *_asm)
         reg = alloc_register(_asm);
 
         tmp = eval_asm(unary_expr->postfix_expr, _asm);
-        fprintf(_asm->out, "\tseqz %s, %s\n", reg->label, tmp->label);
+        emit_set_eq_zero(reg, tmp, _asm);
 
         free_register(tmp);
         return reg;
