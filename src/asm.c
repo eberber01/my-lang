@@ -101,6 +101,11 @@ Label extend_label(Label label, char *str)
     return new_label;
 }
 
+void emit_set_lt(Register *rd, Register *reg1, Register *reg2, RISCV *_asm)
+{
+    fprintf(_asm->out, "\tslt %s, %s, %s\n", rd->label, reg1->label, reg2->label);
+}
+
 void emit_shift_left_log(Register *rd, Register *reg1, Register *reg2, RISCV *_asm)
 {
     fprintf(_asm->out, "\tsll %s, %s, %s\n", rd->label, reg1->label, reg2->label);
@@ -449,7 +454,8 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
         return eval_log_or(left, right, _asm);
     case TOK_LT:
         reg = alloc_register(_asm);
-        fprintf(_asm->out, "\tslt %s, %s, %s\n", reg->label, left->label, right->label);
+
+        emit_set_lt(reg, left, right, _asm);
 
         free_register(left);
         free_register(right);
@@ -459,7 +465,7 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
         tmp = alloc_register(_asm);
 
         // temp = rhs < lhs
-        fprintf(_asm->out, "\tslt %s, %s, %s\n", tmp->label, right->label, left->label);
+        emit_set_lt(tmp, right, left, _asm);
 
         // invert → lhs <= rhs
         fprintf(_asm->out, "\txori %s, %s, %d\n", reg->label, tmp->label, 1);
@@ -470,7 +476,8 @@ Register *eval_bin_exp(AstNode *node, RISCV *_asm)
         return reg;
     case TOK_GT:
         reg = alloc_register(_asm);
-        fprintf(_asm->out, "\tslt %s, %s, %s\n", reg->label, right->label, left->label);
+
+        emit_set_lt(reg, right, left, _asm);
 
         free_register(left);
         free_register(right);
