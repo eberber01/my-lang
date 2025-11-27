@@ -106,6 +106,11 @@ void emit_branch_eq(Register *reg1, Register *reg2, Label label, RISCV *_asm)
     fprintf(_asm->out, "\tbeq %s, %s, %s\n", reg1->label, reg2->label, label);
 }
 
+void emit_branch_not_eq(Register *reg1, Register *reg2, Label label, RISCV *_asm)
+{
+    fprintf(_asm->out, "\tbne %s, %s, %s\n", reg1->label, reg2->label, label);
+}
+
 void emit_jump_label(Label label, RISCV *_asm)
 {
     fprintf(_asm->out, "\tj %s\n", label);
@@ -348,8 +353,8 @@ Register *eval_log_or(Register *left, Register *right, RISCV *_asm)
     Label true_label = extend_label(or_label, "true");
     Label end_label = extend_label(or_label, "end");
 
-    fprintf(_asm->out, "\tbne %s, zero, %s\n", left->label, true_label);
-    fprintf(_asm->out, "\tbne %s, zero, %s\n", right->label, true_label);
+    emit_branch_not_eq(left, _asm->zero, true_label, _asm);
+    emit_branch_not_eq(right, _asm->zero, true_label, _asm);
 
     emit_load_register(reg, 0, _asm);
     emit_jump_label(end_label, _asm);

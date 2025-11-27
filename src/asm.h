@@ -41,6 +41,8 @@ typedef struct RISCV
     Register *ret;
     // Stack Pointer
     Register *sp;
+    // Hardcoded zero
+    Register *zero;
     // Assembly file
     FILE *out;
     size_t for_count;
