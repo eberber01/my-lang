@@ -45,6 +45,7 @@ RISCV *make_riscv(void)
     riscv->save = save_reg;
     riscv->ret = make_register("ra");
     riscv->sp = make_register("sp");
+    riscv->zero = make_register("zero");
     riscv->while_count = 0;
     riscv->for_count = 0;
     riscv->if_count = 0;
@@ -98,6 +99,11 @@ Label extend_label(Label label, char *str)
     Label new_label = my_malloc(sizeof(char) * strlen(tmp) + 1);
     strcpy(new_label, tmp);
     return new_label;
+}
+
+void emit_branch_eq(Register *reg1, Register *reg2, Label label, RISCV *_asm)
+{
+    fprintf(_asm->out, "\tbeq %s, %s, %s\n", reg1->label, reg2->label, label);
 }
 
 void emit_jump_label(Label label, RISCV *_asm)
@@ -312,8 +318,8 @@ Register *eval_log_and(Register *left, Register *right, RISCV *_asm)
     Label false_label = extend_label(and_label, "false");
     Label end_label = extend_label(and_label, "end");
 
-    fprintf(_asm->out, "\tbeq %s, zero, %s\n", left->label, false_label);
-    fprintf(_asm->out, "\tbeq %s, zero, %s\n", right->label, false_label);
+    emit_branch_eq(left, _asm->zero, false_label, _asm);
+    emit_branch_eq(right, _asm->zero, false_label, _asm);
 
     emit_load_register(reg, 1, _asm);
     emit_jump_label(end_label, _asm);
@@ -885,6 +891,7 @@ void asm_free(RISCV *riscv)
     vector_free(riscv->save);
     free(riscv->sp);
     free(riscv->ret);
+    free(riscv->zero);
     free(riscv);
 }
 
