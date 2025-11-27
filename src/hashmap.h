@@ -61,8 +61,6 @@ typedef struct SymTabEntry
     // Value for enum
     int const_value;
 
-    int scope_id;
-
     StackFrame *frame;
 } SymTabEntry;
 

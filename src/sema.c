@@ -43,7 +43,6 @@ Scope *exit_scope(Scope *scope)
 
 void scope_add(Scope *scope, SymTabEntry *entry)
 {
-    entry->scope_id = scope->id;
     hashmap_add(scope->symtab, entry, entry->key);
 }
 
