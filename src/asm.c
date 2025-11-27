@@ -217,6 +217,7 @@ void emit_move_register(Register *reg1, Register *reg2, RISCV *_asm)
 Register *eval_func_call(AstNode *node, RISCV *_asm)
 {
     AstFuncCall *func_call;
+    Register *ret_reg;
     Register *reg;
 
     func_call = (AstFuncCall *)node->as;
@@ -282,7 +283,9 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
 
     // Move return value to empty register
     reg = alloc_register(_asm);
-    fprintf(_asm->out, "\tadd %s, zero, a0\n", reg->label);
+    ret_reg = (Register *)vector_get(_asm->arg, 0);
+
+    emit_move_register(ret_reg, reg, _asm);
 
     // Restore arg registers
     for (int i = _asm->arg->length - 1; i >= 0; i--)
