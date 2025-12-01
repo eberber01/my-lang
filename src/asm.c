@@ -164,12 +164,12 @@ void emit_jump_label(Label label, RISCV *_asm)
 
 void emit_sp_increase(size_t bytes, RISCV *_asm)
 {
-    fprintf(_asm->out, "\taddi sp, sp, -%zu\n", bytes);
+    fprintf(_asm->out, "\taddi sp, sp, %zu\n", bytes);
 }
 
 void emit_sp_decrease(size_t bytes, RISCV *_asm)
 {
-    fprintf(_asm->out, "\taddi sp, sp, %zu\n", bytes);
+    fprintf(_asm->out, "\taddi sp, sp, -%zu\n", bytes);
 }
 
 // Load value at sp offset into reg
@@ -658,16 +658,24 @@ void gen_func_def(AstNode *node, RISCV *_asm)
         param->symbol->arg_reg = i;
     }
 
-    size_t frame_size = func_def->symbol->frame->size;
+    size_t frame_size = func_def->symbol->frame->size + REGISTER_SIZE;
     // Create stack space for frame
 
-    if (frame_size > 0)
-        emit_sp_increase(frame_size, _asm);
+    if (frame_size > 0){
+        emit_sp_decrease(frame_size, _asm);
+        fprintf(_asm->out, "\tsw ra, 4(sp)\n");
+        fprintf(_asm->out, "\tsw s0, 0(sp)\n");
+        fprintf(_asm->out, "\taddi s0, sp, %zu\n", frame_size);
+
+    }
 
     _gen_asm(func_def->body, _asm);
 
-    if (frame_size > 0)
-        emit_sp_decrease(frame_size, _asm);
+    if (frame_size > 0){
+        fprintf(_asm->out, "\tlw ra, 4(sp)\n");
+        fprintf(_asm->out, "\tlw s0, 0(sp)\n");
+        emit_sp_increase(frame_size, _asm);
+    }
 
     emit_return_from_jump(_asm);
 }
