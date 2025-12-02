@@ -359,10 +359,6 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
 
     emit_jump_to_label(func_call->value, _asm);
 
-    //restore frame pointer
-    emit_sp_load(vector_get(_asm->save,  0), offset, _asm);
-    offset -= REGISTER_SIZE;
-
     // Restore temp registers
     for (int i = _asm->temp->length - 1; i >= 0; i--)
     {
@@ -784,19 +780,22 @@ Register *eval_ident(AstNode *node, RISCV *_asm)
 
 Register *eval_var_asgn(AstNode *node, RISCV *_asm)
 {
-    size_t offset;
     AstVarAsgn *asgn;
     Register *lval;
     Register *rval;
-    Register *fp;
+    Register *fp = (Register *)vector_get(_asm->save, 0);
 
     asgn = (AstVarAsgn *)node->as;
 
-    offset = asgn->symbol->offset;
-    reg = eval_asm(asgn->expr, _asm);
+    lval = eval_asm(asgn->lval, _asm);
+    rval = eval_asm(asgn->rval, _asm);
 
-    emit_store_word_fp(reg, offset + REGISTER_SIZE * (3 + _asm->arg->length), _asm);
-    return reg;
+    // Calculate lval stack address from fp
+    emit_sub(lval, fp, lval, _asm);
+    fprintf(_asm->out, "\tsw %s, 0(%s)\n", rval->label, lval->label);
+
+    free_register(lval);
+    return rval;
 }
 
 Register *eval_unary_expr(AstNode *node, RISCV *_asm)
@@ -916,7 +915,7 @@ Register *eval_lval(AstNode *node, RISCV *_asm)
     AstIdent *ident_node;
     size_t offset;
     AstLValue *lval = (AstLValue *)node->as;
-
+    size_t base_offset = (REGISTER_SIZE * (3 + _asm->arg->length));
     switch (lval->kind)
     {
     case AST_LVAL_IDENT:
@@ -925,7 +924,7 @@ Register *eval_lval(AstNode *node, RISCV *_asm)
         reg = alloc_register(_asm);
         offset = ident_node->symbol->offset;
 
-        emit_load_register(reg, offset, _asm);
+        emit_load_register(reg, base_offset + offset, _asm);
         return reg;
     default:
         perror("Unknown Lval type");
