@@ -29,11 +29,12 @@ void _print_ast(AstNode *node, int level)
     AstEnum *enm;
     AstIfElse *if_stmt;
     AstVarDec *dec;
-    // AstVarAsgn *asgn;
+    AstVarAsgn *asgn;
     AstWhile *w_stmt;
     AstFor *f_stmt;
     AstExprStmt *expr_stmt;
     AstUnaryExpr *unary_expr;
+    AstLValue *lval;
 
     switch (node->type)
     {
@@ -156,14 +157,20 @@ void _print_ast(AstNode *node, int level)
         break;
 
     case AST_VAR_ASGN:
-        // asgn = (AstVarAsgn *)node->as;
+        asgn = (AstVarAsgn *)node->as;
 
-        printlvl("VarAsgn()", level);
-        // printlvl("\texpr=[", level);
-        // _print_ast(asgn->expr, level + 1);
-        // printlvl("\t]", level);
+        printlvl("VarAsgn(", level);
 
-        // printlvl(")", level);
+        printlvl("\tlval=[", level);
+        _print_ast(asgn->lval, level + 1);
+        printlvl("\t]", level);
+
+        printlvl("\trval=[", level);
+        _print_ast(asgn->rval, level + 1);
+        printlvl("\t]", level);
+
+        printlvl(")", level);
+
         break;
     case AST_WHILE:
         w_stmt = (AstWhile *)node->as;
@@ -215,12 +222,25 @@ void _print_ast(AstNode *node, int level)
         printlvl("\t]", level);
         printlvl(")", level);
         break;
+
+    case AST_LVAL:
+        lval = (AstLValue *)node->as;
+        switch (lval->kind)
+        {
+        case AST_LVAL_IDENT:
+            _print_ast(lval->u.ident, level);
+            break;
+        default:
+            fprintf(stderr, "Print Ast: Unknown AST LValue Type (%d)\n", lval->kind);
+            break;
+        }
+        break;
     case AST_EMPTY_EXPR:
         printlvl("Empty Expr()", level);
         break;
     default:
-        printf("type%d", node->type);
-        perror("not impl");
+        fprintf(stderr, "Print Ast: Unknown AST Type (%d)\n", node->type);
+        break;
     }
 }
 
@@ -398,6 +418,7 @@ void ast_free(AstNode *node)
     AstWhile *w_stmt;
     AstExprStmt *expr_stmt;
     AstUnaryExpr *unary_expr;
+    AstLValue *lval;
 
     if (node == NULL)
         return;
@@ -516,10 +537,24 @@ void ast_free(AstNode *node)
         ast_free(unary_expr->postfix_expr);
         free(unary_expr);
         break;
+    case AST_LVAL:
+        lval = (AstLValue *)node->as;
+        AstIdent *lval_ident;
+        switch (lval->kind)
+        {
+        case AST_LVAL_IDENT:
+            lval_ident = (AstIdent *)(lval->u.ident->as);
+            free(lval_ident);
+            break;
+        default:
+            fprintf(stderr, "Ast Free: Unknown AST LValue Type (%d)\n", lval->kind);
+            break;
+        }
+        free(lval);
     case AST_EMPTY_EXPR:
         break;
     default:
-        perror("unkown ast type");
+        fprintf(stderr, "Ast Free: Unknown AST Type (%d)\n", node->type);
         break;
     }
 
