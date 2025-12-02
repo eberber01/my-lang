@@ -28,12 +28,12 @@ A self-hosting C compiler targeting the **RISC-V instruction set architecture**.
 ### Control Flow
 
 * [x] Implement `if`, `else`, `while`, `for`
-* [ ] Add logical and relational operators
+* [x] Add logical and relational operators
 
 ### Function Calling Conventions
 
-* [ ] Implement RISC-V calling convention (registers/stack)
-* [ ] Support multiple parameters
+* [s] Implement RISC-V calling convention (registers/stack)
+* [x] Support multiple parameters
 * [x] Handle simple recursion
 
 ### Type System Expansion
@@ -81,7 +81,7 @@ git clone https://github.com/yourusername/my-lang.git
 cd my-lang
 
 # Build using CMake
-cmake -B build -DCMAKE_BUILD_TYPE=Release # or Debug
+cmake -B build -DRV32=1 -DCMAKE_BUILD_TYPE=Release # or Debug
 
 cmake --build build
 

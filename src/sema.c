@@ -1,11 +1,11 @@
 #include "sema.h"
 #include "ast.h"
+#include "asm.h"
 #include "hashmap.h"
 #include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-#define INT_SIZE 4
 
 StackFrame *make_stack_frame(char *func)
 {
