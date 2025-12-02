@@ -63,6 +63,7 @@ target_link_libraries(
 target_compile_definitions(my-lang PRIVATE
     $<$<CONFIG:Debug>:DEBUG>
 )
+add_compile_definitions($<$<BOOL:${RV32}>:RV32>)
 
 add_test(NAME my-lang-tests COMMAND my-lang-tests)
 

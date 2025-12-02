@@ -8,7 +8,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef RV32
 #define REGISTER_SIZE 4
+#define INT_SIZE 4
+#else
+#endif
 
 typedef char *Label;
 
