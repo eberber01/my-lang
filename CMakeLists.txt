@@ -68,8 +68,8 @@ add_test(NAME my-lang-tests COMMAND my-lang-tests)
 
 find_program(CLANG_FORMAT_BIN clang-format)
 
-find_program(RISCV_AS riscv64-unknown-elf-as)
-find_program(RISCV_LD riscv64-unknown-elf-ld)
+set(RISCV_AS /usr/bin/riscv32-unknown-elf-as)
+set(RISCV_LD /usr/bin/riscv32-unknown-elf-ld)
 
 if (NOT RISCV_AS OR NOT RISCV_LD)
     message(FATAL_ERROR "Failed to find RISC-V ELF binutils")
@@ -81,7 +81,7 @@ message(STATUS "Using RISCV LD: ${RISCV_LD}")
 add_custom_target(run
     COMMAND ${RISCV_AS} -o ${CMAKE_BINARY_DIR}/prog.o ${CMAKE_SOURCE_DIR}/asm.s
     COMMAND ${RISCV_LD} -Ttext=0x10000 -o ${CMAKE_BINARY_DIR}/prog ${CMAKE_BINARY_DIR}/prog.o
-    COMMAND qemu-riscv64 ${CMAKE_BINARY_DIR}/prog
+    COMMAND qemu-riscv32 ${CMAKE_BINARY_DIR}/prog
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
