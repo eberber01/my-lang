@@ -9,6 +9,23 @@
 #include "lex.h"
 #include "util.h"
 
+/*
+    fp ------------
+        ra
+       -------------
+        s0
+       -------------
+        a0 - a7
+       -------------
+       Local variables
+       -------------
+       Temp registers
+       -------------
+       Spilled args
+       -------------
+
+*/
+
 Register *make_register(char *label)
 {
     Register *reg = my_malloc(sizeof(Register));
@@ -164,12 +181,12 @@ void emit_jump_label(Label label, RISCV *_asm)
 
 void emit_sp_increase(size_t bytes, RISCV *_asm)
 {
-    fprintf(_asm->out, "\taddi sp, sp, -%zu\n", bytes);
+    fprintf(_asm->out, "\taddi sp, sp, %zu\n", bytes);
 }
 
 void emit_sp_decrease(size_t bytes, RISCV *_asm)
 {
-    fprintf(_asm->out, "\taddi sp, sp, %zu\n", bytes);
+    fprintf(_asm->out, "\taddi sp, sp, -%zu\n", bytes);
 }
 
 // Load value at sp offset into reg
@@ -179,10 +196,31 @@ Register *emit_sp_load(Register *reg, int offset, RISCV *_asm)
     return reg;
 }
 
+void emit_comment(char *comm, RISCV *_asm)
+{
+    fprintf(_asm->out, "\n\t#%s\n", comm);
+}
+
 // Store value at reg at sp plus offset
 void emit_sp_store(int offset, Register *reg, RISCV *_asm)
 {
     fprintf(_asm->out, "\tsw %s, %d(sp)\n", reg->label, offset);
+}
+
+void emit_load_word_fp(Register *rd, size_t offset, RISCV *_asm)
+{
+    fprintf(_asm->out, "\tlw %s, -%zu(s0)\n", rd->label, offset);
+}
+
+void emit_store_word_fp(Register *rd, size_t offset, RISCV *_asm)
+{
+    fprintf(_asm->out, "\tsw %s, -%zu(s0)\n", rd->label, offset);
+}
+
+void emit_add_imm(Register *rd, Register *reg1, int imm, RISCV *_asm)
+{
+
+    fprintf(_asm->out, "\taddi %s, %s, %d\n", rd->label, reg1->label, imm);
 }
 
 // Allocate free temporary register
@@ -279,55 +317,43 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
 
     func_call = (AstFuncCall *)node->as;
 
-    // Allocate enough space for ra + + fp +temp and arg registers
-    size_t stack_space = REGISTER_SIZE * (_asm->temp->length + _asm->arg->length + 2);
+    size_t base_offset = func_call->symbol->frame->size + (REGISTER_SIZE * (3 + _asm->arg->length));
 
-    size_t offset = 0;
-
-    // Allocate space for return address
-    emit_sp_increase(stack_space, _asm);
-    emit_sp_store(offset, _asm->ret, _asm);
-    offset += REGISTER_SIZE;
-
-    // Save arg registers
-    for (size_t i = 0; i < _asm->arg->length; i++)
-    {
-        reg = vector_get(_asm->arg, i);
-        emit_sp_store(offset, reg, _asm);
-        offset += REGISTER_SIZE;
-    }
-
-    // Save temp registers
+    size_t temp_offset = base_offset;
     int freed[7] = {0};
+
     for (size_t i = 0; i < _asm->temp->length; i++)
     {
         reg = vector_get(_asm->temp, i);
         if (!reg->free)
         {
-
-            emit_sp_store(offset, reg, _asm);
-            offset += REGISTER_SIZE;
+            temp_offset += REGISTER_SIZE;
+            emit_store_word_fp(reg, temp_offset, _asm);
             freed[i] = 1;
             free_register(reg);
         }
     }
 
-    //Save frame pointer
-    emit_sp_store(offset, vector_get(_asm->save,  0), _asm);
-    offset += REGISTER_SIZE;
-
-
-    // Eval func args and move them into arg register
+    // Evaluate arguments and store in spill section
+    size_t arg_offset = temp_offset;
     for (size_t i = 0; i < func_call->args->length; i++)
     {
         AstNode *arg = (AstNode *)vector_get(func_call->args, i);
-        // This is always going to be an expression
         reg = eval_asm(arg, _asm);
-        emit_move_register(reg, vector_get(_asm->arg, i), _asm);
+
+        arg_offset += REGISTER_SIZE;
+        emit_store_word_fp(reg, arg_offset, _asm);
+
         free_register(reg);
     }
 
-    
+    // Move spilled arguments into argument registers
+    size_t load_offset = temp_offset;
+    for (size_t i = 0; i < func_call->args->length && i < _asm->arg->length; i++)
+    {
+        load_offset += REGISTER_SIZE;
+        emit_load_word_fp(((Register *)vector_get(_asm->arg, i)), load_offset, _asm);
+    }
 
     // TODO move left over args to stack
 
@@ -343,8 +369,8 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
         if (freed[i])
         {
             reg = vector_get(_asm->temp, i);
-            offset -= REGISTER_SIZE;
-            emit_sp_load(reg, offset, _asm);
+            emit_load_word_fp(reg, temp_offset, _asm);
+            temp_offset -= REGISTER_SIZE;
             reg->free = false;
         }
     }
@@ -355,20 +381,6 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
 
     emit_move_register(ret_reg, reg, _asm);
 
-    // Restore arg registers
-    for (int i = _asm->arg->length - 1; i >= 0; i--)
-    {
-
-        offset -= REGISTER_SIZE;
-        emit_sp_load(vector_get(_asm->arg, i), offset, _asm);
-    }
-
-    offset -= REGISTER_SIZE;
-    // restore return address
-    emit_sp_load(_asm->ret, offset, _asm);
-    emit_sp_decrease(stack_space, _asm);
-
-    // Return register with return value
     return reg;
 }
 
@@ -605,6 +617,7 @@ void gen_ret(AstNode *node, RISCV *_asm)
     Register *reg;
     Register *ret_reg;
     StackFrame *frame;
+    Register *fp = (Register *)vector_get(_asm->save, 0);
 
     ret = (AstRet *)node->as;
     frame = ret->func->frame;
@@ -623,8 +636,16 @@ void gen_ret(AstNode *node, RISCV *_asm)
     }
 
     // restore stack
-    if (frame->size > 0)
-        emit_sp_decrease(ret->func->frame->size, _asm);
+
+    size_t frame_size = (REGISTER_SIZE * 2) +                                             // RA + FP
+                        frame->size +                                                     // locals;
+                        (REGISTER_SIZE * (_asm->temp->length + (_asm->arg->length * 2))); // Temp + arg
+
+    frame_size = frame_size + (16 - (frame_size % 16));
+
+    emit_sp_load(_asm->ret, frame_size - REGISTER_SIZE, _asm);
+    emit_sp_load(fp, frame_size - (REGISTER_SIZE * 2), _asm);
+    emit_sp_increase(frame_size, _asm);
 
     emit_return_from_jump(_asm);
 }
@@ -655,6 +676,9 @@ Register *eval_int_const(AstNode *node, RISCV *_asm)
 void gen_func_def(AstNode *node, RISCV *_asm)
 {
     AstFuncDef *func_def;
+    Register *reg;
+    Register *fp = (Register *)vector_get(_asm->save, 0);
+
     func_def = (AstFuncDef *)node->as;
     emit_label(func_def->value, _asm);
 
@@ -669,22 +693,42 @@ void gen_func_def(AstNode *node, RISCV *_asm)
         param->symbol->arg_reg = i;
     }
 
-    
- 
-    //Save sp in fp(s0);
-    emit_move_register(_asm->sp, vector_get(_asm->save,  0), _asm);
+    size_t frame_size = (REGISTER_SIZE * 2) +                                             // RA + FP
+                        func_def->symbol->frame->size +                                   // locals;
+                        (REGISTER_SIZE * (_asm->temp->length + (_asm->arg->length * 2))); // Temp + arg
 
+    // Align 16 bytes
 
-    size_t frame_size = func_def->symbol->frame->size;
-    // Create stack space for frame
+    frame_size = frame_size + (16 - (frame_size % 16));
 
-    if (frame_size > 0)
-        emit_sp_increase(frame_size, _asm);
+    size_t arg_offset = (REGISTER_SIZE * 3);
+
+    emit_sp_decrease(frame_size, _asm);
+
+    // Save ra and fp registers
+    emit_sp_store(frame_size - REGISTER_SIZE, _asm->ret, _asm);
+    emit_sp_store(frame_size - (REGISTER_SIZE * 2), fp, _asm);
+
+    // Set fp
+    emit_add_imm(fp, _asm->sp, frame_size, _asm);
+
+    // Save arg registers
+    for (size_t i = 0; i < _asm->arg->length; i++)
+    {
+        reg = vector_get(_asm->arg, i);
+        emit_store_word_fp(reg, arg_offset, _asm);
+        arg_offset += REGISTER_SIZE;
+    }
 
     _gen_asm(func_def->body, _asm);
 
-    if (frame_size > 0)
-        emit_sp_decrease(frame_size, _asm);
+    // I think this is only for non void
+    if (!strcmp("void", func_def->type))
+    {
+        emit_sp_load(_asm->ret, frame_size - REGISTER_SIZE, _asm);
+        emit_sp_load(fp, frame_size - (REGISTER_SIZE * 2), _asm);
+        emit_sp_increase(frame_size, _asm);
+    }
 
     emit_return_from_jump(_asm);
 }
@@ -699,14 +743,11 @@ void gen_var_def(AstNode *node, RISCV *_asm)
     // Increase stack frame size
     offset = var_def->symbol->offset;
 
-    // store value on to stack
+    emit_comment("Variable definition", _asm);
     reg = eval_asm(var_def->expr, _asm);
 
-    //
-    //emit_sp_store(offset, reg, _asm);
-    //Store from fp
-    fprintf(_asm->out, "\tsw %s, %zu(s0)", reg->label ,offset) ;
-
+    // Store value relative to fp
+    emit_store_word_fp(reg, offset + (REGISTER_SIZE * (3 + _asm->arg->length)), _asm);
     free_register(reg);
 }
 
@@ -728,20 +769,22 @@ Register *eval_ident(AstNode *node, RISCV *_asm)
     }
     if (var->is_arg_loaded)
     {
-        return (Register *)vector_get(_asm->arg, var->arg_reg);
+        reg = (Register *)vector_get(_asm->arg, var->arg_reg);
+        size_t offset = (REGISTER_SIZE * (3 + var->arg_reg));
+        // Load saved value on stack
+        emit_load_word_fp(reg, offset, _asm);
+        return reg;
     }
 
     // Load value from sp
     reg = alloc_register(_asm);
-
-    // Emit offset from frame pointer
-    //emit_sp_load(reg, var->offset, _asm);
-    fprintf(_asm->out, "\tlw %s, %zu(s0)", reg->label ,var->offset) ;
+    emit_load_word_fp(reg, var->offset + (REGISTER_SIZE * (3 + _asm->arg->length)), _asm);
     return reg;
 }
 
 Register *eval_var_asgn(AstNode *node, RISCV *_asm)
 {
+    size_t offset;
     AstVarAsgn *asgn;
     Register *lval;
     Register *rval;
@@ -749,20 +792,11 @@ Register *eval_var_asgn(AstNode *node, RISCV *_asm)
 
     asgn = (AstVarAsgn *)node->as;
 
-    lval = eval_asm(asgn->lval, _asm);
-    rval = eval_asm(asgn->rval, _asm);
+    offset = asgn->symbol->offset;
+    reg = eval_asm(asgn->expr, _asm);
 
-    // emit_sp_store(lval, reg, _asm);
-    // Calculate from current frame pointer
-    
-    fp = (Register*)vector_get(_asm->save, 0);
-
-    fprintf(_asm->out, "\tadd %s, %s, %s", lval->label, lval->label, fp->label) ;
-
-    fprintf(_asm->out, "\tsw %s, 0(%s)\n", rval->label, lval->label);
-    free_register(lval);
-
-    return rval;
+    emit_store_word_fp(reg, offset + REGISTER_SIZE * (3 + _asm->arg->length), _asm);
+    return reg;
 }
 
 Register *eval_unary_expr(AstNode *node, RISCV *_asm)

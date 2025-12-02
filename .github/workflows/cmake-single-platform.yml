@@ -1,6 +1,5 @@
-# This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
-# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
-name: CMake on a single platform
+
+name: CMake on a single platform (RISC-V 32-bit)
 
 on:
   push:
@@ -9,14 +8,11 @@ on:
     branches: [ "main" ]
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
+  RISCV_PREFIX: riscv32-unknown-elf
 
 jobs:
   build:
-    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
-    # You can convert this to a matrix build if you need cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
 
     steps:
@@ -29,33 +25,40 @@ jobs:
           build-essential \
           cmake \
           ninja-build \
-          qemu-system-misc \
-          libgtest-dev \
           qemu-user \
-          qemu-user-static
+          qemu-user-static \
+          libgtest-dev \
+          software-properties-common \
+          wget \
+          git
 
-    - name: Install RISC-V Bare-Metal Toolchain
+    - name: Install 32-bit RISC-V Bare-Metal Toolchain
       run: |
-        sudo apt-get update
-        sudo apt-get install -y software-properties-common
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        sudo apt-get update
-        sudo apt-get install -y gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
+        # Download prebuilt 32-bit RISC-V toolchain
+        wget https://static.dev.sifive.com/dev-tools/riscv32-unknown-elf-gcc-2022.10.4-x86_64-linux.tar.gz -O /tmp/riscv32.tar.gz
+        sudo tar -xzf /tmp/riscv32.tar.gz -C /opt/
+        echo "/opt/riscv32-unknown-elf-gcc-2022.10.4-x86_64-linux/bin" | sudo tee /etc/profile.d/riscv32.sh
+        source /etc/profile.d/riscv32.sh
 
-    - name: Verify Toolchain
+    - name: Verify 32-bit Toolchain
       run: |
-        which riscv64-unknown-elf-as
-        which riscv64-unknown-elf-ld
-        which riscv64-unknown-elf-gcc
-    
+        which ${RISCV_PREFIX}-as
+        which ${RISCV_PREFIX}-ld
+        which ${RISCV_PREFIX}-gcc
+        ${RISCV_PREFIX}-gcc --version
+
     - name: Build GTest
       run: |
-        # Build GTest (Ubuntu only ships the source)
         cd /usr/src/gtest
         sudo cmake .
         sudo make
         sudo mv lib/*.a /usr/lib
 
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+        -DRISCV_AS=$(which ${RISCV_PREFIX}-as) \
+        -DRISCV_LD=$(which ${RISCV_PREFIX}-ld)
+        
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
