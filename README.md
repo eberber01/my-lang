@@ -32,7 +32,7 @@ A self-hosting C compiler targeting the **RISC-V instruction set architecture**.
 
 ### Function Calling Conventions
 
-* [s] Implement RISC-V calling convention (registers/stack)
+* [x] Implement RISC-V calling convention (registers/stack)
 * [x] Support multiple parameters
 * [x] Handle simple recursion
 
