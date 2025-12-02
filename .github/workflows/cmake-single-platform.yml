@@ -32,17 +32,11 @@ jobs:
           wget \
           git
 
-    - name: Build 32-bit RISC-V toolchain from source
+    - name: Install 32-bit RISC-V Bare-Metal Toolchain
       run: |
-        sudo apt-get install -y autoconf automake autotools-dev \
-          curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk \
-          wget build-essential bison flex texinfo gperf libtool \
-          patchutils bc zlib1g-dev libexpat-dev ninja-build
-        git clone --recursive https://github.com/riscv/riscv-gnu-toolchain /tmp/riscv-gnu
-        cd /tmp/riscv-gnu
-        ./configure --prefix=/opt/riscv --with-arch=rv32i --with-abi=ilp32
-        make -j$(nproc)
-        echo "/opt/riscv/bin" | sudo tee /etc/profile.d/riscv32.sh
+        wget https://github.com/stnolting/riscv-gcc-prebuilt/releases/latest/download/riscv32-unknown-elf.gcc-13.2.0.tar.gz -O /tmp/riscv32.tar.gz
+        sudo tar -xzf /tmp/riscv32.tar.gz -C /opt/
+        echo "/opt/riscv32-unknown-elf-gcc-13.2.0/bin" | sudo tee /etc/profile.d/riscv32.sh
         source /etc/profile.d/riscv32.sh
 
     - name: Verify 32-bit Toolchain
