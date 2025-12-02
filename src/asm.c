@@ -821,8 +821,7 @@ Register *eval_unary_expr(AstNode *node, RISCV *_asm)
         free_register(tmp);
         return reg;
     default:
-        printf("%d\n", node->type);
-        perror("unkown unary operator");
+        fprintf(stderr, "Eval Unary: Unknown Unary Type (%d)\n", unary_expr->op_type);
         exit(1);
     }
 }
@@ -956,8 +955,7 @@ Register *eval_asm(AstNode *node, RISCV *_asm)
     case AST_LVAL:
         return eval_lval(node, _asm);
     default:
-        printf("%d\n", node->type);
-        perror("eval asm unkown ast type");
+        fprintf(stderr, "Eval Asm: Unknown AST Type (%d)\n", node->type);
         exit(1);
     }
 }
@@ -1005,8 +1003,7 @@ void _gen_asm(AstNode *node, RISCV *_asm)
     case AST_VAR_DEC:
         break;
     default:
-        printf("%d\n", node->type);
-        perror("gen asm unkown ast type");
+        fprintf(stderr, "Gen Asm: Unknown AST Type (%d)\n", node->type);
         exit(1);
     }
 }
