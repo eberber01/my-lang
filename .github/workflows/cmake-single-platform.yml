@@ -34,9 +34,10 @@ jobs:
 
     - name: Install 32-bit RISC-V Bare-Metal Toolchain
       run: |
-        wget https://github.com/stnolting/riscv-gcc-prebuilt/releases/latest/download/riscv32-unknown-elf.gcc-13.2.0.tar.gz -O /tmp/riscv32.tar.gz
+        # Download prebuilt 32-bit RISC-V toolchain
+        wget https://static.dev.sifive.com/dev-tools/riscv32-unknown-elf-gcc-2022.10.4-x86_64-linux.tar.gz -O /tmp/riscv32.tar.gz
         sudo tar -xzf /tmp/riscv32.tar.gz -C /opt/
-        echo "/opt/riscv32-unknown-elf-gcc-13.2.0/bin" | sudo tee /etc/profile.d/riscv32.sh
+        echo "/opt/riscv32-unknown-elf-gcc-2022.10.4-x86_64-linux/bin" | sudo tee /etc/profile.d/riscv32.sh
         source /etc/profile.d/riscv32.sh
 
     - name: Verify 32-bit Toolchain
@@ -57,7 +58,7 @@ jobs:
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
         -DRISCV_AS=$(which ${RISCV_PREFIX}-as) \
         -DRISCV_LD=$(which ${RISCV_PREFIX}-ld)
-
+        
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
