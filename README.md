@@ -6,8 +6,8 @@ A self-hosting C compiler targeting the **RISC-V instruction set architecture**.
 
 * [x] Integer arithmetic, variables, functions, return statements
 * [x] Control flow (`if`, `else`, `while`, `for`)
-* [ ] Logical and relational operators (`==`, `<`, `>`, `&&`, `||`, `!`)
-* [ ] Function calling conventions (RISC-V ABI, multiple parameters, recursion)
+* [x] Logical and relational operators (`==`, `<`, `>`, `&&`, `||`, `!`)
+* [x] Function calling conventions (RISC-V ABI, multiple parameters, recursion)
 * [ ] Expanded type system (`char`, `void`, pointers syntax)
 * [ ] Pointer arithmetic (`&`, `*`)
 * [ ] Arrays and string literals
