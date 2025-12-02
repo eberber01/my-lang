@@ -4,7 +4,7 @@ EXPECTED="$2"
 LOG="$3"
 
 # Run the program; the exit code will be stored in $?
-qemu-riscv64 "$ELF"
+qemu-riscv32 "$ELF"
 rv=$?  # capture exit status
 
 echo "Program exit code: $rv" > "$LOG"
