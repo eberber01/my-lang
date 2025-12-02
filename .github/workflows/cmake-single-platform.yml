@@ -40,13 +40,13 @@ jobs:
         sudo apt-get install -y software-properties-common
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
         sudo apt-get update
-        sudo apt-get install -y gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
+        sudo apt-get install -y gcc-riscv32-unknown-elf binutils-riscv32-unknown-elf
 
     - name: Verify Toolchain
       run: |
-        which riscv64-unknown-elf-as
-        which riscv64-unknown-elf-ld
-        which riscv64-unknown-elf-gcc
+        which riscv32-unknown-elf-as
+        which riscv32-unknown-elf-ld
+        which riscv32-unknown-elf-gcc
     
     - name: Build GTest
       run: |

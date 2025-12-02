@@ -68,8 +68,8 @@ add_test(NAME my-lang-tests COMMAND my-lang-tests)
 
 find_program(CLANG_FORMAT_BIN clang-format)
 
-set(RISCV_AS /usr/bin/riscv32-unknown-elf-as)
-set(RISCV_LD /usr/bin/riscv32-unknown-elf-ld)
+find_program()(RISCV_AS riscv32-unknown-elf-as)
+find_program(RISCV_LD riscv32-unknown-elf-ld)
 
 if (NOT RISCV_AS OR NOT RISCV_LD)
     message(FATAL_ERROR "Failed to find RISC-V ELF binutils")
