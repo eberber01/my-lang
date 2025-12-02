@@ -1,11 +1,10 @@
 #include "sema.h"
-#include "ast.h"
 #include "asm.h"
+#include "ast.h"
 #include "hashmap.h"
 #include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
-
 
 StackFrame *make_stack_frame(char *func)
 {
@@ -90,16 +89,12 @@ TypeSpecifier type_check(AstNode *node)
     AstIdent *ident;
     AstFuncCall *func_call;
     AstRet *ret;
-    // AstEnum *enm;
-    // AstVarDec *dec;
-    // AstVarAsgn *asgn;
+    AstVarAsgn *asgn;
     AstWhile *w_stmt;
     AstFor *f_stmt;
     AstExprStmt *expr_stmt;
     AstUnaryExpr *unary_expr;
-
-    TypeSpecifier left;
-    TypeSpecifier right;
+    AstLValue *lval;
 
     TypeSpecifier expected;
     TypeSpecifier actual;
@@ -128,11 +123,11 @@ TypeSpecifier type_check(AstNode *node)
         return TS_VOID;
     case AST_BIN_EXP:
         bin_exp = (AstBinExp *)node->as;
-        left = type_check(bin_exp->left);
-        right = type_check(bin_exp->left);
+        expected = type_check(bin_exp->left);
+        actual = type_check(bin_exp->left);
 
-        assert_type_eq(left, right);
-        return left;
+        assert_type_eq(expected, actual);
+        return expected;
     case AST_INT_CONST:
         return TS_INT;
     case AST_FUNC_DEF:
@@ -153,14 +148,12 @@ TypeSpecifier type_check(AstNode *node)
 
         return expected;
     case AST_VAR_ASGN:
-        // asgn = (AstVarAsgn *)node->as;
+        asgn = (AstVarAsgn *)node->as;
+        expected = type_check(asgn->lval);
+        actual = type_check(asgn->rval);
 
-        // expected = asgn->symbol->type;
-        // actual = type_check(asgn->expr);
-
-        // assert_type_eq(expected, actual);
-        // return expected;
-        return TS_VOID;
+        assert_type_eq(expected, actual);
+        return expected;
     case AST_WHILE:
         w_stmt = (AstWhile *)node->as;
         return type_check(w_stmt->body);
@@ -177,9 +170,23 @@ TypeSpecifier type_check(AstNode *node)
     case AST_VAR_DEC:
     case AST_EMPTY_EXPR:
         return TS_VOID;
+    case AST_LVAL:
+        lval = (AstLValue *)node->as;
+        AstIdent *lval_ident;
+
+        switch (lval->kind)
+        {
+        case AST_LVAL_IDENT:
+            lval_ident = (AstIdent *)(lval->u.ident->as);
+            return lval_ident->symbol->type;
+            break;
+
+        default:
+            fprintf(stderr, "Type Check: Unknown AST LValue Type (%d)\n", lval->kind);
+            exit(1);
+        }
     default:
-        printf("type%d", node->type);
-        perror("unkown ast type");
+        fprintf(stderr, "Type Check: Unknown AST Type (%d)\n", node->type);
         exit(1);
     }
 }
@@ -226,7 +233,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         break;
     case AST_VAR_DEF:
         var_def = (AstVarDef *)node->as;
-        printf("var def:%s\n", var_def->value);
+
         // Check if symbol exists in scope
         if (in_scope(scope, var_def->value))
         {
@@ -296,7 +303,6 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         }
 
         ident->symbol = entry;
-        printf("ident %s, offset: %zu\n", ident->symbol->key, ident->symbol->offset);
         break;
     case AST_FUNC_CALL:
         func_call = (AstFuncCall *)node->as;
@@ -394,8 +400,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
     case AST_EMPTY_EXPR:
         break;
     default:
-        printf("type%d", node->type);
-        perror("unkown ast type");
+        fprintf(stderr, "Symbol Check: Unknown AST Type (%d)\n", node->type);
         exit(1);
     }
 }
