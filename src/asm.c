@@ -215,6 +215,12 @@ void emit_store_word_fp(Register* rd, size_t offset, RISCV* _asm){
     fprintf(_asm->out, "\tsw %s, -%zu(s0)\n", rd->label, offset);
 }
 
+void emit_add_imm(Register* rd, Register* reg1, int imm, RISCV* _asm){
+
+    fprintf(_asm->out, "\taddi %s, %s, %d\n", rd->label, reg1->label, imm);
+}
+
+
 // Allocate free temporary register
 Register *alloc_register(RISCV *_asm)
 {
@@ -605,6 +611,7 @@ void gen_ret(AstNode *node, RISCV *_asm)
     Register *reg;
     Register *ret_reg;
     StackFrame *frame;
+    Register* fp = (Register*)vector_get(_asm->save, 0);
 
     ret = (AstRet *)node->as;
     frame = ret->func->frame;
@@ -627,9 +634,11 @@ void gen_ret(AstNode *node, RISCV *_asm)
     size_t frame_size = (REGISTER_SIZE * 2) +                                             // RA + FP
                         frame->size +                                                     // locals;
                         (REGISTER_SIZE * (_asm->temp->length + (_asm->arg->length * 2))); // Temp + arg
+
     frame_size = frame_size + (16 - (frame_size % 16));
-    fprintf(_asm->out, "\tlw ra, %zu(sp)\n", frame_size - REGISTER_SIZE);
-    fprintf(_asm->out, "\tlw s0, %zu(sp)\n", frame_size - (REGISTER_SIZE * 2));
+
+    emit_sp_load(_asm->ret, frame_size - REGISTER_SIZE, _asm);
+    emit_sp_load(fp, frame_size - (REGISTER_SIZE * 2), _asm);
     emit_sp_increase(frame_size, _asm);
 
     emit_return_from_jump(_asm);
@@ -662,6 +671,8 @@ void gen_func_def(AstNode *node, RISCV *_asm)
 {
     AstFuncDef *func_def;
     Register *reg;
+    Register* fp = (Register*)vector_get(_asm->save, 0);
+
     func_def = (AstFuncDef *)node->as;
     emit_label(func_def->value, _asm);
 
@@ -687,15 +698,20 @@ void gen_func_def(AstNode *node, RISCV *_asm)
     size_t arg_offset = (REGISTER_SIZE * 3);
 
     emit_sp_decrease(frame_size, _asm);
-    fprintf(_asm->out, "\tsw ra, %zu(sp)\n", frame_size - REGISTER_SIZE);
-    fprintf(_asm->out, "\tsw s0, %zu(sp)\n", frame_size - (REGISTER_SIZE * 2));
-    fprintf(_asm->out, "\taddi s0, sp, %zu\n", frame_size);
+
+    //Save ra and fp registers
+    emit_sp_store(frame_size - REGISTER_SIZE, _asm->ret,  _asm);
+    emit_sp_store(frame_size - (REGISTER_SIZE * 2), fp,  _asm);
+
+    //Set fp
+    emit_add_imm(fp, _asm->sp, frame_size, _asm);
+
 
     // Save arg registers
     for (size_t i = 0; i < _asm->arg->length; i++)
     {
         reg = vector_get(_asm->arg, i);
-        fprintf(_asm->out, "\tsw %s, -%zu(s0)\n", reg->label, arg_offset);
+        emit_store_word_fp(reg, arg_offset, _asm);
         arg_offset += REGISTER_SIZE;
     }
 
@@ -704,8 +720,8 @@ void gen_func_def(AstNode *node, RISCV *_asm)
     // I think this is only for non void
     if (!strcmp("void", func_def->type))
     {
-        fprintf(_asm->out, "\tlw ra, %zu(sp)\n", frame_size - REGISTER_SIZE);
-        fprintf(_asm->out, "\tlw s0, %zu(sp)\n", frame_size - (REGISTER_SIZE * 2));
+        emit_sp_load(_asm->ret, frame_size - REGISTER_SIZE, _asm);
+        emit_sp_load(fp, frame_size - (REGISTER_SIZE * 2), _asm);
         emit_sp_increase(frame_size, _asm);
     }
 
