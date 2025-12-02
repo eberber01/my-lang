@@ -639,6 +639,7 @@ void gen_ret(AstNode *node, RISCV *_asm)
 
     frame_size = frame_size + (16 - (frame_size % 16));
 
+    emit_comment("Function Return", _asm);
     emit_sp_load(_asm->ret, frame_size - REGISTER_SIZE, _asm);
     emit_sp_load(fp, frame_size - (REGISTER_SIZE * 2), _asm);
     emit_sp_increase(frame_size, _asm);
@@ -699,6 +700,8 @@ void gen_func_def(AstNode *node, RISCV *_asm)
 
     size_t arg_offset = (REGISTER_SIZE * 3);
 
+    
+    emit_comment("Function Prolouge", _asm);
     emit_sp_decrease(frame_size, _asm);
 
     // Save ra and fp registers
@@ -708,7 +711,7 @@ void gen_func_def(AstNode *node, RISCV *_asm)
     // Set fp
     emit_add_imm(fp, _asm->sp, frame_size, _asm);
 
-    // Save arg registers
+    emit_comment("Save Arg Registers", _asm);
     for (size_t i = 0; i < _asm->arg->length; i++)
     {
         reg = vector_get(_asm->arg, i);
@@ -765,6 +768,7 @@ Register *eval_ident(AstNode *node, RISCV *_asm)
     }
     if (var->is_arg_loaded)
     {
+        emit_comment("Load Arg from stack", _asm);
         reg = (Register *)vector_get(_asm->arg, var->arg_reg);
         size_t offset = (REGISTER_SIZE * (3 + var->arg_reg));
         // Load saved value on stack
