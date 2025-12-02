@@ -207,6 +207,14 @@ void emit_sp_store(int offset, Register *reg, RISCV *_asm)
     fprintf(_asm->out, "\tsw %s, %d(sp)\n", reg->label, offset);
 }
 
+void emit_load_word_fp(Register* rd, size_t offset, RISCV* _asm){
+    fprintf(_asm->out, "\tlw %s, -%zu(s0)\n", rd->label, offset);
+}
+
+void emit_store_word_fp(Register* rd, size_t offset, RISCV* _asm){
+    fprintf(_asm->out, "\tsw %s, -%zu(s0)\n", rd->label, offset);
+}
+
 // Allocate free temporary register
 Register *alloc_register(RISCV *_asm)
 {
@@ -312,7 +320,7 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
         if (!reg->free)
         {
             temp_offset += REGISTER_SIZE;
-            fprintf(_asm->out, "\tsw %s, -%zu(s0)\n", reg->label, temp_offset);
+            emit_store_word_fp(reg, temp_offset, _asm);
             freed[i] = 1;
             free_register(reg);
         }
@@ -326,7 +334,7 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
         reg = eval_asm(arg, _asm);
 
         arg_offset += REGISTER_SIZE;
-        fprintf(_asm->out, "\tsw %s, -%zu(s0)\n", reg->label, arg_offset);
+        emit_store_word_fp(reg, arg_offset, _asm);
 
         free_register(reg);
     }
@@ -336,7 +344,7 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
     for (size_t i = 0; i < func_call->args->length && i < _asm->arg->length; i++)
     {
         load_offset += REGISTER_SIZE;
-        fprintf(_asm->out, "\tlw %s, -%zu(s0)\n", ((Register *)vector_get(_asm->arg, i))->label, load_offset);
+        emit_load_word_fp(((Register *)vector_get(_asm->arg, i)), load_offset, _asm);
     }
 
     // TODO move left over args to stack
@@ -349,7 +357,7 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
         if (freed[i])
         {
             reg = vector_get(_asm->temp, i);
-            fprintf(_asm->out, "\tlw %s, -%zu(s0)\n", reg->label, temp_offset);
+            emit_load_word_fp(reg, temp_offset,_asm);
             temp_offset -= REGISTER_SIZE;
             reg->free = false;
         }
@@ -718,7 +726,7 @@ void gen_var_def(AstNode *node, RISCV *_asm)
     reg = eval_asm(var_def->expr, _asm);
 
     // Store value relative to fp
-    fprintf(_asm->out, "\tsw %s, -%zu(s0)\n", reg->label, offset + (REGISTER_SIZE * (3 + _asm->arg->length)));
+    emit_store_word_fp(reg, offset + (REGISTER_SIZE * (3 + _asm->arg->length)), _asm);
     free_register(reg);
 }
 
@@ -743,14 +751,13 @@ Register *eval_ident(AstNode *node, RISCV *_asm)
         reg = (Register *)vector_get(_asm->arg, var->arg_reg);
         size_t offset = (REGISTER_SIZE * (3 + var->arg_reg));
         // Load saved value on stack
-        fprintf(_asm->out, "\tlw %s, -%zu(s0)\n", reg->label, offset);
+        emit_load_word_fp(reg, offset, _asm);
         return reg;
     }
 
     // Load value from sp
     reg = alloc_register(_asm);
-    // emit_sp_load(reg, var->offset, _asm);
-    fprintf(_asm->out, "\tlw %s, -%zu(s0)\n", reg->label, var->offset + (REGISTER_SIZE * (3 + _asm->arg->length)));
+    emit_load_word_fp(reg, var->offset + (REGISTER_SIZE * (3 + _asm->arg->length)), _asm);
     return reg;
 }
 
@@ -764,8 +771,8 @@ Register *eval_var_asgn(AstNode *node, RISCV *_asm)
 
     offset = asgn->symbol->offset;
     reg = eval_asm(asgn->expr, _asm);
-    // emit_sp_store(offset, reg, _asm);
-    fprintf(_asm->out, "\tsw %s, -%zu(s0)\n", reg->label, offset + REGISTER_SIZE * (3 + _asm->arg->length));
+
+    emit_store_word_fp(reg, offset + REGISTER_SIZE * (3 + _asm->arg->length), _asm);
     return reg;
 }
 
