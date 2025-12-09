@@ -72,7 +72,19 @@ A self-hosting C compiler targeting the **RISC-V instruction set architecture**.
 ### (Optional Enhancements)
 
 * [ ] TBD
+## Requirements
 
+- CMake **3.31** or newer
+- C compiler with C99 support (e.g. `gcc`, `clang`)
+- C++ compiler (for unit tests)
+- [GoogleTest](https://github.com/google/googletest) (found via `find_package(GTest REQUIRED)`)
+- RISC-V 32-bit ELF toolchain:
+  - `riscv32-unknown-elf-as`
+  - `riscv32-unknown-elf-ld`
+- QEMU user-mode RISC-V emulator:
+  - `qemu-riscv32`
+- (Optional) `clang-format` for `format` / `check-format` targets
+- A POSIX-like shell environment (for `run_test.sh`)
 ## Build Instructions
 
 ```bash
