@@ -6,8 +6,8 @@ A self-hosting C compiler targeting the **RISC-V instruction set architecture**.
 
 * [x] Integer arithmetic, variables, functions, return statements
 * [x] Control flow (`if`, `else`, `while`, `for`)
-* [ ] Logical and relational operators (`==`, `<`, `>`, `&&`, `||`, `!`)
-* [ ] Function calling conventions (RISC-V ABI, multiple parameters, recursion)
+* [x] Logical and relational operators (`==`, `<`, `>`, `&&`, `||`, `!`)
+* [x] Function calling conventions (RISC-V ABI, multiple parameters, recursion)
 * [ ] Expanded type system (`char`, `void`, pointers syntax)
 * [ ] Pointer arithmetic (`&`, `*`)
 * [ ] Arrays and string literals
@@ -32,7 +32,7 @@ A self-hosting C compiler targeting the **RISC-V instruction set architecture**.
 
 ### Function Calling Conventions
 
-* [s] Implement RISC-V calling convention (registers/stack)
+* [x] Implement RISC-V calling convention (registers/stack)
 * [x] Support multiple parameters
 * [x] Handle simple recursion
 
@@ -72,7 +72,19 @@ A self-hosting C compiler targeting the **RISC-V instruction set architecture**.
 ### (Optional Enhancements)
 
 * [ ] TBD
+## Requirements
 
+- CMake **3.31** or newer
+- C compiler with C99 support (e.g. `gcc`, `clang`)
+- C++ compiler (for unit tests)
+- [GoogleTest](https://github.com/google/googletest) (found via `find_package(GTest REQUIRED)`)
+- RISC-V 32-bit ELF toolchain:
+  - `riscv32-unknown-elf-as`
+  - `riscv32-unknown-elf-ld`
+- QEMU user-mode RISC-V emulator:
+  - `qemu-riscv32`
+- (Optional) `clang-format` for `format` / `check-format` targets
+- A POSIX-like shell environment (for `run_test.sh`)
 ## Build Instructions
 
 ```bash
