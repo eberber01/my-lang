@@ -79,8 +79,8 @@ A self-hosting C compiler targeting the **RISC-V instruction set architecture**.
 - C++ compiler (for unit tests)
 - [GoogleTest](https://github.com/google/googletest) (found via `find_package(GTest REQUIRED)`)
 - RISC-V 32-bit ELF toolchain:
-  - `riscv32-unknown-elf-as`
-  - `riscv32-unknown-elf-ld`
+  - `riscv32-unknown-linux-gnu-as`
+  - `riscv32-unknown-linux-gnu-ld`
 - QEMU user-mode RISC-V emulator:
   - `qemu-riscv32`
 - (Optional) `clang-format` for `format` / `check-format` targets
@@ -112,13 +112,13 @@ ctest
 
 ./build/my-lang-tests
 ```
-### Run Compile Tests
+### Compile Tests
 ```
 cmake --build build --target build_compile_tests
 ```
-###  Qemu Tests
+###  Runtime Tests
 ```
-cmake --build build --target run_all_tests
+cmake --build build --target runtime_tests
 ```
 
 
