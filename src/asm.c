@@ -1,5 +1,6 @@
 #include "asm.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -196,9 +197,13 @@ Register *emit_sp_load(Register *reg, int offset, RISCV *_asm)
     return reg;
 }
 
-void emit_comment(char *comm, RISCV *_asm)
+void emit_comment(char *comm, RISCV *_asm, ...)
 {
-    fprintf(_asm->out, "\n\t#%s\n", comm);
+    va_list args;
+    va_start(args, _asm);
+    fprintf(_asm->out, "\n\t#");
+    vfprintf(_asm->out, comm, args);
+    fprintf(_asm->out, "\n");
 }
 
 // Store value at reg at sp plus offset
@@ -321,7 +326,7 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
 
     size_t temp_offset = base_offset;
     int freed[7] = {0};
-
+    emit_comment("Function Call", _asm);
     for (size_t i = 0; i < _asm->temp->length; i++)
     {
         reg = vector_get(_asm->temp, i);
@@ -334,6 +339,7 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
         }
     }
 
+    emit_comment("Evaluate Args", _asm);
     // Evaluate arguments and store in spill section
     size_t arg_offset = temp_offset;
     for (size_t i = 0; i < func_call->args->length; i++)
@@ -347,6 +353,7 @@ Register *eval_func_call(AstNode *node, RISCV *_asm)
         free_register(reg);
     }
 
+    emit_comment("Move Evaluated Args to Registers", _asm);
     // Move spilled arguments into argument registers
     size_t load_offset = temp_offset;
     for (size_t i = 0; i < func_call->args->length && i < _asm->arg->length; i++)
@@ -624,6 +631,7 @@ void gen_ret(AstNode *node, RISCV *_asm)
     else
     {
 
+        emit_comment("Evaluate Return", _asm);
         reg = eval_asm(ret->expr, _asm);
         ret_reg = vector_get(_asm->arg, 0);
         // move to return a0
@@ -742,7 +750,7 @@ void gen_var_def(AstNode *node, RISCV *_asm)
     // Increase stack frame size
     offset = var_def->symbol->offset;
 
-    emit_comment("Variable definition", _asm);
+    emit_comment("Variable definition: %s", _asm, var_def->symbol->key);
     reg = eval_asm(var_def->expr, _asm);
 
     // Store value relative to fp
@@ -768,8 +776,8 @@ Register *eval_ident(AstNode *node, RISCV *_asm)
     }
     if (var->is_arg_loaded)
     {
-        emit_comment("Load Arg from stack", _asm);
-        reg = (Register *)vector_get(_asm->arg, var->arg_reg);
+        emit_comment("Load Arg from stack: %s", _asm, var->key);
+        reg = alloc_register(_asm);
         size_t offset = (REGISTER_SIZE * (3 + var->arg_reg));
         // Load saved value on stack
         emit_load_word_fp(reg, offset, _asm);
@@ -777,6 +785,7 @@ Register *eval_ident(AstNode *node, RISCV *_asm)
     }
 
     // Load value from sp
+    emit_comment("Load Value from frame: %s", _asm, var->key);
     reg = alloc_register(_asm);
     emit_load_word_fp(reg, var->offset + (REGISTER_SIZE * (3 + _asm->arg->length)), _asm);
     return reg;
