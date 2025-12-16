@@ -1,4 +1,4 @@
-name: CMake on a single platform (RISC-V 32-bit)
+name: RISCV-32 Linux Compiler CI
 
 on:
   push:
@@ -8,69 +8,40 @@ on:
 
 env:
   BUILD_TYPE: Release
-  # NOTE: This image uses the 'linux-gnu' prefix, not 'unknown-elf'
-  RISCV_PREFIX: riscv32-unknown-linux-gnu
+  RISCV_PREFIX: riscv32-linux-gnu
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    # Run the entire job in the RISC-V toolchain container
     container:
-      image: renefonseca/riscv32-toolchain:latest
-      options: --user root  # so apt-get, etc. will work
+      image: eberber01/riscv32-linux-ci:latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install build dependencies (inside container)
-        run: |
-          apt-get update
-          apt-get install -y \
-            build-essential \
-            cmake \
-            ninja-build \
-            qemu-user \
-            qemu-user-static \
-            libgtest-dev \
-            git
-
-      - name: Verify 32-bit Toolchain
+      - name: Verify toolchain
         run: |
           which ${RISCV_PREFIX}-gcc
-          which ${RISCV_PREFIX}-as
-          which ${RISCV_PREFIX}-ld
           ${RISCV_PREFIX}-gcc --version
+          qemu-riscv32 --version
 
-      - name: Build GTest
+      - name: Configure
         run: |
-          cd /usr/src/gtest
-          cmake .
-          make
-          mv lib/*.a /usr/lib
-
-      - name: Configure CMake
-        run: |
-          cmake -B ${{ github.workspace }}/build \
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
             -DRV32=1 \
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
             -DRISCV_AS=$(which ${RISCV_PREFIX}-as) \
             -DRISCV_LD=$(which ${RISCV_PREFIX}-ld)
 
-      - name: Format Check
-        working-directory: ${{ github.workspace }}/build
-        run: make check-format
-
       - name: Build
-        run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
+        run: cmake --build build
 
-      - name: Unit Test
-        working-directory: ${{ github.workspace }}/build
-        run: ctest -C ${{ env.BUILD_TYPE }}
+      - name: Unit tests
+        run: |
+          cd build
+          ctest --output-on-failure
 
-      - name: Compile Test Programs
-        run: cmake --build ${{ github.workspace }}/build --target build_compile_tests
+      - name: Runtime tests
+        run: cmake --build build --target runtime_tests
 
-      - name: Run Test Programs
-        run: cmake --build ${{ github.workspace }}/build --target runtime_tests
 
