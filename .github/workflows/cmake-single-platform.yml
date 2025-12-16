@@ -8,7 +8,7 @@ on:
 
 env:
   BUILD_TYPE: Release
-  RISCV_PREFIX: riscv32-linux-gnu
+  RISCV_PREFIX: riscv32-unknown-linux-gnu
 
 jobs:
   build:
