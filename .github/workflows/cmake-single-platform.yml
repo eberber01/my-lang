@@ -27,6 +27,9 @@ jobs:
             -DRISCV_AS=$(which ${RISCV_PREFIX}-as) \
             -DRISCV_LD=$(which ${RISCV_PREFIX}-ld)
 
+      - name: Format check
+        run: cmake --build build --target check-format
+
       - name: Build
         run: cmake --build build
 

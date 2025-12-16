@@ -708,7 +708,6 @@ void gen_func_def(AstNode *node, RISCV *_asm)
 
     size_t arg_offset = (REGISTER_SIZE * 3);
 
-    
     emit_comment("Function Prolouge", _asm);
     emit_sp_decrease(frame_size, _asm);
 

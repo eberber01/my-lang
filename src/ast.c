@@ -539,7 +539,7 @@ void ast_free(AstNode *node)
         break;
     case AST_LVAL:
         lval = (AstLValue *)node->as;
-        AstIdent* lval_ident;
+        AstIdent *lval_ident;
         switch (lval->kind)
         {
         case AST_LVAL_IDENT:
