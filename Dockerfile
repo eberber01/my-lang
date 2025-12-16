@@ -16,3 +16,11 @@ RUN wget -q https://github.com/riscv-collab/riscv-gnu-toolchain/releases/downloa
  && rm riscv32-glibc-ubuntu-24.04-gcc.tar.xz
 
 ENV PATH=/opt/riscv32-glibc/bin:$PATH
+
+RUN git clone https://github.com/google/googletest.git /tmp/googletest \
+ && cd /tmp/googletest \
+ && cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+ && cmake --build build --config Release \
+ && cp build/lib/*.a /usr/lib \
+ && cp -r googletest/include/gtest /usr/include/ \
+ && rm -rf /tmp/googletest
