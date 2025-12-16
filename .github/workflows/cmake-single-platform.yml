@@ -19,12 +19,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify toolchain
-        run: |
-          which ${RISCV_PREFIX}-gcc
-          ${RISCV_PREFIX}-gcc --version
-          qemu-riscv32 --version
-
       - name: Configure
         run: |
           cmake -B build \
