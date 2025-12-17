@@ -85,6 +85,13 @@ A self-hosting C compiler targeting the **RISC-V instruction set architecture**.
   - `qemu-riscv32`
 - (Optional) `clang-format` for `format` / `check-format` targets
 - A POSIX-like shell environment (for `run_test.sh`)
+
+## Docker
+  Run project inside Docker image with all necessary requirements.
+  ```bash
+  make dev
+  ```
+
 ## Build Instructions
 
 ```bash
