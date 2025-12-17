@@ -99,10 +99,10 @@ A self-hosting C compiler targeting the **RISC-V instruction set architecture**.
 git clone https://github.com/yourusername/my-lang.git
 cd my-lang
 
-# Build using CMake
-cmake -B build -DRV32=1 -DCMAKE_BUILD_TYPE=Release # or Debug
+# Build using Make
+make release # or debug
 
-cmake --build build
+make build
 
 ```
 ### Usage

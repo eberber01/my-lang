@@ -69,11 +69,40 @@ add_test(NAME my-lang-tests COMMAND my-lang-tests)
 
 find_program(CLANG_FORMAT_BIN clang-format)
 
-find_program(RISCV_AS riscv32-unknown-linux-gnu-as)
-find_program(RISCV_LD riscv32-unknown-linux-gnu-ld)
+set(RISCV_AS_CANDIDATES
+    riscv32-unknown-linux-gnu-as
+    riscv32-elf-as
+    riscv32-unknown-elf-as
+)
+
+set(RISCV_LD_CANDIDATES
+    riscv32-unknown-linux-gnu-ld
+    riscv32-elf-ld
+    riscv32-unknown-elf-ld
+)
+
+# Try to find assembler
+find_program(
+    RISCV_AS
+    NAMES ${RISCV_AS_CANDIDATES}
+    HINTS
+        $ENV{RISCV}/bin
+        $ENV{RISCV_TOOLCHAIN}/bin
+    DOC "RISC-V assembler"
+)
+
+# Try to find linker
+find_program(
+    RISCV_LD
+    NAMES ${RISCV_LD_CANDIDATES}
+    HINTS
+        $ENV{RISCV}/bin
+        $ENV{RISCV_TOOLCHAIN}/bin
+    DOC "RISC-V linker"
+)
 
 if (NOT RISCV_AS OR NOT RISCV_LD)
-    message(FATAL_ERROR "Failed to find RISC-V ELF binutils")
+    message(FATAL_ERROR "Failed to find RISC-V ELF binutils (tried: ${RISCV_AS_CANDIDATES} / ${RISCV_LD_CANDIDATES})")
 endif()
 
 message(STATUS "Using RISCV AS: ${RISCV_AS}")
