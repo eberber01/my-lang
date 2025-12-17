@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     ninja-build \
     git \
     clang-format \
+    valgrind \
     build-essential
 
 RUN wget -q https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2025.11.27/riscv32-glibc-ubuntu-24.04-gcc.tar.xz \
