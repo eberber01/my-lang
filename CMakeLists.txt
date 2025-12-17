@@ -4,6 +4,39 @@ project(my-lang)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic -Wall -Wextra -Werror")
 
+# --- LLVM detection using llvm-config ---
+find_program(LLVM_CONFIG_EXECUTABLE llvm-config REQUIRED)
+
+# Get include dir and lib dir
+execute_process(
+    COMMAND ${LLVM_CONFIG_EXECUTABLE} --includedir
+    OUTPUT_VARIABLE LLVM_INCLUDE_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+execute_process(
+    COMMAND ${LLVM_CONFIG_EXECUTABLE} --libdir
+    OUTPUT_VARIABLE LLVM_LIBRARY_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the right libs for the components you need
+execute_process(
+    COMMAND ${LLVM_CONFIG_EXECUTABLE} --libs core mc native bitwriter
+    OUTPUT_VARIABLE LLVM_LIBS_STRING
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Convert the string "-lLLVM-18 -lLLVMSupport ..." into a CMake list
+separate_arguments(LLVM_LIBS NATIVE_COMMAND "${LLVM_LIBS_STRING}")
+
+message(STATUS "LLVM include dir: ${LLVM_INCLUDE_DIR}")
+message(STATUS "LLVM library dir: ${LLVM_LIBRARY_DIR}")
+message(STATUS "LLVM libs: ${LLVM_LIBS}")
+
+include_directories(SYSTEM ${LLVM_INCLUDE_DIR})
+
+
 add_library(my-lib  
     src/asm.c
     src/ast.c
@@ -12,6 +45,7 @@ add_library(my-lib
     src/hashmap.c
     src/util.c
     src/sema.c
+    src/llvm/backend.c
 )
 
 target_include_directories(my-lib
@@ -23,8 +57,8 @@ add_executable(my-lang
     src/main.c
 )
 
-target_link_libraries(my-lang PRIVATE my-lib)
-
+target_link_directories(my-lang PRIVATE ${LLVM_LIBRARY_DIRS})
+target_link_libraries(my-lang PRIVATE ${LLVM_LIBS} my-lib)
 
 find_package(GTest REQUIRED)
 enable_testing()
@@ -233,7 +267,9 @@ if(CLANG_FORMAT_BIN)
     file(GLOB_RECURSE ALL_SOURCE_FILES
         "${CMAKE_SOURCE_DIR}/src/*.c"
         "${CMAKE_SOURCE_DIR}/src/*.h"
-        "${CMAKE_SOURCE_DIR}/src/*.cpp"
+        "${CMAKE_SOURCE_DIR}/src/test/*.cpp"
+        "${CMAKE_SOURCE_DIR}/include/*.h"
+        "${CMAKE_SOURCE_DIR}/src/llvm/*.c"
     )
 
     add_custom_target(format

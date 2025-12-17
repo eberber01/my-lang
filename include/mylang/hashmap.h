@@ -1,6 +1,7 @@
 #ifndef SYMTAB_H
 #define SYMTAB_H
 #include "util.h"
+#include <llvm-c/Types.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -62,6 +63,9 @@ typedef struct SymTabEntry
     int const_value;
 
     StackFrame *frame;
+
+    LLVMValueRef llvm_ref;
+
 } SymTabEntry;
 
 typedef struct TableNode

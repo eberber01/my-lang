@@ -1,3 +1,4 @@
+#include "./llvm/backend.h"
 #include <mylang/asm.h>
 #include <mylang/ast.h>
 #include <mylang/hashmap.h>
@@ -47,8 +48,9 @@ void my_lang(char *file_name)
 
     print_ast(prog);
 #endif
-    gen_asm(prog);
+    // gen_asm(prog);
 
+    llvm_code_gen(prog);
     my_lang_cleanup(input, type_env, tokens, prog, symbols);
 }
 
