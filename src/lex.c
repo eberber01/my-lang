@@ -1,11 +1,9 @@
-#include "lex.h"
-
 #include <ctype.h>
+#include <mylang/lex.h>
+#include <mylang/util.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "util.h"
 
 char *read_file(char *filename, size_t *length)
 {

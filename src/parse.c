@@ -1,13 +1,10 @@
-// #include "ast.h"
-#include "parse.h"
-
+#include <mylang/ast.h>
+#include <mylang/lex.h>
+#include <mylang/parse.h>
+#include <mylang/util.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
-#include "ast.h"
-#include "lex.h"
-#include "util.h"
 
 // Get current token in stream
 // Returns NULL if end of stream

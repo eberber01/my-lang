@@ -4,68 +4,53 @@ project(my-lang)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic -Wall -Wextra -Werror")
 
-include_directories(
-    "${CMAKE_SOURCE_DIR}/src/"
-    "${CMAKE_SOURCE_DIR}/build/"
+add_library(my-lib  
+    src/asm.c
+    src/ast.c
+    src/lex.c
+    src/parse.c
+    src/hashmap.c
+    src/util.c
+    src/sema.c
+)
+
+target_include_directories(my-lib
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/include
 )
 
 add_executable(my-lang 
-    ../src/asm.c
-    ../src/asm.h
-    ../src/ast.c
-    ../src/ast.h
-    ../src/lex.c
-    ../src/lex.h
-    ../src/main.c
-    ../src/parse.c
-    ../src/parse.h
-    ../src/hashmap.c
-    ../src/hashmap.h
-    ../src/sema.c
-    ../src/sema.h
-    ../src/util.c
-    ../src/util.h
+    src/main.c
 )
 
-add_library(my-lib  
-    ../src/asm.c
-    ../src/asm.h
-    ../src/ast.c
-    ../src/ast.h
-    ../src/lex.c
-    ../src/lex.h
-    ../src/parse.c
-    ../src/parse.h
-    ../src/hashmap.c
-    ../src/hashmap.h
-    ../src/util.c
-    ../src/util.h
-)
+target_link_libraries(my-lang PRIVATE my-lib)
+
 
 find_package(GTest REQUIRED)
 enable_testing()
 
 add_executable(
     my-lang-tests
-    ../src/test/hashmap.cpp
-    ../src/test/vector.cpp
-    ../src/test/string.cpp
-    ../src/test/parse.cpp
-    ../src/test/lex.cpp
+    src/test/hashmap.cpp
+    src/test/vector.cpp
+    src/test/string.cpp
+    src/test/parse.cpp
+    src/test/lex.cpp
 )
 
 target_link_libraries(
     my-lang-tests
-    my-lib
-    GTest::gtest_main
+    PRIVATE
+        my-lib
+        GTest::gtest_main
 )
+
+add_test(NAME my-lang-tests COMMAND my-lang-tests)
 
 target_compile_definitions(my-lang PRIVATE
     $<$<CONFIG:Debug>:DEBUG>
 )
 add_compile_definitions($<$<BOOL:${RV32}>:RV32>)
-
-add_test(NAME my-lang-tests COMMAND my-lang-tests)
 
 find_program(CLANG_FORMAT_BIN clang-format)
 

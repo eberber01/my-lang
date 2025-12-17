@@ -2,8 +2,8 @@
 #include <gtest/gtest.h>
 extern "C"
 {
-#include "../lex.h"
-#include "../util.h"
+#include <mylang/lex.h>
+#include <mylang/util.h>
 }
 
 struct LexCase

@@ -1,8 +1,8 @@
-#include "sema.h"
-#include "asm.h"
-#include "ast.h"
-#include "hashmap.h"
-#include "util.h"
+#include <mylang/asm.h>
+#include <mylang/ast.h>
+#include <mylang/hashmap.h>
+#include <mylang/sema.h>
+#include <mylang/util.h>
 #include <stdio.h>
 #include <stdlib.h>
 

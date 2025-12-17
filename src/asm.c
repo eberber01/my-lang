@@ -1,14 +1,11 @@
-#include "asm.h"
-
+#include <mylang/asm.h>
+#include <mylang/hashmap.h>
+#include <mylang/lex.h>
+#include <mylang/util.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "ast.h"
-#include "hashmap.h"
-#include "lex.h"
-#include "util.h"
 
 /*
     fp ------------

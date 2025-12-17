@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 extern "C"
 {
-#include "../hashmap.h"
+#include <mylang/hashmap.h>
 }
 
 TEST(HashMap, Add)

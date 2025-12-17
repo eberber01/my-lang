@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 extern "C"
 {
-#include "../ast.h"
-#include "../hashmap.h"
-#include "../lex.h"
-#include "../parse.h"
-#include "../util.h"
+#include <mylang/ast.h>
+#include <mylang/hashmap.h>
+#include <mylang/lex.h>
+#include <mylang/parse.h>
+#include <mylang/util.h>
 }
 
 TEST(Parse, Variable)

@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 extern "C"
 {
-#include "../util.h"
+#include <mylang/util.h>
 }
 
 struct VectorData

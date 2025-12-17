@@ -1,6 +1,5 @@
-#include "ast.h"
-
-#include "util.h"
+#include <mylang/ast.h>
+#include <mylang/util.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>

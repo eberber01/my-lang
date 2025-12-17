@@ -1,10 +1,10 @@
-#include "asm.h"
-#include "ast.h"
-#include "hashmap.h"
-#include "lex.h"
-#include "parse.h"
-#include "sema.h"
-#include "util.h"
+#include <mylang/asm.h>
+#include <mylang/ast.h>
+#include <mylang/hashmap.h>
+#include <mylang/lex.h>
+#include <mylang/parse.h>
+#include <mylang/sema.h>
+#include <mylang/util.h>
 #include <stdio.h>
 
 void my_lang_cleanup(char *input, HashMap *type_env, Vector *tokens, Vector *prog, Vector *symbols)
