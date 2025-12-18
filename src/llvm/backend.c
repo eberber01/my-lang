@@ -22,8 +22,8 @@ LLVMValueRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef
     AstBinExp *bin_exp;
     AstIntConst *int_const;
     AstFuncCall *func_call;
+    AstVarDef *var_def;
     // AstIfElse *if_stmt;
-    // AstVarDef *var_def;
     // AstEnum *enm;
     // AstVarAsgn *asgn;
     // AstWhile *w_stmt;
@@ -99,7 +99,7 @@ LLVMValueRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef
     case AST_FUNC_CALL:
         func_call = (AstFuncCall *)node->as;
 
-        AstNode *node;
+        AstNode *n;
         LLVMValueRef *args = NULL;
         size_t arg_length = func_call->args->length;
         if (arg_length > 0)
@@ -109,8 +109,8 @@ LLVMValueRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef
 
             for (size_t i = 0; i < arg_length; i++)
             {
-                node = (AstNode *)vector_get(func_call->args, i);
-                args[i] = _llvm_code_gen(node, llvm_func, mod, ctx);
+                n = (AstNode *)vector_get(func_call->args, i);
+                args[i] = _llvm_code_gen(n, llvm_func, mod, ctx);
             }
         }
 
@@ -119,6 +119,19 @@ LLVMValueRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef
 
         return LLVMBuildCall2(builder, func_call->symbol->llvm_type_ref, func_call->symbol->llvm_value_ref, args,
                               arg_length, "");
+    case AST_VAR_DEF:
+        var_def = (AstVarDef*)node->as;
+        
+        LLVMValueRef init_val = _llvm_code_gen(var_def->expr,  llvm_func,  mod,  ctx);
+
+        bb = LLVMAppendBasicBlockInContext(ctx, llvm_func, "var def");
+        LLVMPositionBuilderAtEnd(builder, bb);
+
+        LLVMValueRef var_def_ref = LLVMBuildAlloca(builder, LLVMInt32Type(), var_def->value);
+        LLVMBuildStore(builder, init_val, var_def_ref);
+
+        var_def->symbol->llvm_value_ref = var_def_ref;
+        break;
     case AST_IF:
     case AST_BOOL_EXPR:
     case AST_ENUM:
@@ -130,7 +143,6 @@ LLVMValueRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef
     case AST_UNARY_EXPR:
     case AST_LVAL:
     case AST_FUNC_DEF:
-    case AST_VAR_DEF:
         perror("LLVM not implemented");
         break;
     }
