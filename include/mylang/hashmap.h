@@ -64,7 +64,8 @@ typedef struct SymTabEntry
 
     StackFrame *frame;
 
-    LLVMValueRef llvm_ref;
+    LLVMTypeRef llvm_type_ref;
+    LLVMValueRef llvm_value_ref;
 
 } SymTabEntry;
 
