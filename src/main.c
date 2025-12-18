@@ -8,6 +8,12 @@
 #include <mylang/util.h>
 #include <stdio.h>
 
+typedef struct CompilerOptions
+{
+    bool use_llvm;
+    char *file_name;
+} CompilerOptions;
+
 void my_lang_cleanup(char *input, HashMap *type_env, Vector *tokens, Vector *prog, Vector *symbols)
 {
     type_env_free(type_env);
@@ -29,10 +35,10 @@ void my_lang_cleanup(char *input, HashMap *type_env, Vector *tokens, Vector *pro
     free(input);
 }
 
-void my_lang(char *file_name)
+void my_lang(CompilerOptions *opt)
 {
     size_t input_length = 0;
-    char *input = read_file(file_name, &input_length);
+    char *input = read_file(opt->file_name, &input_length);
 
     HashMap *type_env = hashmap_new();
     type_env_init(type_env);
@@ -48,20 +54,40 @@ void my_lang(char *file_name)
 
     print_ast(prog);
 #endif
-    // gen_asm(prog);
 
-    llvm_code_gen(prog);
+    if (opt->use_llvm)
+        llvm_code_gen(prog);
+    else
+        gen_asm(prog);
+
     my_lang_cleanup(input, type_env, tokens, prog, symbols);
 }
 
-int main(int argc, char **argv)
+CompilerOptions *parse_args(int argc, char **argv)
 {
+    CompilerOptions *opt = my_malloc(sizeof(CompilerOptions));
+    opt->use_llvm = false;
     if (argc < 2)
     {
         printf("Please provide an input file.");
         return 0;
     }
-    my_lang(argv[1]);
+
+    for (int i = 1; i < argc; i++)
+    {
+        if (!strcmp("--backend=llvm", argv[i]))
+            opt->use_llvm = true;
+    }
+
+    opt->file_name = argv[argc - 1];
+
+    return opt;
+}
+
+int main(int argc, char **argv)
+{
+    CompilerOptions *opt = parse_args(argc, argv);
+    my_lang(opt);
 
     return 0;
 }

@@ -87,7 +87,7 @@ LLVMValueRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef
     return NULL;
 }
 
-void gen_func_def(AstFuncDef *func, LLVMModuleRef mod)
+void llvm_func_def(AstFuncDef *func, LLVMModuleRef mod)
 {
     LLVMTypeRef ret_type;
     size_t param_count = func->params->length;
@@ -132,7 +132,7 @@ void llvm_code_gen(Vector *prog)
     for (size_t i = 0; i < prog->length; i++)
     {
         node = (AstNode *)vector_get(prog, i);
-        gen_func_def((AstFuncDef *)(node->as), mod);
+        llvm_func_def((AstFuncDef *)(node->as), mod);
     }
     printf("Writing llvm mod\n");
     save_module_to_file(mod, "./my-llvm");
