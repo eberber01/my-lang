@@ -12,63 +12,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-LLVMValueRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef mod, LLVMContextRef ctx)
+LLVMValueRef llvm_eval(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef mod, LLVMContextRef ctx)
 {
 
-    AstCompStmt *comp_stmt;
     AstIdent *ident;
-    AstRet *ret;
-    AstVarDec *dec;
     AstBinExp *bin_exp;
     AstIntConst *int_const;
     AstFuncCall *func_call;
-    AstVarDef *var_def;
-    // AstIfElse *if_stmt;
-    // AstEnum *enm;
-    // AstVarAsgn *asgn;
-    // AstWhile *w_stmt;
-    // AstFor *f_stmt;
-    // AstExprStmt *expr_stmt;
-    // AstUnaryExpr *unary_expr;
-    // AstLValue *lvalue;
 
     LLVMBasicBlockRef bb;
     LLVMBuilderRef builder = LLVMCreateBuilderInContext(ctx);
     switch (node->type)
     {
-    case AST_COMP_STMT:
-        comp_stmt = (AstCompStmt *)node->as;
-        for (size_t i = 0; i < comp_stmt->body->length; i++)
-        {
-            _llvm_code_gen((AstNode *)vector_get(comp_stmt->body, i), llvm_func, mod, ctx);
-        }
-        break;
-    case AST_RET:
-        ret = (AstRet *)node->as;
-
-        LLVMValueRef ret_val = _llvm_code_gen(ret->expr, llvm_func, mod, ctx);
-
-        bb = LLVMAppendBasicBlockInContext(ctx, llvm_func, "ret");
-        LLVMPositionBuilderAtEnd(builder, bb);
-
-        LLVMBuildRet(builder, ret_val);
-        break;
-    case AST_VAR_DEC:
-        dec = (AstVarDec *)node->as;
-        bb = LLVMAppendBasicBlockInContext(ctx, llvm_func, "var");
-        LLVMPositionBuilderAtEnd(builder, bb);
-
-        LLVMValueRef ref = LLVMBuildAlloca(builder, LLVMInt32Type(), dec->value);
-        dec->symbol->llvm_value_ref = ref;
-        break;
     case AST_IDENT:
         ident = (AstIdent *)node->as;
         return ident->symbol->llvm_value_ref;
+        break;
     case AST_BIN_EXP:
         bin_exp = (AstBinExp *)node->as;
         LLVMOpcode op;
-        LLVMValueRef left = _llvm_code_gen(bin_exp->left, llvm_func, mod, ctx);
-        LLVMValueRef right = _llvm_code_gen(bin_exp->right, llvm_func, mod, ctx);
+        LLVMValueRef left = llvm_eval(bin_exp->left, llvm_func, mod, ctx);
+        LLVMValueRef right = llvm_eval(bin_exp->right, llvm_func, mod, ctx);
 
         bb = LLVMAppendBasicBlockInContext(ctx, llvm_func, "binop");
         LLVMPositionBuilderAtEnd(builder, bb);
@@ -110,7 +74,7 @@ LLVMValueRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef
             for (size_t i = 0; i < arg_length; i++)
             {
                 n = (AstNode *)vector_get(func_call->args, i);
-                args[i] = _llvm_code_gen(n, llvm_func, mod, ctx);
+                args[i] = llvm_eval(n, llvm_func, mod, ctx);
             }
         }
 
@@ -119,10 +83,58 @@ LLVMValueRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef
 
         return LLVMBuildCall2(builder, func_call->symbol->llvm_type_ref, func_call->symbol->llvm_value_ref, args,
                               arg_length, "");
+    default:
+        perror("LLVM eval not implemented");
+        exit(1);
+    }
+}
+void _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef mod, LLVMContextRef ctx)
+{
+
+    AstCompStmt *comp_stmt;
+    AstRet *ret;
+    AstVarDec *dec;
+    AstVarDef *var_def;
+    // AstIfElse *if_stmt;
+    // AstEnum *enm;
+    // AstVarAsgn *asgn;
+    // AstWhile *w_stmt;
+    // AstFor *f_stmt;
+    // AstExprStmt *expr_stmt;
+    // AstUnaryExpr *unary_expr;
+    // AstLValue *lvalue;
+
+    LLVMBasicBlockRef bb;
+    LLVMBuilderRef builder = LLVMCreateBuilderInContext(ctx);
+    switch (node->type)
+    {
+    case AST_COMP_STMT:
+        comp_stmt = (AstCompStmt *)node->as;
+        for (size_t i = 0; i < comp_stmt->body->length; i++)
+            _llvm_code_gen((AstNode *)vector_get(comp_stmt->body, i), llvm_func, mod, ctx);
+        break;
+    case AST_RET:
+        ret = (AstRet *)node->as;
+
+        LLVMValueRef ret_val = llvm_eval(ret->expr, llvm_func, mod, ctx);
+
+        bb = LLVMAppendBasicBlockInContext(ctx, llvm_func, "ret");
+        LLVMPositionBuilderAtEnd(builder, bb);
+
+        LLVMBuildRet(builder, ret_val);
+        break;
+    case AST_VAR_DEC:
+        dec = (AstVarDec *)node->as;
+        bb = LLVMAppendBasicBlockInContext(ctx, llvm_func, "var");
+        LLVMPositionBuilderAtEnd(builder, bb);
+
+        LLVMValueRef ref = LLVMBuildAlloca(builder, LLVMInt32Type(), dec->value);
+        dec->symbol->llvm_value_ref = ref;
+        break;
     case AST_VAR_DEF:
-        var_def = (AstVarDef*)node->as;
-        
-        LLVMValueRef init_val = _llvm_code_gen(var_def->expr,  llvm_func,  mod,  ctx);
+        var_def = (AstVarDef *)node->as;
+
+        LLVMValueRef init_val = llvm_eval(var_def->expr, llvm_func, mod, ctx);
 
         bb = LLVMAppendBasicBlockInContext(ctx, llvm_func, "var def");
         LLVMPositionBuilderAtEnd(builder, bb);
@@ -143,10 +155,10 @@ LLVMValueRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef
     case AST_UNARY_EXPR:
     case AST_LVAL:
     case AST_FUNC_DEF:
+    default:
         perror("LLVM not implemented");
         break;
     }
-    return NULL;
 }
 
 void llvm_func_def(AstFuncDef *func, LLVMModuleRef mod, LLVMContextRef ctx)
