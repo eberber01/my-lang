@@ -15,7 +15,6 @@ typedef enum AstNodeType
     AST_FUNC_CALL,
     AST_RET,
     AST_IF,
-    AST_BOOL_EXPR,
     AST_ENUM,
     AST_VAR_DEC,
     AST_VAR_ASGN,

@@ -19,6 +19,9 @@ LLVMValueRef llvm_eval(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef mod,
     AstBinExp *bin_exp;
     AstIntConst *int_const;
     AstFuncCall *func_call;
+    AstVarAsgn *var_asgn;
+    AstLValue *lvalue;
+    AstIdent *lval_ident;
 
     LLVMBasicBlockRef bb;
     LLVMBuilderRef builder = LLVMCreateBuilderInContext(ctx);
@@ -83,11 +86,32 @@ LLVMValueRef llvm_eval(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef mod,
 
         return LLVMBuildCall2(builder, func_call->symbol->llvm_type_ref, func_call->symbol->llvm_value_ref, args,
                               arg_length, "");
+
+    case AST_LVAL:
+        lvalue = (AstLValue *)node->as;
+        switch (lvalue->kind)
+        {
+        case AST_LVAL_IDENT:
+            lval_ident = (AstIdent *)(lvalue->u.ident->as);
+            return lval_ident->symbol->llvm_value_ref;
+        default:
+            perror("LLVM eval lvalue not implemented");
+            exit(1);
+        }
+    case AST_VAR_ASGN:
+        var_asgn = (AstVarAsgn*)node->as;
+        bb = LLVMAppendBasicBlockInContext(ctx, llvm_func, "asgn");
+        LLVMValueRef lval = llvm_eval(var_asgn->lval,  llvm_func,  mod,  ctx);
+        LLVMValueRef rval = llvm_eval(var_asgn->rval,  llvm_func,  mod,  ctx);
+
+        LLVMPositionBuilderAtEnd(builder, bb);
+        return LLVMBuildStore(builder, rval, lval);
     default:
         perror("LLVM eval not implemented");
         exit(1);
     }
 }
+
 void _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef mod, LLVMContextRef ctx)
 {
 
@@ -100,9 +124,8 @@ void _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef mod, LL
     // AstVarAsgn *asgn;
     // AstWhile *w_stmt;
     // AstFor *f_stmt;
-    // AstExprStmt *expr_stmt;
+    AstExprStmt *expr_stmt;
     // AstUnaryExpr *unary_expr;
-    // AstLValue *lvalue;
 
     LLVMBasicBlockRef bb;
     LLVMBuilderRef builder = LLVMCreateBuilderInContext(ctx);
@@ -144,19 +167,20 @@ void _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef mod, LL
 
         var_def->symbol->llvm_value_ref = var_def_ref;
         break;
+    case AST_EXPR_STMT:
+        expr_stmt = (AstExprStmt *)node->as;
+        if (expr_stmt->expr->type != AST_EMPTY_EXPR)
+            llvm_eval(expr_stmt->expr,  llvm_func,  mod,  ctx);
+        break;
     case AST_IF:
-    case AST_BOOL_EXPR:
     case AST_ENUM:
-    case AST_VAR_ASGN:
     case AST_WHILE:
     case AST_FOR:
     case AST_EMPTY_EXPR:
-    case AST_EXPR_STMT:
     case AST_UNARY_EXPR:
-    case AST_LVAL:
     case AST_FUNC_DEF:
     default:
-        perror("LLVM not implemented");
+        fprintf(stderr, "LLVM not implemented type: %d\n", node->type);
         break;
     }
 }
