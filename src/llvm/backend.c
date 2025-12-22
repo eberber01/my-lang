@@ -116,14 +116,13 @@ LLVMValueRef llvm_eval_int_const(AstIntConst *int_const)
     return LLVMConstInt(LLVMInt32Type(), int_const->value, false);
 }
 
-
 LLVMValueRef llvm_eval_ident(AstIdent *ident, LLVMValueRef llvm_func, LLVMContextRef ctx)
 {
     LLVMBuilderRef builder = LLVMCreateBuilderInContext(ctx);
-    LLVMBasicBlockRef bb = LLVMAppendBasicBlockInContext(ctx, llvm_func,  "ident");
+    LLVMBasicBlockRef bb = LLVMAppendBasicBlockInContext(ctx, llvm_func, "ident");
     LLVMPositionBuilderAtEnd(builder, bb);
 
-    return LLVMBuildLoad2(builder, ident->symbol->llvm_type_ref,  ident->symbol->llvm_value_ref,  "");
+    return LLVMBuildLoad2(builder, ident->symbol->llvm_type_ref, ident->symbol->llvm_value_ref, "");
 }
 
 LLVMValueRef llvm_eval(AstNode *node, LLVMValueRef llvm_func, LLVMContextRef ctx)
@@ -163,10 +162,11 @@ LLVMValueRef llvm_eval(AstNode *node, LLVMValueRef llvm_func, LLVMContextRef ctx
     }
 }
 
-void llvm_gen_if(AstIfElse *if_stmt, LLVMValueRef llvm_func, LLVMContextRef ctx)
+LLVMBasicBlockRef llvm_gen_if(AstIfElse *if_stmt, LLVMValueRef llvm_func, LLVMContextRef ctx)
 {
 
     LLVMBuilderRef builder = LLVMCreateBuilderInContext(ctx);
+    LLVMBasicBlockRef bb;
     LLVMBasicBlockRef cond_block = LLVMCreateBasicBlockInContext(ctx, "cond");
     LLVMBasicBlockRef then_block = LLVMCreateBasicBlockInContext(ctx, "then");
     LLVMBasicBlockRef else_block = LLVMCreateBasicBlockInContext(ctx, "else");
@@ -182,7 +182,8 @@ void llvm_gen_if(AstIfElse *if_stmt, LLVMValueRef llvm_func, LLVMContextRef ctx)
     // then
     LLVMPositionBuilderAtEnd(builder, then_block);
     LLVMAppendExistingBasicBlock(llvm_func, then_block);
-    _llvm_code_gen(if_stmt->if_body, llvm_func, ctx);
+    bb = _llvm_code_gen(if_stmt->if_body, llvm_func, ctx);
+    LLVMPositionBuilderAtEnd(builder, bb);
     LLVMBuildBr(builder, cont_block);
 
     // Else
@@ -190,14 +191,16 @@ void llvm_gen_if(AstIfElse *if_stmt, LLVMValueRef llvm_func, LLVMContextRef ctx)
     {
         LLVMPositionBuilderAtEnd(builder, else_block);
         LLVMAppendExistingBasicBlock(llvm_func, else_block);
-        _llvm_code_gen(if_stmt->else_body, llvm_func, ctx);
+        bb = _llvm_code_gen(if_stmt->else_body, llvm_func, ctx);
+        LLVMPositionBuilderAtEnd(builder, bb);
         LLVMBuildBr(builder, cont_block);
     }
 
     LLVMAppendExistingBasicBlock(llvm_func, cont_block);
+    return cont_block;
 }
 
-void llvm_gen_ret(AstRet *ret, LLVMValueRef llvm_func, LLVMContextRef ctx)
+LLVMBasicBlockRef llvm_gen_ret(AstRet *ret, LLVMValueRef llvm_func, LLVMContextRef ctx)
 {
 
     LLVMBuilderRef builder = LLVMCreateBuilderInContext(ctx);
@@ -207,9 +210,10 @@ void llvm_gen_ret(AstRet *ret, LLVMValueRef llvm_func, LLVMContextRef ctx)
     LLVMPositionBuilderAtEnd(builder, bb);
 
     LLVMBuildRet(builder, ret_val);
+    return bb;
 }
 
-void llvm_gen_var_dec(AstVarDec *dec, LLVMValueRef llvm_func, LLVMContextRef ctx)
+LLVMBasicBlockRef llvm_gen_var_dec(AstVarDec *dec, LLVMValueRef llvm_func, LLVMContextRef ctx)
 {
 
     LLVMBuilderRef builder = LLVMCreateBuilderInContext(ctx);
@@ -220,9 +224,10 @@ void llvm_gen_var_dec(AstVarDec *dec, LLVMValueRef llvm_func, LLVMContextRef ctx
     LLVMValueRef ref = LLVMBuildAlloca(builder, type_ref, dec->value);
     dec->symbol->llvm_value_ref = ref;
     dec->symbol->llvm_type_ref = type_ref;
+    return bb;
 }
 
-void llvm_gen_var_def(AstVarDef *var_def, LLVMValueRef llvm_func, LLVMContextRef ctx)
+LLVMBasicBlockRef llvm_gen_var_def(AstVarDef *var_def, LLVMValueRef llvm_func, LLVMContextRef ctx)
 {
 
     LLVMBuilderRef builder = LLVMCreateBuilderInContext(ctx);
@@ -237,9 +242,10 @@ void llvm_gen_var_def(AstVarDef *var_def, LLVMValueRef llvm_func, LLVMContextRef
 
     var_def->symbol->llvm_value_ref = var_def_ref;
     var_def->symbol->llvm_type_ref = var_type_ref;
+    return bb;
 }
 
-void _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMContextRef ctx)
+LLVMBasicBlockRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMContextRef ctx)
 {
 
     AstCompStmt *comp_stmt;
@@ -253,37 +259,35 @@ void _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMContextRef ctx)
     // AstWhile *w_stmt;
     // AstFor *f_stmt;
     // AstUnaryExpr *unary_expr;
+    LLVMBasicBlockRef bb;
 
     switch (node->type)
     {
     case AST_COMP_STMT:
         comp_stmt = (AstCompStmt *)node->as;
+
         for (size_t i = 0; i < comp_stmt->body->length; i++)
-            _llvm_code_gen((AstNode *)vector_get(comp_stmt->body, i), llvm_func, ctx);
-        break;
+            bb = _llvm_code_gen((AstNode *)vector_get(comp_stmt->body, i), llvm_func, ctx);
+        return bb;
     case AST_RET:
         ret = (AstRet *)node->as;
-        llvm_gen_ret(ret, llvm_func, ctx);
-        break;
+        return llvm_gen_ret(ret, llvm_func, ctx);
     case AST_VAR_DEC:
         dec = (AstVarDec *)node->as;
-        llvm_gen_var_dec(dec, llvm_func, ctx);
-        break;
+        return llvm_gen_var_dec(dec, llvm_func, ctx);
     case AST_VAR_DEF:
         var_def = (AstVarDef *)node->as;
-        llvm_gen_var_def(var_def, llvm_func, ctx);
-        break;
+        return llvm_gen_var_def(var_def, llvm_func, ctx);
     case AST_EXPR_STMT:
         expr_stmt = (AstExprStmt *)node->as;
         if (expr_stmt->expr->type != AST_EMPTY_EXPR)
             llvm_eval(expr_stmt->expr, llvm_func, ctx);
-        break;
+        return LLVMAppendBasicBlockInContext(ctx, llvm_func, "");
     case AST_IF:
         if_stmt = (AstIfElse *)node->as;
-        llvm_gen_if(if_stmt, llvm_func, ctx);
-        break;
+        return llvm_gen_if(if_stmt, llvm_func, ctx);
     case AST_EMPTY_EXPR:
-        break;
+        return LLVMAppendBasicBlockInContext(ctx, llvm_func, "");
     case AST_ENUM:
     case AST_WHILE:
     case AST_FOR:
@@ -291,7 +295,7 @@ void _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMContextRef ctx)
     case AST_FUNC_DEF:
     default:
         fprintf(stderr, "LLVM not implemented type: %d\n", node->type);
-        break;
+        exit(1);
     }
 }
 
@@ -333,10 +337,11 @@ void save_module_to_file(LLVMModuleRef module, const char *filename)
     }
 }
 
-void llvm_code_gen(Vector *prog) {
-    const char *triple   = "riscv32-unknown-linux-gnu";
-    const char *cpu      = "";                    
-    const char *features = "+m,+a,+f,+d,+c";     
+void llvm_code_gen(Vector *prog)
+{
+    const char *triple = "riscv32-unknown-linux-gnu";
+    const char *cpu = "";
+    const char *features = "+m,+a,+f,+d,+c";
 
     LLVMInitializeRISCVTargetInfo();
     LLVMInitializeRISCVTarget();
@@ -344,24 +349,22 @@ void llvm_code_gen(Vector *prog) {
     LLVMInitializeRISCVAsmPrinter();
 
     LLVMContextRef ctx = LLVMContextCreate();
-    LLVMModuleRef  mod = LLVMModuleCreateWithNameInContext("my-lang", ctx);
+    LLVMModuleRef mod = LLVMModuleCreateWithNameInContext("my-lang", ctx);
 
     LLVMTargetRef target;
     char *error = NULL;
 
-    if (LLVMGetTargetFromTriple(triple, &target, &error)) {
+    if (LLVMGetTargetFromTriple(triple, &target, &error))
+    {
         fprintf(stderr, "LLVMGetTargetFromTriple error: %s\n", error);
         LLVMDisposeMessage(error);
         exit(1);
     }
 
-    LLVMTargetMachineRef tm = LLVMCreateTargetMachine(
-        target, triple, cpu, features,
-        LLVMCodeGenLevelDefault,
-        LLVMRelocDefault,
-        LLVMCodeModelDefault
-    );
-    if (!tm) {
+    LLVMTargetMachineRef tm = LLVMCreateTargetMachine(target, triple, cpu, features, LLVMCodeGenLevelDefault,
+                                                      LLVMRelocDefault, LLVMCodeModelDefault);
+    if (!tm)
+    {
         fprintf(stderr, "LLVMCreateTargetMachine failed\n");
         exit(1);
     }
@@ -370,12 +373,13 @@ void llvm_code_gen(Vector *prog) {
     LLVMSetModuleDataLayout(mod, dl);
     LLVMSetTarget(mod, triple);
 
-    for (size_t i = 0; i < prog->length; i++) {
+    for (size_t i = 0; i < prog->length; i++)
+    {
         AstNode *node = (AstNode *)vector_get(prog, i);
         llvm_func_def((AstFuncDef *)(node->as), mod, ctx);
     }
 
-    save_module_to_file(mod, "./my-llvm.ll"); 
+    save_module_to_file(mod, "./my-llvm.ll");
 
     /*
     char *err2 = NULL;
