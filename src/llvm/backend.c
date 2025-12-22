@@ -1,5 +1,6 @@
 
 #include "mylang/hashmap.h"
+#include "mylang/lex.h"
 #include <inttypes.h>
 #include <llvm-c/Analysis.h>
 #include <llvm-c/BitWriter.h>
@@ -54,7 +55,18 @@ LLVMValueRef llvm_eval(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef mod,
         case TOK_DIV:
             op = LLVMSDiv;
             break;
-            break;
+        case TOK_EQUAL:
+            return LLVMBuildICmp(builder,  LLVMIntEQ,  left,  right, "equal");
+        case TOK_NOT_EQUAL:
+            return LLVMBuildICmp(builder,  LLVMIntNE,  left,  right, "not equal");
+        case TOK_LT:
+            return LLVMBuildICmp(builder,  LLVMIntULT,  left,  right, "less than");
+        case TOK_LT_EQ:
+            return LLVMBuildICmp(builder,  LLVMIntULE,  left,  right, "less than equal");
+        case TOK_GT:
+            return LLVMBuildICmp(builder,  LLVMIntUGT,  left,  right, "greater than");
+        case TOK_GT_EQ:
+            return LLVMBuildICmp(builder,  LLVMIntUGE,  left,  right, "greater than equal");
         default:
             perror("LLVM op type not implemented");
             exit(1);
@@ -103,7 +115,6 @@ LLVMValueRef llvm_eval(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef mod,
         bb = LLVMAppendBasicBlockInContext(ctx, llvm_func, "asgn");
         LLVMValueRef lval = llvm_eval(var_asgn->lval,  llvm_func,  mod,  ctx);
         LLVMValueRef rval = llvm_eval(var_asgn->rval,  llvm_func,  mod,  ctx);
-
         LLVMPositionBuilderAtEnd(builder, bb);
         return LLVMBuildStore(builder, rval, lval);
     default:
@@ -119,12 +130,12 @@ void _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef mod, LL
     AstRet *ret;
     AstVarDec *dec;
     AstVarDef *var_def;
-    // AstIfElse *if_stmt;
+    AstIfElse *if_stmt;
+    AstExprStmt *expr_stmt;
     // AstEnum *enm;
     // AstVarAsgn *asgn;
     // AstWhile *w_stmt;
     // AstFor *f_stmt;
-    AstExprStmt *expr_stmt;
     // AstUnaryExpr *unary_expr;
 
     LLVMBasicBlockRef bb;
@@ -151,8 +162,10 @@ void _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef mod, LL
         bb = LLVMAppendBasicBlockInContext(ctx, llvm_func, "var");
         LLVMPositionBuilderAtEnd(builder, bb);
 
-        LLVMValueRef ref = LLVMBuildAlloca(builder, LLVMInt32Type(), dec->value);
+        LLVMTypeRef type_ref = LLVMInt32Type();
+        LLVMValueRef ref = LLVMBuildAlloca(builder, type_ref, dec->value);
         dec->symbol->llvm_value_ref = ref;
+        dec->symbol->llvm_type_ref = type_ref;
         break;
     case AST_VAR_DEF:
         var_def = (AstVarDef *)node->as;
@@ -162,10 +175,12 @@ void _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef mod, LL
         bb = LLVMAppendBasicBlockInContext(ctx, llvm_func, "var def");
         LLVMPositionBuilderAtEnd(builder, bb);
 
-        LLVMValueRef var_def_ref = LLVMBuildAlloca(builder, LLVMInt32Type(), var_def->value);
+        LLVMTypeRef var_type_ref = LLVMInt32Type();
+        LLVMValueRef var_def_ref = LLVMBuildAlloca(builder, var_type_ref, var_def->value);
         LLVMBuildStore(builder, init_val, var_def_ref);
 
         var_def->symbol->llvm_value_ref = var_def_ref;
+        var_def->symbol->llvm_type_ref = var_type_ref;
         break;
     case AST_EXPR_STMT:
         expr_stmt = (AstExprStmt *)node->as;
@@ -173,10 +188,43 @@ void _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMModuleRef mod, LL
             llvm_eval(expr_stmt->expr,  llvm_func,  mod,  ctx);
         break;
     case AST_IF:
+        if_stmt = (AstIfElse*)node->as;
+        LLVMBasicBlockRef cond_block = LLVMCreateBasicBlockInContext(ctx, "cond");
+        LLVMBasicBlockRef then_block = LLVMCreateBasicBlockInContext(ctx, "then");
+        LLVMBasicBlockRef else_block = LLVMCreateBasicBlockInContext(ctx, "else");
+        LLVMBasicBlockRef cont_block = LLVMCreateBasicBlockInContext(ctx, "ifcont");
+
+        //If
+
+
+        LLVMValueRef cond = llvm_eval(if_stmt->if_expr,  llvm_func,  mod,  ctx);
+
+        LLVMAppendExistingBasicBlock(llvm_func,  cond_block);
+        LLVMPositionBuilderAtEnd(builder,  cond_block);
+        LLVMBuildCondBr(builder, cond, then_block, else_block);
+
+        //then
+        LLVMPositionBuilderAtEnd(builder, then_block);
+        LLVMAppendExistingBasicBlock(llvm_func,  then_block);
+        _llvm_code_gen(if_stmt->if_body,  llvm_func,  mod,  ctx);
+        LLVMBuildBr(builder, cont_block);
+
+        //Else
+        if(if_stmt->else_body != NULL){
+            LLVMPositionBuilderAtEnd(builder, else_block);
+            LLVMAppendExistingBasicBlock(llvm_func,  else_block);
+            _llvm_code_gen(if_stmt->else_body,  llvm_func,  mod,  ctx);
+            LLVMBuildBr(builder, cont_block);
+        }
+        
+        LLVMAppendExistingBasicBlock(llvm_func,  cont_block);
+
+        break;
+    case AST_EMPTY_EXPR:
+        break;
     case AST_ENUM:
     case AST_WHILE:
     case AST_FOR:
-    case AST_EMPTY_EXPR:
     case AST_UNARY_EXPR:
     case AST_FUNC_DEF:
     default:
