@@ -116,6 +116,16 @@ LLVMValueRef llvm_eval_int_const(AstIntConst *int_const)
     return LLVMConstInt(LLVMInt32Type(), int_const->value, false);
 }
 
+
+LLVMValueRef llvm_eval_ident(AstIdent *ident, LLVMValueRef llvm_func, LLVMContextRef ctx)
+{
+    LLVMBuilderRef builder = LLVMCreateBuilderInContext(ctx);
+    LLVMBasicBlockRef bb = LLVMAppendBasicBlockInContext(ctx, llvm_func,  "ident");
+    LLVMPositionBuilderAtEnd(builder, bb);
+
+    return LLVMBuildLoad2(builder, ident->symbol->llvm_type_ref,  ident->symbol->llvm_value_ref,  "");
+}
+
 LLVMValueRef llvm_eval(AstNode *node, LLVMValueRef llvm_func, LLVMContextRef ctx)
 {
 
@@ -130,7 +140,7 @@ LLVMValueRef llvm_eval(AstNode *node, LLVMValueRef llvm_func, LLVMContextRef ctx
     {
     case AST_IDENT:
         ident = (AstIdent *)node->as;
-        return ident->symbol->llvm_value_ref;
+        return llvm_eval_ident(ident, llvm_func, ctx);
         break;
     case AST_BIN_EXP:
         bin_exp = (AstBinExp *)node->as;
@@ -323,18 +333,61 @@ void save_module_to_file(LLVMModuleRef module, const char *filename)
     }
 }
 
-void llvm_code_gen(Vector *prog)
-{
-    AstNode *node;
-    LLVMContextRef ctx = LLVMContextCreate();
-    LLVMModuleRef mod = LLVMModuleCreateWithNameInContext("my-lang", ctx);
+void llvm_code_gen(Vector *prog) {
+    const char *triple   = "riscv32-unknown-linux-gnu";
+    const char *cpu      = "";                    
+    const char *features = "+m,+a,+f,+d,+c";     
 
-    for (size_t i = 0; i < prog->length; i++)
-    {
-        node = (AstNode *)vector_get(prog, i);
+    LLVMInitializeRISCVTargetInfo();
+    LLVMInitializeRISCVTarget();
+    LLVMInitializeRISCVTargetMC();
+    LLVMInitializeRISCVAsmPrinter();
+
+    LLVMContextRef ctx = LLVMContextCreate();
+    LLVMModuleRef  mod = LLVMModuleCreateWithNameInContext("my-lang", ctx);
+
+    LLVMTargetRef target;
+    char *error = NULL;
+
+    if (LLVMGetTargetFromTriple(triple, &target, &error)) {
+        fprintf(stderr, "LLVMGetTargetFromTriple error: %s\n", error);
+        LLVMDisposeMessage(error);
+        exit(1);
+    }
+
+    LLVMTargetMachineRef tm = LLVMCreateTargetMachine(
+        target, triple, cpu, features,
+        LLVMCodeGenLevelDefault,
+        LLVMRelocDefault,
+        LLVMCodeModelDefault
+    );
+    if (!tm) {
+        fprintf(stderr, "LLVMCreateTargetMachine failed\n");
+        exit(1);
+    }
+
+    LLVMTargetDataRef dl = LLVMCreateTargetDataLayout(tm);
+    LLVMSetModuleDataLayout(mod, dl);
+    LLVMSetTarget(mod, triple);
+
+    for (size_t i = 0; i < prog->length; i++) {
+        AstNode *node = (AstNode *)vector_get(prog, i);
         llvm_func_def((AstFuncDef *)(node->as), mod, ctx);
     }
-    printf("Writing llvm mod\n");
-    save_module_to_file(mod, "./my-llvm");
+
+    save_module_to_file(mod, "./my-llvm.ll"); 
+
+    /*
+    char *err2 = NULL;
+    if (LLVMTargetMachineEmitToFile(tm, mod, "out.o", LLVMObjectFile, &err2)) {
+        fprintf(stderr, "Emit error: %s\n", err2);
+        LLVMDisposeMessage(err2);
+        exit(1);
+    }
+    */
+
+    LLVMDisposeModule(mod);
+    LLVMDisposeTargetData(dl);
+    LLVMDisposeTargetMachine(tm);
     LLVMContextDispose(ctx);
 }
