@@ -245,6 +245,30 @@ LLVMBasicBlockRef llvm_gen_var_def(AstVarDef *var_def, LLVMValueRef llvm_func, L
     return bb;
 }
 
+LLVMBasicBlockRef llvm_gen_while(AstWhile *w_stmt, LLVMValueRef llvm_func, LLVMContextRef ctx)
+{
+    LLVMBasicBlockRef bb;
+    LLVMBuilderRef builder = LLVMCreateBuilderInContext(ctx);
+    LLVMBasicBlockRef cond_block = LLVMCreateBasicBlockInContext(ctx, "cond");
+    LLVMBasicBlockRef body = LLVMCreateBasicBlockInContext(ctx, "body");
+    LLVMBasicBlockRef cont_block = LLVMCreateBasicBlockInContext(ctx, "while cont");
+
+    LLVMValueRef cond = llvm_eval(w_stmt->expr, llvm_func, ctx);
+
+    LLVMAppendExistingBasicBlock(llvm_func, cond_block);
+    LLVMPositionBuilderAtEnd(builder, cond_block);
+    LLVMBuildCondBr(builder, cond, body, cont_block);
+
+    LLVMAppendExistingBasicBlock(llvm_func, body);
+    bb = _llvm_code_gen(w_stmt->body, llvm_func, ctx);
+    LLVMPositionBuilderAtEnd(builder, bb);
+    LLVMBuildBr(builder, cond_block);
+
+    LLVMAppendExistingBasicBlock(llvm_func, cont_block);
+
+    return cont_block;
+}
+
 LLVMBasicBlockRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMContextRef ctx)
 {
 
@@ -254,9 +278,9 @@ LLVMBasicBlockRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMCont
     AstVarDef *var_def;
     AstIfElse *if_stmt;
     AstExprStmt *expr_stmt;
+    AstWhile *w_stmt;
     // AstEnum *enm;
     // AstVarAsgn *asgn;
-    // AstWhile *w_stmt;
     // AstFor *f_stmt;
     // AstUnaryExpr *unary_expr;
     LLVMBasicBlockRef bb;
@@ -288,8 +312,10 @@ LLVMBasicBlockRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMCont
         return llvm_gen_if(if_stmt, llvm_func, ctx);
     case AST_EMPTY_EXPR:
         return LLVMAppendBasicBlockInContext(ctx, llvm_func, "");
-    case AST_ENUM:
     case AST_WHILE:
+        w_stmt = (AstWhile *)node->as;
+        return llvm_gen_while(w_stmt, llvm_func, ctx);
+    case AST_ENUM:
     case AST_FOR:
     case AST_UNARY_EXPR:
     case AST_FUNC_DEF:
