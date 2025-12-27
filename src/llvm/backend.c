@@ -249,20 +249,22 @@ LLVMBasicBlockRef llvm_gen_while(AstWhile *w_stmt, LLVMValueRef llvm_func, LLVMC
 {
     LLVMBasicBlockRef bb;
     LLVMBuilderRef builder = LLVMCreateBuilderInContext(ctx);
-    LLVMBasicBlockRef cond_block = LLVMCreateBasicBlockInContext(ctx, "cond");
+    LLVMBasicBlockRef before_cond = LLVMCreateBasicBlockInContext(ctx, "aftercond");
+    LLVMBasicBlockRef after_cond = LLVMCreateBasicBlockInContext(ctx, "beforecond");
     LLVMBasicBlockRef body = LLVMCreateBasicBlockInContext(ctx, "body");
     LLVMBasicBlockRef cont_block = LLVMCreateBasicBlockInContext(ctx, "while cont");
 
-    LLVMValueRef cond = llvm_eval(w_stmt->expr, llvm_func, ctx);
+    LLVMAppendExistingBasicBlock(llvm_func, before_cond);
+    LLVMValueRef cond_value = llvm_eval(w_stmt->expr, llvm_func, ctx);
 
-    LLVMAppendExistingBasicBlock(llvm_func, cond_block);
-    LLVMPositionBuilderAtEnd(builder, cond_block);
-    LLVMBuildCondBr(builder, cond, body, cont_block);
+    LLVMAppendExistingBasicBlock(llvm_func, after_cond);
+    LLVMPositionBuilderAtEnd(builder, after_cond);
+    LLVMBuildCondBr(builder, cond_value, body, cont_block);
 
     LLVMAppendExistingBasicBlock(llvm_func, body);
     bb = _llvm_code_gen(w_stmt->body, llvm_func, ctx);
     LLVMPositionBuilderAtEnd(builder, bb);
-    LLVMBuildBr(builder, cond_block);
+    LLVMBuildBr(builder, before_cond);
 
     LLVMAppendExistingBasicBlock(llvm_func, cont_block);
 
