@@ -283,7 +283,7 @@ LLVMBasicBlockRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMCont
     // AstVarAsgn *asgn;
     // AstFor *f_stmt;
     // AstUnaryExpr *unary_expr;
-    LLVMBasicBlockRef bb;
+    LLVMBasicBlockRef bb = NULL;
 
     switch (node->type)
     {
@@ -292,6 +292,10 @@ LLVMBasicBlockRef _llvm_code_gen(AstNode *node, LLVMValueRef llvm_func, LLVMCont
 
         for (size_t i = 0; i < comp_stmt->body->length; i++)
             bb = _llvm_code_gen((AstNode *)vector_get(comp_stmt->body, i), llvm_func, ctx);
+
+        //Return empty block if comp statement is empty
+        if (bb == NULL)
+            return LLVMAppendBasicBlockInContext(ctx, llvm_func, "");
         return bb;
     case AST_RET:
         ret = (AstRet *)node->as;
