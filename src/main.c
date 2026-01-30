@@ -61,8 +61,18 @@ void my_lang(CompilerOptions *opt)
 
 void print_version()
 {
-    printf("mylang %s\n", MYLANG_VERSION);
+    printf("my-lang %s\n", MYLANG_VERSION);
     printf("Target: riscv32\n");
+}
+
+void print_help()
+{
+
+    char *message = "Usage: my-lang [options] file.c\n\n"
+                    "Options:\n"
+                    "\t-v, --version    Print version and exit\n"
+                    "\t-h, --help       Show this help\n";
+    printf(message);
 }
 
 CompilerOptions *parse_args(int argc, char **argv)
@@ -74,7 +84,13 @@ CompilerOptions *parse_args(int argc, char **argv)
         exit(0);
     }
 
-    if (!strcmp("-v", argv[1]))
+    if (!strcmp("-h", argv[1]) || !strcmp("--help", argv[1]))
+    {
+        print_help();
+        exit(0);
+    }
+
+    if (!strcmp("-v", argv[1]) || !strcmp("--version", argv[1]))
     {
         print_version();
         exit(0);
