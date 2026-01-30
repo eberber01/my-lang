@@ -5,7 +5,13 @@
 #include <mylang/parse.h>
 #include <mylang/sema.h>
 #include <mylang/util.h>
+#include <mylang/version.h>
 #include <stdio.h>
+
+typedef struct CompilerOptions
+{
+    char *file_name;
+} CompilerOptions;
 
 void my_lang_cleanup(char *input, HashMap *type_env, Vector *tokens, Vector *prog, Vector *symbols)
 {
@@ -28,10 +34,10 @@ void my_lang_cleanup(char *input, HashMap *type_env, Vector *tokens, Vector *pro
     free(input);
 }
 
-void my_lang(char *file_name)
+void my_lang(CompilerOptions *opt)
 {
     size_t input_length = 0;
-    char *input = read_file(file_name, &input_length);
+    char *input = read_file(opt->file_name, &input_length);
 
     HashMap *type_env = hashmap_new();
     type_env_init(type_env);
@@ -47,19 +53,44 @@ void my_lang(char *file_name)
 
     print_ast(prog);
 #endif
+
     gen_asm(prog);
 
     my_lang_cleanup(input, type_env, tokens, prog, symbols);
 }
 
-int main(int argc, char **argv)
+void print_version()
 {
+    printf("mylang %s\n", MYLANG_VERSION);
+    printf("Target: riscv32\n");
+}
+
+CompilerOptions *parse_args(int argc, char **argv)
+{
+
     if (argc < 2)
     {
-        printf("Please provide an input file.");
-        return 0;
+        printf("Please provide an input file.\n");
+        exit(0);
     }
-    my_lang(argv[1]);
+
+    if (!strcmp("-v", argv[1]))
+    {
+        print_version();
+        exit(0);
+    }
+
+    CompilerOptions *opt = my_malloc(sizeof(CompilerOptions));
+
+    opt->file_name = argv[argc - 1];
+
+    return opt;
+}
+
+int main(int argc, char **argv)
+{
+    CompilerOptions *opt = parse_args(argc, argv);
+    my_lang(opt);
 
     return 0;
 }

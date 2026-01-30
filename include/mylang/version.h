@@ -1,0 +1,9 @@
+#ifndef MYLANG_VERSION_H
+#define MYLANG_VERSION_H
+
+#define MYLANG_VERSION "0.1.0-alpha"
+#define MYLANG_VERSION_MAJOR 0
+#define MYLANG_VERSION_MINOR 1
+#define MYLANG_VERSION_PATCH 0
+
+#endif
