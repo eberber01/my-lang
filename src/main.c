@@ -62,7 +62,9 @@ void print_help()
     char *message = "Usage: my-lang [options] file.c\n\n"
                     "Options:\n"
                     "\t-v, --version    Print version and exit\n"
-                    "\t-h, --help       Show this help\n";
+                    "\t-h, --help       Show this help\n"
+                    "\t-dump-tokens     Print Tokens\n"
+                    "\t-dump-ast        Print AST\n";
     printf("%s", message);
 }
 
