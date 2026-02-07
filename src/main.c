@@ -87,7 +87,8 @@ void parse_args(int argc, char **argv)
         exit(0);
     }
 
-    for (int i=0; i < argc - 1; i++) {
+    for (int i = 0; i < argc - 1; i++)
+    {
         if (!strcmp("-dump-tokens", argv[i]))
             opt.dump_tokens = true;
         if (!strcmp("-dump-ast", argv[i]))
@@ -95,7 +96,6 @@ void parse_args(int argc, char **argv)
     }
 
     opt.file_name = argv[argc - 1];
-
 }
 
 int main(int argc, char **argv)
