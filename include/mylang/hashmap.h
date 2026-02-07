@@ -62,6 +62,8 @@ typedef struct SymTabEntry
     int const_value;
 
     StackFrame *frame;
+
+    bool is_used;
 } SymTabEntry;
 
 typedef struct TableNode

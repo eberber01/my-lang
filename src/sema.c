@@ -3,6 +3,7 @@
 #include <mylang/hashmap.h>
 #include <mylang/sema.h>
 #include <mylang/util.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -302,6 +303,7 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
         }
 
         ident->symbol = entry;
+        ident->symbol->is_used = true;
         break;
     case AST_FUNC_CALL:
         func_call = (AstFuncCall *)node->as;
@@ -404,6 +406,18 @@ void sym_check(AstNode *node, StackFrame *frame, Scope *scope, HashMap *type_env
     }
 }
 
+void warn_unused(Vector *symbols)
+{
+    SymTabEntry *symbol;
+    for (size_t i = 0; i < symbols->length; i++)
+    {
+        symbol = (SymTabEntry *)vector_get(symbols, i);
+        if (!symbol->is_used && strcmp(symbol->key, "main"))
+            printf(COLOR_YELLOW "warning:" COLOR_RESET " unused variable " COLOR_BOLD "'%s'\n" COLOR_RESET,
+                   symbol->key);
+    }
+}
+
 Vector *sema_check(Vector *prog, HashMap *type_env)
 {
     AstNode *node;
@@ -426,6 +440,8 @@ Vector *sema_check(Vector *prog, HashMap *type_env)
         node = (AstNode *)vector_get(prog, i);
         type_check(node);
     }
+
+    warn_unused(symbols);
 
     return symbols;
 }

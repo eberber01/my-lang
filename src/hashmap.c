@@ -27,6 +27,7 @@ SymTabEntry *make_symtab_entry(char *key, TypeSpecifier type, SymbolType symbol)
     entry->type = type;
     entry->symbol = symbol;
     entry->is_arg_loaded = false;
+    entry->is_used = false;
     return entry;
 }
 

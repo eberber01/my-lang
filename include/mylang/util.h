@@ -7,6 +7,13 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#define COLOR_RESET   "\x1b[0m"
+#define COLOR_RED     "\x1b[31m"
+#define COLOR_YELLOW  "\x1b[33m"
+#define COLOR_BLUE    "\x1b[34m"
+#define COLOR_BOLD    "\x1b[1m"
+
+
 extern Arena default_arena;
 extern Arena *context_arena;
 
