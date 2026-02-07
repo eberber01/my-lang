@@ -62,6 +62,8 @@ typedef struct Token
     int line;
 } Token;
 
+void dump_tokens(Vector* tokens);
+
 void print_token(Token *t);
 
 Token *make_token(int type, String *value, int pos, int line);

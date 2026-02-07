@@ -243,7 +243,7 @@ void _print_ast(AstNode *node, int level)
     }
 }
 
-void print_ast(Vector *prog)
+void dump_ast(Vector *prog)
 {
     for (size_t i = 0; i < prog->length; i++)
     {

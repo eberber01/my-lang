@@ -7,17 +7,22 @@
 #include <mylang/sema.h>
 #include <mylang/util.h>
 #include <mylang/version.h>
+#include <stdbool.h>
 #include <stdio.h>
 
 typedef struct CompilerOptions
 {
     char *file_name;
+    bool dump_ast;
+    bool dump_tokens;
 } CompilerOptions;
 
-void my_lang(CompilerOptions *opt)
+struct CompilerOptions opt;
+
+void my_lang(CompilerOptions opt)
 {
     size_t input_length = 0;
-    char *input = read_file(opt->file_name, &input_length);
+    char *input = read_file(opt.file_name, &input_length);
 
     HashMap *type_env = hashmap_new();
     type_env_init(type_env);
@@ -27,12 +32,18 @@ void my_lang(CompilerOptions *opt)
     Vector *prog = parse(tokens);
 
     sema_check(prog, type_env);
-#ifdef DEBUG
-    for (size_t i = 0; i < tokens->length; i++)
-        print_token((Token *)vector_get(tokens, i));
 
-    print_ast(prog);
-#endif
+    if (opt.dump_tokens)
+    {
+        dump_tokens(tokens);
+        exit(0);
+    }
+
+    if (opt.dump_ast)
+    {
+        dump_ast(prog);
+        exit(0);
+    }
 
     gen_asm(prog);
 
@@ -55,7 +66,7 @@ void print_help()
     printf(message);
 }
 
-CompilerOptions *parse_args(int argc, char **argv)
+void parse_args(int argc, char **argv)
 {
 
     if (argc < 2)
@@ -76,17 +87,23 @@ CompilerOptions *parse_args(int argc, char **argv)
         exit(0);
     }
 
-    CompilerOptions *opt = (CompilerOptions *)context_alloc(sizeof(CompilerOptions));
+    for (int i=0; i < argc - 1; i++) {
+        if (!strcmp("-dump-tokens", argv[i]))
+            opt.dump_tokens = true;
+        if (!strcmp("-dump-ast", argv[i]))
+            opt.dump_ast = true;
+    }
 
-    opt->file_name = argv[argc - 1];
+    opt.file_name = argv[argc - 1];
 
-    return opt;
 }
 
 int main(int argc, char **argv)
 {
-    CompilerOptions *opt = parse_args(argc, argv);
+    parse_args(argc, argv);
+
     my_lang(opt);
+
     arena_free(context_arena);
 
     return 0;

@@ -164,7 +164,8 @@ typedef struct AstUnaryExpr
     TokenType op_type;
 } AstUnaryExpr;
 
-void print_ast(Vector *tree);
+void dump_ast(Vector *tree);
+
 void visit(AstNode *node);
 
 void ast_free(AstNode *root);

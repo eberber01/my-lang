@@ -325,6 +325,12 @@ Token *make_token(int type, String *value, int pos, int line)
     return t;
 }
 
+void dump_tokens(Vector *tokens)
+{
+    for (size_t i = 0; i < tokens->length; i++)
+        print_token((Token *)vector_get(tokens, i));
+}
+
 void print_token(Token *t)
 {
     char *str = as_str(t->value);
