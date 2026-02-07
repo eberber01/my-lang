@@ -63,7 +63,7 @@ void print_help()
                     "Options:\n"
                     "\t-v, --version    Print version and exit\n"
                     "\t-h, --help       Show this help\n";
-    printf(message);
+    printf("%s", message);
 }
 
 void parse_args(int argc, char **argv)
