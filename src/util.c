@@ -6,6 +6,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define ARENA_IMPLEMENTATION
+#include <mylang/arena.h>
+
+Arena default_arena = {0};
+Arena *context_arena = &default_arena;
+
+void *context_alloc(size_t size)
+{
+    assert(context_arena);
+    return arena_alloc(context_arena, size);
+}
 /* Convert string s to int out.
  *
  * @param[out] out The converted int. Cannot be NULL.
@@ -47,7 +58,7 @@ str2int_errno str2int(int *out, char *s, int base)
 
 char *str_clone(char *s)
 {
-    char *str = (char *)my_malloc(strlen(s) + 1);
+    char *str = (char *)context_alloc(strlen(s) + 1);
     strcpy(str, s);
     return str;
 }
@@ -77,10 +88,10 @@ void *my_realloc(void *ptr, size_t bytes)
 Vector *vector_new(void)
 {
     // Allocate struct
-    Vector *vector = my_malloc(sizeof(Vector));
+    Vector *vector = (Vector *)context_alloc(sizeof(Vector));
 
     // Allocate inital size
-    void **array = my_malloc(sizeof(void *) * VECTOR_INIT_SIZE);
+    void **array = (void **)context_alloc(sizeof(void *) * VECTOR_INIT_SIZE);
 
     vector->array = array;
     vector->size = 10;
@@ -93,7 +104,8 @@ void vector_push(Vector *vector, void *ptr)
     if (vector->length >= (vector->size))
     {
         vector->size *= 2;
-        void **new_array = my_realloc(vector->array, sizeof(void *) * (vector->size));
+        void **new_array = arena_realloc(context_arena, vector->array, sizeof(void *) * (vector->size / 2),
+                                         sizeof(void *) * (vector->size));
         vector->array = new_array;
         new_array = NULL;
     }
@@ -123,24 +135,24 @@ void *vector_get(Vector *vector, size_t index)
 
 // Caller must free entries in vector
 // before calling this function
-void vector_free(Vector *vector)
-{
-    free(vector->array);
-    free(vector);
-}
+// void vector_free(Vector *vector)
+// {
+//     // free(vector->array);
+//     // free(vector);
+// }
 
-void string_free(String *string)
-{
-    for (size_t i = 0; i < string->length; i++)
-        free(vector_get(string->vector, i));
-    vector_free(string->vector);
-    free(string);
-}
+// void string_free(String *string)
+// {
+//     // for (size_t i = 0; i < string->length; i++)
+//     //     free(vector_get(string->vector, i));
+//     // vector_free(string->vector);
+//     // free(string);
+// }
 
 String *string_new(void)
 {
     // Allocate struct
-    String *string = my_malloc(sizeof(String));
+    String *string = (String *)context_alloc(sizeof(String));
     // Allocate inital string
     Vector *vector = vector_new();
 
@@ -190,7 +202,7 @@ bool string_eq(String *string, char *cmp)
 
 void string_append(String *string, char c)
 {
-    char *n = my_malloc(sizeof(char));
+    char *n = (char *)context_alloc(sizeof(char));
     *n = c;
 
     vector_push(string->vector, (void *)n);
@@ -199,7 +211,7 @@ void string_append(String *string, char c)
 
 char *as_str(String *string)
 {
-    char *s = my_malloc(sizeof(char) * string->length + 1);
+    char *s = (char *)context_alloc(sizeof(char) * string->length + 1);
     for (size_t i = 0; i < string->length; i++)
     {
         s[i] = *((char *)vector_get(string->vector, i));
@@ -210,7 +222,7 @@ char *as_str(String *string)
 
 char *int_to_str(int num, int size)
 {
-    char *str = my_malloc((sizeof(char) * size) + 1);
+    char *str = (char *)context_alloc(sizeof(char) * (size + 1));
     snprintf(str, size, "%d", num);
     return str;
 }

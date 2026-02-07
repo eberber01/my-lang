@@ -27,11 +27,8 @@ TEST_P(LexParamTest, MatchesExpectedTokens)
         char *str = as_str(t->value);
         EXPECT_EQ(t->type, expected[i].first);
         EXPECT_STREQ(str, expected[i].second);
-        string_free(t->value);
-        free(t);
-        free(str);
     }
-    free(tokens);
+    arena_free(context_arena);
 }
 
 INSTANTIATE_TEST_SUITE_P(

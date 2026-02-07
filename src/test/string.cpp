@@ -8,7 +8,7 @@ TEST(String, New)
 {
     String *s = string_new();
     EXPECT_EQ(s->length, 0);
-    string_free(s);
+    arena_free(context_arena);
 }
 
 TEST(String, AsStr)
@@ -19,7 +19,6 @@ TEST(String, AsStr)
     s = string_new();
 
     str = as_str(s);
-    free(str);
     EXPECT_STREQ("", "");
 
     for (int i = 0; i < 6; i++)
@@ -28,6 +27,5 @@ TEST(String, AsStr)
     }
     str = as_str(s);
     EXPECT_STREQ(str, target);
-    string_free(s);
-    free(str);
+    arena_free(context_arena);
 }

@@ -26,7 +26,7 @@
 
 Register *make_register(char *label)
 {
-    Register *reg = my_malloc(sizeof(Register));
+    Register *reg = context_alloc(sizeof(Register));
     reg->label = label;
     reg->free = true;
     return reg;
@@ -34,7 +34,7 @@ Register *make_register(char *label)
 
 RISCV *make_riscv(void)
 {
-    RISCV *riscv = my_malloc(sizeof(RISCV));
+    RISCV *riscv = (RISCV *)context_alloc(sizeof(RISCV));
     Vector *temp_reg = vector_new();
     Vector *arg_reg = vector_new();
     Vector *save_reg = vector_new();
@@ -101,7 +101,7 @@ Label create_base_cond_label(LabelKind kind, RISCV *_asm)
         _asm->or_count++;
         break;
     }
-    Label label = my_malloc(sizeof(char) * strlen(tmp) + 1);
+    Label label = (Label)context_alloc(sizeof(char) * strlen(tmp) + 1);
     strcpy(label, tmp);
     return label;
 }
@@ -111,7 +111,7 @@ Label extend_label(Label label, char *str)
     char tmp[64];
     snprintf(tmp, sizeof(tmp), "%s%s", label, str);
 
-    Label new_label = my_malloc(sizeof(char) * strlen(tmp) + 1);
+    Label new_label = (Label)context_alloc(sizeof(char) * strlen(tmp) + 1);
     strcpy(new_label, tmp);
     return new_label;
 }
@@ -403,10 +403,6 @@ Register *eval_log_and(Register *left, Register *right, RISCV *_asm)
 
     emit_label(end_label, _asm);
 
-    free(and_label);
-    free(false_label);
-    free(end_label);
-
     free_register(left);
     free_register(right);
 
@@ -432,10 +428,6 @@ Register *eval_log_or(Register *left, Register *right, RISCV *_asm)
 
     emit_load_register(reg, 1, _asm);
     emit_label(end_label, _asm);
-
-    free(or_label);
-    free(true_label);
-    free(end_label);
 
     free_register(left);
     free_register(right);
@@ -606,9 +598,6 @@ void gen_if(AstNode *node, RISCV *_asm)
 
     if (if_stmt->else_body != NULL)
         _gen_asm(if_stmt->else_body, _asm);
-
-    free(if_label);
-    free(else_label);
 }
 
 void gen_ret(AstNode *node, RISCV *_asm)
@@ -855,10 +844,6 @@ void gen_while(AstNode *node, RISCV *_asm)
 
     // add other label
     emit_label(end_label, _asm);
-
-    free(label);
-    free(start_label);
-    free(end_label);
 }
 
 void gen_for(AstNode *node, RISCV *_asm)
@@ -909,12 +894,6 @@ void gen_for(AstNode *node, RISCV *_asm)
 
     emit_jump_label(cond_label, _asm);
     emit_label(end_label, _asm);
-
-    free(init_label);
-    free(cond_label);
-    free(body_label);
-    free(step_label);
-    free(end_label);
 }
 
 Register *eval_lval(AstNode *node, RISCV *_asm)
@@ -1031,24 +1010,6 @@ void asm_init(RISCV *_asm)
     emit_linux_prologue(_asm);
 }
 
-void asm_free(RISCV *riscv)
-{
-    fclose(riscv->out);
-    for (int i = 0; i < 7; i++)
-        free(vector_get(riscv->temp, i));
-    for (int i = 0; i < 8; i++)
-        free(vector_get(riscv->arg, i));
-    for (int i = 0; i < 12; i++)
-        free(vector_get(riscv->save, i));
-    vector_free(riscv->arg);
-    vector_free(riscv->temp);
-    vector_free(riscv->save);
-    free(riscv->sp);
-    free(riscv->ret);
-    free(riscv->zero);
-    free(riscv);
-}
-
 void ecall(RISCV *_asm)
 {
     fprintf(_asm->out, "\tecall\n");
@@ -1063,6 +1024,5 @@ void gen_asm(Vector *prog)
     {
         _gen_asm((AstNode *)vector_get(prog, i), _asm);
     }
-
-    asm_free(_asm);
+    fclose(_asm->out);
 }

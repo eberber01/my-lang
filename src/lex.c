@@ -16,7 +16,7 @@ char *read_file(char *filename, size_t *length)
     long size = ftell(f);
     rewind(f);
 
-    char *buffer = malloc(size + 1); // +1 for null-terminator
+    char *buffer = context_alloc(size + 1); // +1 for null-terminator
     n = fread(buffer, 1, size, f);
 
     if (n < (size_t)size)
@@ -37,7 +37,7 @@ Vector *tokenize(const char *input, size_t length)
     char c;
     Vector *vector = vector_new();
 
-    Lexer *lexer = (Lexer *)my_malloc(sizeof(Lexer));
+    Lexer *lexer = (Lexer *)context_alloc(sizeof(Lexer));
     lexer->curr = 0;
     lexer->input = input;
     lexer->length = length;
@@ -47,7 +47,7 @@ Vector *tokenize(const char *input, size_t length)
     char peek;
     while ((c = next(lexer)))
     {
-        Token *t = my_malloc(sizeof(Token));
+        Token *t = (Token *)context_alloc(sizeof(Token));
         switch (c)
         {
         case '+':
@@ -232,13 +232,7 @@ Vector *tokenize(const char *input, size_t length)
         {
             vector_push(vector, (void *)t);
         }
-
-        if (t->value == NULL)
-        {
-            free(t);
-        }
     }
-    free(lexer);
     return vector;
 }
 
@@ -263,7 +257,6 @@ void tokenize_digit(char c, Token *token, Lexer *lexer)
     char *value = int_to_str(digit, size);
     token->value = string(value);
     token->type = TOK_NUM;
-    free(value);
 }
 
 // Parse Identifier token
@@ -336,7 +329,6 @@ void print_token(Token *t)
 {
     char *str = as_str(t->value);
     printf("<TOKEN TYPE=%d VALUE=%s POS=%d LINE=%d>\n", t->type, str, t->pos, t->line);
-    free(str);
 }
 
 int is_ident_char(char c)
@@ -347,16 +339,4 @@ int is_ident_char(char c)
 int is_ident_start(char c)
 {
     return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_';
-}
-
-void free_tokens(Vector *tokens)
-{
-    Token *token;
-    for (size_t i = 0; i < tokens->length; i++)
-    {
-        token = (Token *)vector_get(tokens, i);
-        string_free(token->value);
-        free(token);
-    }
-    vector_free(tokens);
 }

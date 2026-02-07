@@ -27,8 +27,5 @@ TEST(Parse, Variable)
     var = parse_var_def(stream);
 
     EXPECT_EQ(AST_VAR_DEF, var->type);
-
-    free_tokens(tokens);
-    free(stream);
-    ast_free(var);
+    arena_free(context_arena);
 }

@@ -1,3 +1,4 @@
+#include <mylang/arena.h>
 #include <mylang/hashmap.h>
 #include <mylang/util.h>
 #include <stdbool.h>
@@ -13,7 +14,7 @@
 
 TypeEnvEntry *make_type_env_entry(char *value, TypeSpecifier ts)
 {
-    TypeEnvEntry *entry = my_malloc(sizeof(TypeEnvEntry));
+    TypeEnvEntry *entry = context_alloc(sizeof(TypeEnvEntry));
     entry->value = value;
     entry->ts = ts;
     return entry;
@@ -21,7 +22,7 @@ TypeEnvEntry *make_type_env_entry(char *value, TypeSpecifier ts)
 
 SymTabEntry *make_symtab_entry(char *key, TypeSpecifier type, SymbolType symbol)
 {
-    SymTabEntry *entry = my_malloc(sizeof(SymTabEntry));
+    SymTabEntry *entry = context_alloc(sizeof(SymTabEntry));
     entry->key = key;
     entry->type = type;
     entry->symbol = symbol;
@@ -189,8 +190,6 @@ void type_env_free(HashMap *map)
 
         while (curr)
         {
-            TypeEnvEntry *entry = (TypeEnvEntry *)curr->data;
-            free(entry);
             tmp = curr->next;
 
             // Free Table Node

@@ -40,7 +40,7 @@ void next_token(TokenStream *stream)
 
 TokenStream *make_token_stream(Vector *tokens)
 {
-    TokenStream *stream = my_malloc(sizeof(TokenStream));
+    TokenStream *stream = (TokenStream *)context_alloc(sizeof(TokenStream));
 
     stream->tokens = tokens;
     stream->current = 0;
@@ -74,7 +74,6 @@ AstNode *parse_ident(TokenStream *stream)
     char *value = as_str(current->value);
     if (is_func_call_start(stream))
     {
-        free(value);
         return parse_func_call(stream);
     }
     next_token(stream);
@@ -91,7 +90,6 @@ AstNode *parse_primary_expression(TokenStream *stream)
         next_token(stream);
         char *int_str = as_str(current->value);
         str2int(&lit, int_str, 10);
-        free(int_str);
         return make_int_const(lit);
     }
     else if (current != NULL && current->type == TOK_IDENT)
@@ -602,7 +600,7 @@ Vector *parse_func_params(TokenStream *stream)
 
         char *ts_str = as_str(param_type->value);
 
-        Param *param = (Param *)my_malloc(sizeof(Param));
+        Param *param = (Param *)context_alloc(sizeof(Param));
         param->type = ts_str;
         param->value = as_str(param_name->value);
         vector_push(params, param);
@@ -686,6 +684,5 @@ Vector *parse(Vector *tokens)
 {
     TokenStream *stream = make_token_stream(tokens);
     Vector *prog = parse_prog(stream);
-    free(stream);
     return prog;
 }

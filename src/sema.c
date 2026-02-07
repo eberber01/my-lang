@@ -8,7 +8,7 @@
 
 StackFrame *make_stack_frame(char *func)
 {
-    StackFrame *frame = my_malloc(sizeof(StackFrame));
+    StackFrame *frame = context_alloc(sizeof(StackFrame));
 
     frame->size = 0;
     frame->func = func;
@@ -26,7 +26,7 @@ int stackframe_add(StackFrame *frame, size_t n, size_t type_size)
 
 Scope *enter_scope(Scope *parent)
 {
-    Scope *child = (Scope *)my_malloc(sizeof(Scope));
+    Scope *child = (Scope *)context_alloc(sizeof(Scope));
     child->symtab = symtab_clone(parent->symtab);
     child->parent = parent;
     return child;
@@ -36,7 +36,6 @@ Scope *exit_scope(Scope *scope)
 {
     Scope *parent = scope->parent;
     hashmap_free(scope->symtab);
-    free(scope);
     return parent;
 }
 
@@ -411,7 +410,7 @@ Vector *sema_check(Vector *prog, HashMap *type_env)
     HashMap *symtab = hashmap_new();
     Vector *symbols = vector_new();
 
-    Scope *global = (Scope *)my_malloc(sizeof(Scope));
+    Scope *global = (Scope *)context_alloc(sizeof(Scope));
     global->symtab = symtab;
     global->parent = NULL;
     global->id = 0;

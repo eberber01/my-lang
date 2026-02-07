@@ -254,7 +254,7 @@ void print_ast(Vector *prog)
 
 AstNode *make_ast_node(AstNodeType type, void *inner)
 {
-    AstNode *node = (AstNode *)my_malloc(sizeof(AstNode));
+    AstNode *node = (AstNode *)context_alloc(sizeof(AstNode));
     node->type = type;
     node->as = inner;
     return node;
@@ -262,14 +262,14 @@ AstNode *make_ast_node(AstNodeType type, void *inner)
 
 AstNode *make_ast_lval(AstLValueKind kind)
 {
-    AstLValue *lval = (AstLValue *)my_malloc(sizeof(AstLValue));
+    AstLValue *lval = (AstLValue *)context_alloc(sizeof(AstLValue));
     lval->kind = kind;
     return make_ast_node(AST_LVAL, lval);
 }
 
 AstNode *make_ast_unary_expr(AstNode *postfix_expr, char *value, TokenType op_type)
 {
-    AstUnaryExpr *unary_expr = (AstUnaryExpr *)my_malloc(sizeof(AstUnaryExpr));
+    AstUnaryExpr *unary_expr = (AstUnaryExpr *)context_alloc(sizeof(AstUnaryExpr));
     unary_expr->postfix_expr = postfix_expr;
     unary_expr->value = value;
     unary_expr->op_type = op_type;
@@ -278,14 +278,14 @@ AstNode *make_ast_unary_expr(AstNode *postfix_expr, char *value, TokenType op_ty
 
 AstNode *make_expr_stmt(AstNode *expr)
 {
-    AstExprStmt *stmt = (AstExprStmt *)my_malloc(sizeof(AstExprStmt));
+    AstExprStmt *stmt = (AstExprStmt *)context_alloc(sizeof(AstExprStmt));
     stmt->expr = expr;
     return make_ast_node(AST_EXPR_STMT, stmt);
 }
 
 AstNode *make_ast_enum(char *value, Vector *enums)
 {
-    AstEnum *enm = (AstEnum *)my_malloc(sizeof(AstEnum));
+    AstEnum *enm = (AstEnum *)context_alloc(sizeof(AstEnum));
     enm->enums = enums;
     enm->value = value;
     return make_ast_node(AST_ENUM, enm);
@@ -293,21 +293,21 @@ AstNode *make_ast_enum(char *value, Vector *enums)
 
 AstNode *make_ast_comp_stmt(Vector *body)
 {
-    AstCompStmt *stmt = (AstCompStmt *)my_malloc(sizeof(AstCompStmt));
+    AstCompStmt *stmt = (AstCompStmt *)context_alloc(sizeof(AstCompStmt));
     stmt->body = body;
     return make_ast_node(AST_COMP_STMT, stmt);
 }
 
 AstNode *make_int_const(int value)
 {
-    AstIntConst *int_const = (AstIntConst *)my_malloc(sizeof(AstIntConst));
+    AstIntConst *int_const = (AstIntConst *)context_alloc(sizeof(AstIntConst));
     int_const->value = value;
     return make_ast_node(AST_INT_CONST, int_const);
 }
 
 AstNode *make_ast_bin_exp(char *value, TokenType op_type, AstNode *left, AstNode *right)
 {
-    AstBinExp *bin_exp = (AstBinExp *)my_malloc(sizeof(AstBinExp));
+    AstBinExp *bin_exp = (AstBinExp *)context_alloc(sizeof(AstBinExp));
     bin_exp->left = left;
     bin_exp->right = right;
     bin_exp->value = value;
@@ -317,7 +317,7 @@ AstNode *make_ast_bin_exp(char *value, TokenType op_type, AstNode *left, AstNode
 
 AstNode *make_ast_func_def(char *value, char *type, AstNode *body, Vector *params)
 {
-    AstFuncDef *func_def = (AstFuncDef *)my_malloc(sizeof(AstFuncDef));
+    AstFuncDef *func_def = (AstFuncDef *)context_alloc(sizeof(AstFuncDef));
     func_def->body = body;
     func_def->value = value;
     func_def->type = type;
@@ -327,21 +327,21 @@ AstNode *make_ast_func_def(char *value, char *type, AstNode *body, Vector *param
 
 AstNode *make_ast_ident(char *value)
 {
-    AstIdent *ident = (AstIdent *)my_malloc(sizeof(AstIdent));
+    AstIdent *ident = (AstIdent *)context_alloc(sizeof(AstIdent));
     ident->value = value;
     return make_ast_node(AST_IDENT, ident);
 }
 
 AstNode *make_ast_ret(AstNode *expr)
 {
-    AstRet *ret = (AstRet *)my_malloc(sizeof(AstRet));
+    AstRet *ret = (AstRet *)context_alloc(sizeof(AstRet));
     ret->expr = expr;
     return make_ast_node(AST_RET, ret);
 }
 
 AstNode *make_ast_func_call(char *value, Vector *args)
 {
-    AstFuncCall *func_call = (AstFuncCall *)my_malloc(sizeof(AstFuncCall));
+    AstFuncCall *func_call = (AstFuncCall *)context_alloc(sizeof(AstFuncCall));
     func_call->value = value;
     func_call->args = args;
     return make_ast_node(AST_FUNC_CALL, func_call);
@@ -349,7 +349,7 @@ AstNode *make_ast_func_call(char *value, Vector *args)
 
 AstNode *make_ast_var_dec(char *value, char *type)
 {
-    AstVarDec *dec = (AstVarDec *)my_malloc(sizeof(AstVarDec));
+    AstVarDec *dec = (AstVarDec *)context_alloc(sizeof(AstVarDec));
     dec->value = value;
     dec->type = type;
     return make_ast_node(AST_VAR_DEC, dec);
@@ -357,7 +357,7 @@ AstNode *make_ast_var_dec(char *value, char *type)
 
 AstNode *make_ast_var_asgn(AstNode *lval, AstNode *rval)
 {
-    AstVarAsgn *asgn = (AstVarAsgn *)my_malloc(sizeof(AstVarAsgn));
+    AstVarAsgn *asgn = (AstVarAsgn *)context_alloc(sizeof(AstVarAsgn));
     asgn->rval = rval;
     asgn->lval = lval;
     return make_ast_node(AST_VAR_ASGN, asgn);
@@ -365,7 +365,7 @@ AstNode *make_ast_var_asgn(AstNode *lval, AstNode *rval)
 
 AstNode *make_ast_var_def(char *value, char *type, AstNode *expr)
 {
-    AstVarDef *var_def = (AstVarDef *)my_malloc(sizeof(AstVarDef));
+    AstVarDef *var_def = (AstVarDef *)context_alloc(sizeof(AstVarDef));
     var_def->value = value;
     var_def->type = type;
     var_def->expr = expr;
@@ -374,7 +374,7 @@ AstNode *make_ast_var_def(char *value, char *type, AstNode *expr)
 
 AstNode *make_ast_if_else(AstNode *if_expr, AstNode *if_body, AstNode *else_body)
 {
-    AstIfElse *if_stmt = (AstIfElse *)my_malloc(sizeof(AstIfElse));
+    AstIfElse *if_stmt = (AstIfElse *)context_alloc(sizeof(AstIfElse));
     if_stmt->if_body = if_body;
     if_stmt->if_expr = if_expr;
     if_stmt->else_body = else_body;
@@ -383,7 +383,7 @@ AstNode *make_ast_if_else(AstNode *if_expr, AstNode *if_body, AstNode *else_body
 
 AstNode *make_ast_while(AstNode *expr, AstNode *body)
 {
-    AstWhile *w_stmt = (AstWhile *)my_malloc(sizeof(AstWhile));
+    AstWhile *w_stmt = (AstWhile *)context_alloc(sizeof(AstWhile));
     w_stmt->body = body;
     w_stmt->expr = expr;
     return make_ast_node(AST_WHILE, w_stmt);
@@ -391,171 +391,10 @@ AstNode *make_ast_while(AstNode *expr, AstNode *body)
 
 AstNode *make_ast_for(AstNode *init, AstNode *cond, AstNode *step, AstNode *body)
 {
-    AstFor *f_stmt = (AstFor *)my_malloc(sizeof(AstFor));
+    AstFor *f_stmt = (AstFor *)context_alloc(sizeof(AstFor));
     f_stmt->init = init;
     f_stmt->cond = cond;
     f_stmt->step = step;
     f_stmt->body = body;
     return make_ast_node(AST_FOR, f_stmt);
-}
-
-void ast_free(AstNode *node)
-{
-    AstCompStmt *comp_stmt;
-    AstIfElse *if_stmt;
-    AstVarDef *var_def;
-    AstBinExp *bin_exp;
-    AstIntConst *int_const;
-    AstFuncDef *func_def;
-    AstIdent *ident;
-    AstFuncCall *func_call;
-    AstRet *ret;
-    AstEnum *enm;
-    AstVarDec *dec;
-    AstVarAsgn *asgn;
-    AstFor *f_stmt;
-    AstWhile *w_stmt;
-    AstExprStmt *expr_stmt;
-    AstUnaryExpr *unary_expr;
-    AstLValue *lval;
-
-    if (node == NULL)
-        return;
-    switch (node->type)
-    {
-    case AST_COMP_STMT:
-        comp_stmt = (AstCompStmt *)node->as;
-        for (size_t i = 0; i < comp_stmt->body->length; i++)
-            ast_free(vector_get(comp_stmt->body, i));
-
-        vector_free(comp_stmt->body);
-        free(comp_stmt);
-        break;
-    case AST_IF:
-        if_stmt = (AstIfElse *)node->as;
-        ast_free(if_stmt->if_body);
-        ast_free(if_stmt->if_expr);
-        if (if_stmt->else_body != NULL)
-            ast_free(if_stmt->else_body);
-        free(if_stmt);
-        break;
-    case AST_VAR_DEF:
-        var_def = (AstVarDef *)node->as;
-        ast_free(var_def->expr);
-        free(var_def->value);
-        free(var_def->type);
-        free(var_def);
-        break;
-    case AST_BIN_EXP:
-        bin_exp = (AstBinExp *)node->as;
-        ast_free(bin_exp->left);
-        ast_free(bin_exp->right);
-        free(bin_exp->value);
-        free(bin_exp);
-        break;
-    case AST_INT_CONST:
-        int_const = (AstIntConst *)node->as;
-        free(int_const);
-        break;
-    case AST_FUNC_DEF:
-        func_def = (AstFuncDef *)node->as;
-        for (size_t i = 0; i < func_def->params->length; i++)
-        {
-            Param *param = vector_get(func_def->params, i);
-            free(param->type);
-            free(param->value);
-            free(param);
-        }
-        vector_free(func_def->params);
-        ast_free(func_def->body);
-        free(func_def->value);
-        free(func_def->type);
-        free(func_def);
-        break;
-    case AST_IDENT:
-        ident = (AstIdent *)node->as;
-        free(ident->value);
-        free(ident);
-        break;
-    case AST_FUNC_CALL:
-        func_call = (AstFuncCall *)node->as;
-        free(func_call->value);
-        for (size_t i = 0; i < func_call->args->length; i++)
-            ast_free((AstNode *)vector_get(func_call->args, i));
-        vector_free(func_call->args);
-        free(func_call);
-        break;
-    case AST_RET:
-        ret = (AstRet *)node->as;
-        ast_free(ret->expr);
-        free(ret);
-        break;
-    case AST_ENUM:
-        enm = (AstEnum *)node->as;
-        for (size_t i = 0; i < enm->enums->length; i++)
-        {
-            free(vector_get(enm->enums, i));
-        }
-        vector_free(enm->enums);
-        free(enm);
-        break;
-    case AST_VAR_DEC:
-        dec = (AstVarDec *)node->as;
-        free(dec->value);
-        free(dec->type);
-        free(dec);
-        break;
-    case AST_VAR_ASGN:
-        asgn = (AstVarAsgn *)node->as;
-        ast_free(asgn->lval);
-        free(asgn->rval);
-        free(asgn);
-        break;
-    case AST_WHILE:
-        w_stmt = (AstWhile *)node->as;
-        ast_free(w_stmt->body);
-        ast_free(w_stmt->expr);
-        free(w_stmt);
-        break;
-    case AST_FOR:
-        f_stmt = (AstFor *)node->as;
-        ast_free(f_stmt->init);
-        ast_free(f_stmt->cond);
-        ast_free(f_stmt->step);
-        ast_free(f_stmt->body);
-        free(f_stmt);
-        break;
-    case AST_EXPR_STMT:
-        expr_stmt = (AstExprStmt *)node->as;
-        ast_free(expr_stmt->expr);
-        break;
-    case AST_UNARY_EXPR:
-        unary_expr = (AstUnaryExpr *)node->as;
-        if (unary_expr->value != NULL)
-            free(unary_expr->value);
-        ast_free(unary_expr->postfix_expr);
-        free(unary_expr);
-        break;
-    case AST_LVAL:
-        lval = (AstLValue *)node->as;
-        AstIdent *lval_ident;
-        switch (lval->kind)
-        {
-        case AST_LVAL_IDENT:
-            lval_ident = (AstIdent *)(lval->u.ident->as);
-            free(lval_ident);
-            break;
-        default:
-            fprintf(stderr, "Ast Free: Unknown AST LValue Type (%d)\n", lval->kind);
-            break;
-        }
-        free(lval);
-    case AST_EMPTY_EXPR:
-        break;
-    default:
-        fprintf(stderr, "Ast Free: Unknown AST Type (%d)\n", node->type);
-        break;
-    }
-
-    free(node);
 }

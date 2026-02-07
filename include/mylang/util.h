@@ -1,10 +1,14 @@
 #ifndef UTIL_H
 #define UTIL_H
+#include "mylang/arena.h"
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdlib.h>
+
+extern Arena default_arena;
+extern Arena *context_arena;
 
 #ifdef DEBUG
 #define DEBUG_PRINT(x) printf x
@@ -68,5 +72,7 @@ String *string_clone(String *string);
 bool string_eq(String *string, char *cmp);
 
 char *str_clone(char *s);
+
+void *context_alloc(size_t size);
 
 #endif

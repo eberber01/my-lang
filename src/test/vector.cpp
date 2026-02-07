@@ -16,7 +16,7 @@ TEST(Vector, Get)
     Vector *v = vector_new();
     for (int i = 0; i < 3; i++)
     {
-        ptrs[i] = (VectorData *)my_malloc(sizeof(VectorData));
+        ptrs[i] = (VectorData *)context_alloc(sizeof(VectorData));
         vector_push(v, ptrs[i]);
     }
     EXPECT_EQ(3, v->length);
@@ -27,18 +27,18 @@ TEST(Vector, Get)
         EXPECT_EQ(ptrs[i], data);
     }
 
-    vector_free(v);
+    arena_free(context_arena);
 }
 
 TEST(Vector, Push)
 {
     VectorData *data;
     Vector *v = vector_new();
-    data = (VectorData *)my_malloc(sizeof(VectorData));
+    data = (VectorData *)context_alloc(sizeof(VectorData));
     vector_push(v, data);
     EXPECT_EQ(data, v->array[0]);
 
-    vector_free(v);
+    arena_free(context_arena);
 }
 
 TEST(Vector, New)
@@ -48,7 +48,7 @@ TEST(Vector, New)
 
     EXPECT_EQ(VECTOR_INIT_SIZE, v->size);
     EXPECT_EQ(v->length, 0);
-    vector_free(v);
+    arena_free(context_arena);
 }
 
 TEST(Vector, Resize)
@@ -57,9 +57,9 @@ TEST(Vector, Resize)
     Vector *v = vector_new();
     for (int i = 0; i < VECTOR_INIT_SIZE + 1; i++)
     {
-        data = (VectorData *)my_malloc(sizeof(VectorData));
+        data = (VectorData *)context_alloc(sizeof(VectorData));
         vector_push(v, data);
     }
     EXPECT_EQ(VECTOR_INIT_SIZE * 2, v->size);
-    vector_free(v);
+    arena_free(context_arena);
 }
