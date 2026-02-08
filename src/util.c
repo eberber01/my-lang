@@ -133,22 +133,6 @@ void *vector_get(Vector *vector, size_t index)
     return vector->array[index];
 }
 
-// Caller must free entries in vector
-// before calling this function
-// void vector_free(Vector *vector)
-// {
-//     // free(vector->array);
-//     // free(vector);
-// }
-
-// void string_free(String *string)
-// {
-//     // for (size_t i = 0; i < string->length; i++)
-//     //     free(vector_get(string->vector, i));
-//     // vector_free(string->vector);
-//     // free(string);
-// }
-
 String *string_new(void)
 {
     // Allocate struct
